@@ -51,12 +51,28 @@ open class Function(
 
         if (returnType != null) {
             append(": ")
-            if (funGenerics.contains(Generic(returnType!!.name, GenericTypeKind.PLAIN)))
+            if (funGenerics.contains(Generic(returnType!!.name, GenericTypeKind.PLAIN, mutableListOf())))
                 append(returnType!!.name)
             else
                 append(returnType!!.resolve()?.fullName ?: UNRESOLVED_TYPE_SYMBOL)
         }
 
+        if (funGenerics.isNotEmpty()) {
+            var isWhereWasAdded = false
+            for (generic in funGenerics) {
+                if (generic.constraints.size > 0) {
+                    if (!isWhereWasAdded) {
+                        append(" where")
+                        isWhereWasAdded = true
+                    }
+                    for (constraint in generic.constraints) {
+                        append(" " + constraint.first + ": " + constraint.second + ",")
+                    }
+                }
+            }
+            if (isWhereWasAdded)
+                deleteCharAt(this.length - 1)
+        }
         if (!hasBody && contracts.isEmpty()) {
             appendLine(";")
         } else {

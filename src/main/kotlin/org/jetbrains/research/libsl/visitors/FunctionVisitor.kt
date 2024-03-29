@@ -251,14 +251,35 @@ class FunctionVisitor(
     }
 
     private val FunctionDeclContext.funGenerics: MutableList<Generic>
-        get() = getFunGenerics(this.functionHeader().typeParameters())
+        get() = getFunGenerics(this.functionHeader().typeParameters(), this.functionHeader().whereConstraints())
 
-    private fun getFunGenerics(typeParameters: TypeParametersContext): MutableList<Generic> {
+    private fun getFunGenerics(
+        typeParameters: TypeParametersContext,
+        whereConstraints: WhereConstraintsContext?
+    ): MutableList<Generic> {
         val funGenerics: MutableList<Generic> = mutableListOf()
         for (typeParam in typeParameters.typeParameterList().typeParameter()) {
+            val paramName = typeParam.paramType.text
             val type =
                 if (typeParam.bound == null) GenericTypeKind.PLAIN else GenericTypeKind.fromString(typeParam.bound.text)
-            funGenerics.add(Generic(typeParam.paramType.text, type))
+            val constraints = if (whereConstraints != null) {
+                val listOfTypeConstraints = mutableListOf<Pair<String, String>>()
+                for (currentTypeConstraint in whereConstraints.typeConstraint()) {
+                    val curParamName = currentTypeConstraint.paramType.text
+                    val curParamConstraint = currentTypeConstraint.paramConstraint.text
+                    if (paramName == curParamName)
+                        listOfTypeConstraints.add(
+                            Pair(
+                                curParamName,
+                                curParamConstraint
+                            )
+                        )
+                }
+                listOfTypeConstraints
+            } else {
+                mutableListOf()
+            }
+            funGenerics.add(Generic(paramName, type, constraints))
         }
         return funGenerics
     }

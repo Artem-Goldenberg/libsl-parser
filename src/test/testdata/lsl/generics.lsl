@@ -31,4 +31,7 @@ automaton A
 
     <in T, out R> fun *.copy(from: R, to: T): void {
     }
+
+    <in T, out Q, S> fun *.print (t: T, s: S, args: array<Q>): Q where T: Int, Q: Int {
+    }
 }

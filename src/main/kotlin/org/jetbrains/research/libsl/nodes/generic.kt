@@ -11,7 +11,8 @@ enum class GenericTypeKind(val string: String) {
 
 open class Generic(
     open var name: String,
-    open var type: GenericTypeKind
+    open var type: GenericTypeKind,
+    open var constraints: MutableList<Pair<String, String>>
 ) {
 
 

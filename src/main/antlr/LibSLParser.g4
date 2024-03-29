@@ -295,7 +295,7 @@ functionDecl
 
 functionHeader
    :   annotationUsage* modifier=Identifier? typeParameters? FUN (automatonName=periodSeparatedFullName DOT)? headerWithAsterisk? functionName=Identifier
-   L_BRACKET functionDeclArgList? R_BRACKET (COLON functionType=typeIdentifier)?
+   L_BRACKET functionDeclArgList? R_BRACKET (COLON functionType=typeIdentifier)? whereConstraints?
    ;
 
 functionDeclArgList
@@ -522,4 +522,16 @@ typeParameters
 
 typeParameterList
     : typeParameter (',' typeParameter)*
+    ;
+
+constraint
+    : Identifier (L_ARROW Identifier R_ARROW)?
+    ;
+
+typeConstraint
+    : paramType=Identifier COLON paramConstraint=constraint
+    ;
+
+whereConstraints
+    : WHERE typeConstraint (',' typeConstraint)*
     ;

@@ -101,8 +101,23 @@ private fun checkAutomatonIsResolved(automaton: Automaton) {
 private fun checkFunctionIsResolved(function: Function) {
     checkStatementIsResolved(function, function.statements)
 
-    if (!function.funGenerics.contains(function.returnType?.name?.let { Generic(it, GenericTypeKind.PLAIN) })) function.returnType?.resolveOrError()
-    function.args.forEach { arg -> if (!function.funGenerics.contains(Generic(arg.typeReference.name, GenericTypeKind.PLAIN))) arg.typeReference.resolveOrError() }
+    if (!function.funGenerics.contains(function.returnType?.name?.let {
+            Generic(
+                it,
+                GenericTypeKind.PLAIN,
+                mutableListOf()
+            )
+        })) function.returnType?.resolveOrError()
+    function.args.forEach { arg ->
+        if (!function.funGenerics.contains(
+                Generic(
+                    arg.typeReference.name,
+                    GenericTypeKind.PLAIN,
+                    mutableListOf()
+                )
+            )
+        ) arg.typeReference.resolveOrError()
+    }
 }
 
 private fun checkStatementIsResolved(function: Function, statements: List<Statement>) {

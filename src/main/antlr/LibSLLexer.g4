@@ -262,6 +262,10 @@ OUT
    :   'out'
    ;
 
+WHERE
+   :   'where'
+   ;
+
 IntegerLiteral:
     DecimalIntegerLiteral
     | HexIntegerLiteral
