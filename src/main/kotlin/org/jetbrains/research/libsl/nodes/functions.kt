@@ -33,12 +33,7 @@ open class Function(
             append("static ")
         }
         if (funGenerics.isNotEmpty()) {
-            append("<")
-            for (i in 0 until funGenerics.size - 1) {
-                appendGeneric(this, i, true)
-            }
-            appendGeneric(this, funGenerics.size - 1, false)
-            append("> ")
+            append("generic ")
         }
         append("${kind.value} ")
         if (isMethod) {
@@ -51,7 +46,7 @@ open class Function(
 
         if (returnType != null) {
             append(": ")
-            if (funGenerics.contains(Generic(returnType!!.name, GenericTypeKind.PLAIN, mutableListOf())))
+            if (funGenerics.contains(Generic(returnType!!.name, GenericTypeBound.EMPTY, mutableListOf())))
                 append(returnType!!.name)
             else
                 append(returnType!!.resolve()?.fullName ?: UNRESOLVED_TYPE_SYMBOL)
@@ -66,7 +61,9 @@ open class Function(
                         isWhereWasAdded = true
                     }
                     for (constraint in generic.constraints) {
-                        append(" " + constraint.first + ": " + constraint.second + ",")
+                        val typeBound =
+                            if (!GenericTypeBound.EMPTY.equals(generic.typeBound)) generic.typeBound.string + " " else ""
+                        append(" " + generic.name + ": " + typeBound + constraint + ",")
                     }
                 }
             }
@@ -90,7 +87,7 @@ open class Function(
 
     private fun appendGeneric(t: StringBuilder, i: Int, addComma: Boolean) {
         val type =
-            if (!funGenerics[i].type.equals(GenericTypeKind.PLAIN)) funGenerics[i].type.string + " " else ""
+            if (!funGenerics[i].typeBound.equals(GenericTypeBound.EMPTY)) funGenerics[i].typeBound.string + " " else ""
         t.append(type + funGenerics[i].name + if (addComma) ", " else "")
     }
 }

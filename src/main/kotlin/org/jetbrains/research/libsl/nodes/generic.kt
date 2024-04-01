@@ -1,8 +1,8 @@
 package org.jetbrains.research.libsl.nodes
 
 
-enum class GenericTypeKind(val string: String) {
-    IN("in"), OUT("out"), PLAIN("plain");
+enum class GenericTypeBound(val string: String) {
+    IN("in"), OUT("out"), EMPTY("");
 
     companion object {
         fun fromString(str: String) = values().first { op -> op.string == str }
@@ -11,8 +11,8 @@ enum class GenericTypeKind(val string: String) {
 
 open class Generic(
     open var name: String,
-    open var type: GenericTypeKind,
-    open var constraints: MutableList<Pair<String, String>>
+    open var typeBound: GenericTypeBound,
+    open var constraints: MutableList<String>
 ) {
 
 

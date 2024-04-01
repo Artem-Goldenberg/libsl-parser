@@ -266,6 +266,10 @@ WHERE
    :   'where'
    ;
 
+GENERIC
+   :   'generic'
+   ;
+
 IntegerLiteral:
     DecimalIntegerLiteral
     | HexIntegerLiteral

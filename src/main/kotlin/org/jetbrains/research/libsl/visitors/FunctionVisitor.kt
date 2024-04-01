@@ -59,7 +59,7 @@ class FunctionVisitor(
         val targetAutomatonRef = args.getFunctionTargetByAnnotation ?: automatonReference
         val returnType = ctx.functionHeader().functionType?.let { processTypeIdentifier(it) }
 
-        val funGenerics: MutableList<Generic> = if (ctx.functionHeader().typeParameters() != null)
+        val funGenerics: MutableList<Generic> = if (ctx.functionHeader().GENERIC() != null)
             ctx.funGenerics
         else
             mutableListOf()
@@ -251,35 +251,25 @@ class FunctionVisitor(
     }
 
     private val FunctionDeclContext.funGenerics: MutableList<Generic>
-        get() = getFunGenerics(this.functionHeader().typeParameters(), this.functionHeader().whereConstraints())
+        get() = getFunGenerics(this.functionHeader().whereConstraints())
 
     private fun getFunGenerics(
-        typeParameters: TypeParametersContext,
-        whereConstraints: WhereConstraintsContext?
+        whereConstraints: WhereConstraintsContext
     ): MutableList<Generic> {
         val funGenerics: MutableList<Generic> = mutableListOf()
-        for (typeParam in typeParameters.typeParameterList().typeParameter()) {
-            val paramName = typeParam.paramType.text
-            val type =
-                if (typeParam.bound == null) GenericTypeKind.PLAIN else GenericTypeKind.fromString(typeParam.bound.text)
-            val constraints = if (whereConstraints != null) {
-                val listOfTypeConstraints = mutableListOf<Pair<String, String>>()
-                for (currentTypeConstraint in whereConstraints.typeConstraint()) {
-                    val curParamName = currentTypeConstraint.paramType.text
-                    val curParamConstraint = currentTypeConstraint.paramConstraint.text
-                    if (paramName == curParamName)
-                        listOfTypeConstraints.add(
-                            Pair(
-                                curParamName,
-                                curParamConstraint
-                            )
-                        )
-                }
-                listOfTypeConstraints
+        for (typeConstraint in whereConstraints.typeConstraint()) {
+            val paramName = typeConstraint.paramName.text
+            val bound =
+                if (typeConstraint.paramConstraint.bound == null) GenericTypeBound.EMPTY else GenericTypeBound.fromString(
+                    typeConstraint.paramConstraint.bound.text
+                )
+            val constraints = mutableListOf<String>(typeConstraint.paramConstraint.constraintType.text)
+
+            if (!funGenerics.contains(Generic(paramName, bound, mutableListOf()))) {
+                funGenerics.add(Generic(paramName, bound, constraints))
             } else {
-                mutableListOf()
+                funGenerics[funGenerics.indexOf(Generic(paramName, bound, constraints))].constraints.addAll(constraints)
             }
-            funGenerics.add(Generic(paramName, type, constraints))
         }
         return funGenerics
     }
