@@ -32,10 +32,10 @@ class TypeResolver(
             context = context,
             entityPosition = posGetter.getCtxPosition(fileName, ctx)
         )
-        if(originType !in context.getAllTypes()) {
+        if (originType !in context.getAllTypes()) {
             context.storeType(originType)
         }
-        if(type !in context.getAllTypes()) {
+        if (type !in context.getAllTypes()) {
             context.storeType(type)
         }
     }
@@ -57,10 +57,10 @@ class TypeResolver(
             posGetter.getCtxPosition(fileName, ctx)
         )
 
-        if(originType !in context.getAllTypes()) {
+        if (originType !in context.getAllTypes()) {
             context.storeType(originType)
         }
-        if(type !in context.getAllTypes()) {
+        if (type !in context.getAllTypes()) {
             context.storeType(type)
         }
     }
@@ -129,7 +129,10 @@ class TypeResolver(
         val name = ctx.name.asPeriodSeparatedString()
         val isTypeIdentifier = ctx.targetType()?.typeIdentifier()?.name?.text
         val forTypeList = mutableListOf<String>()
-        ctx.targetType()?.typeList()?.typeIdentifier()?.forEach { forTypeList.add(it.name.text)}
+        ctx.targetType()?.typeList()?.typeIdentifier()?.forEach { forTypeList.add(it.name.text) }
+        val generics = mutableListOf<Generic>()
+        ctx.generic().typeIdentifier()
+            .forEach { generics.add(Generic(it.name.text, GenericTypeBound.EMPTY, mutableListOf())) }
 
         val variables = mutableListOf<Variable>()
         val functions = mutableListOf<org.jetbrains.research.libsl.nodes.Function>()
@@ -149,13 +152,14 @@ class TypeResolver(
             name,
             variables,
             functions,
+            generics,
             isTypeIdentifier,
             forTypeList,
             annotationReferences,
             context,
             posGetter.getCtxPosition(fileName, ctx)
         )
-        if(type !in context.getAllTypes()) {
+        if (type !in context.getAllTypes()) {
             context.storeType(type)
         }
     }
@@ -182,8 +186,8 @@ class TypeResolver(
         val isMethod = ctx.functionHeader().headerWithAsterisk() != null
         val functionContext = FunctionContext(context)
         var isStatic = false
-        if(ctx.functionHeader().modifier != null) {
-            if(ctx.functionHeader().modifier.text == "static") {
+        if (ctx.functionHeader().modifier != null) {
+            if (ctx.functionHeader().modifier.text == "static") {
                 isStatic = true
             } else {
                 throw IllegalStateException("Unknown modifier, only static allowed")
@@ -222,7 +226,8 @@ class TypeResolver(
             ?.mapIndexed { i, parameter ->
                 val typeRef = processTypeIdentifier(parameter.type)
                 val annotationsReferences = getAnnotationUsages(parameter.annotationUsage())
-                val arg = FunctionArgument(parameter.name.text.extractIdentifier(), typeRef, i,
+                val arg = FunctionArgument(
+                    parameter.name.text.extractIdentifier(), typeRef, i,
                     annotationsReferences,
                     targetAutomaton = null,
                     entityPosition = posGetter.getCtxPosition(fileName, parameter)

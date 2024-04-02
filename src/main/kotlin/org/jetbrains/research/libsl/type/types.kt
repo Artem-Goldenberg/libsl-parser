@@ -20,7 +20,7 @@ sealed interface Type : IPrinter {
         get() = buildString {
             append(if (isPointer) "*" else "")
             append(name)
-            if(generics.isNotEmpty()) {
+            if (generics.isNotEmpty()) {
                 append("<")
                 append(generics.joinToString(separator = ", ") {
                     it.resolve()?.fullName ?: UNRESOLVED_TYPE_SYMBOL
@@ -133,6 +133,7 @@ data class StructuredType(
     override val name: String,
     val variables: MutableList<Variable> = mutableListOf(),
     val functions: MutableList<Function> = mutableListOf(),
+    val genericsTypes: MutableList<Generic> = mutableListOf(),
     val isTypeIdentifier: String?,
     val forTypeList: MutableList<String> = mutableListOf(),
     val annotationUsages: MutableList<AnnotationUsage>,
@@ -146,10 +147,17 @@ data class StructuredType(
     override fun dumpToString(): String = buildString {
         append(formatListEmptyLineAtEndIfNeeded(annotationUsages))
         append("type $name ")
-        if(isTypeIdentifier != null) {
+        if (genericsTypes.isNotEmpty()) {
+            append("<")
+            for (i in 0 until genericsTypes.size - 1)
+                append(genericsTypes[i].name + ", ")
+            append(genericsTypes[genericsTypes.size - 1])
+            append("> ")
+        }
+        if (isTypeIdentifier != null) {
             append("is $isTypeIdentifier ")
         }
-        if(forTypeList.isNotEmpty()) {
+        if (forTypeList.isNotEmpty()) {
             append("for ")
             append(forTypeList.joinToString(separator = ", "))
             append(" ")

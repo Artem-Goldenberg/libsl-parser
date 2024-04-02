@@ -9,6 +9,11 @@ library std
 typealias Int = int32;
 
 // automata
+type HashMap  <K, V>
+    is java.util.HashMap
+    for java.util.Map
+{
+}
 
 automaton A
 (
