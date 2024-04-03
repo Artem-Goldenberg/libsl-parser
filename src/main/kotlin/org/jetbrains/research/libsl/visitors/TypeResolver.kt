@@ -6,6 +6,7 @@ import org.jetbrains.research.libsl.LibSLParser.FunctionDeclContext
 import org.jetbrains.research.libsl.context.FunctionContext
 import org.jetbrains.research.libsl.context.LslContextBase
 import org.jetbrains.research.libsl.errors.ErrorManager
+import org.jetbrains.research.libsl.errors.UnresolvedType
 import org.jetbrains.research.libsl.nodes.*
 import org.jetbrains.research.libsl.nodes.Function
 import org.jetbrains.research.libsl.type.*
@@ -139,6 +140,26 @@ class TypeResolver(
                     )
                 generics.add(Generic(it.name.text, bound, mutableListOf()))
             }
+        if (ctx.whereConstraints() != null) {
+            ctx.whereConstraints().typeConstraint().forEach {
+                if (!generics.contains(Generic(it.paramName.text, GenericTypeBound.EMPTY, mutableListOf())))
+                    errorManager(
+                        UnresolvedType(
+                            "Unknown generic in where section",
+                            posGetter.getCtxPosition(context.fileName, ctx)
+                        )
+                    )
+                generics.get(
+                    generics.indexOf(
+                        Generic(
+                            it.paramName.text,
+                            GenericTypeBound.EMPTY,
+                            mutableListOf()
+                        )
+                    )
+                ).constraints.add(it.paramConstraint.text)
+            }
+        }
 
         val variables = mutableListOf<Variable>()
         val functions = mutableListOf<org.jetbrains.research.libsl.nodes.Function>()

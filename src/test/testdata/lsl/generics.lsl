@@ -12,12 +12,18 @@ typealias Int = int32;
 type HashMap  <K, V>
     is java.util.HashMap
     for java.util.Map
+    where
+        K: any,
+        V: any
 {
 }
 
 type HashMapInOuParams  <in K, out V>
     is java.util.HashMap
     for java.util.Map
+    where
+        K: any,
+        V: any
 {
 }
 

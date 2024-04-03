@@ -167,6 +167,15 @@ data class StructuredType(
             append(forTypeList.joinToString(separator = ", "))
             append(" ")
         }
+        if (genericsTypes.size > 0) {
+            append("where ")
+            // TODO add case many constraints for one type!
+            for (i in 0 until genericsTypes.size - 1)
+                for (j in 0 until genericsTypes[i].constraints.size)
+                    append(genericsTypes[i].name + ": " + genericsTypes[i].constraints[j] + ", ")
+            // TODO: bad style; it must be refactored
+            append(genericsTypes[genericsTypes.size - 1].name + ": " + genericsTypes[genericsTypes.size - 1].constraints[genericsTypes[genericsTypes.size - 1].constraints.size - 1] + " ")
+        }
         appendLine("{")
         variables.forEach { v ->
             appendLine(withIndent(v.dumpToString()))
