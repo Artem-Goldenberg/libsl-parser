@@ -149,9 +149,14 @@ data class StructuredType(
         append("type $name ")
         if (genericsTypes.isNotEmpty()) {
             append("<")
-            for (i in 0 until genericsTypes.size - 1)
-                append(genericsTypes[i].name + ", ")
-            append(genericsTypes[genericsTypes.size - 1])
+            for (i in 0 until genericsTypes.size - 1) {
+                val typeBound =
+                    if (GenericTypeBound.EMPTY != genericsTypes[i].typeBound) genericsTypes[i].typeBound.string + " " else ""
+                append(typeBound + genericsTypes[i].name + ", ")
+            }
+            val typeBound =
+                if (GenericTypeBound.EMPTY != genericsTypes[genericsTypes.size - 1].typeBound) genericsTypes[genericsTypes.size - 1].typeBound.string + " " else ""
+            append(typeBound + genericsTypes[genericsTypes.size - 1].name)
             append("> ")
         }
         if (isTypeIdentifier != null) {

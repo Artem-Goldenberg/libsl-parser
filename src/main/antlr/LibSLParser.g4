@@ -222,7 +222,7 @@ nameWithType
  * syntax: one.two.three<T>
  */
 typeIdentifier
-   :   (asterisk=ASTERISK)? name=periodSeparatedFullName generic?
+   :   (asterisk=ASTERISK)? genericBound? name=periodSeparatedFullName generic?
    ;
 
 generic
@@ -523,3 +523,7 @@ typeConstraint
 whereConstraints
     : WHERE typeConstraint (',' typeConstraint)*
     ;
+
+genericBound
+   :   bound=(IN | OUT)
+   ;

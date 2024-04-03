@@ -15,6 +15,12 @@ type HashMap  <K, V>
 {
 }
 
+type HashMapInOuParams  <in K, out V>
+    is java.util.HashMap
+    for java.util.Map
+{
+}
+
 automaton A
 (
 )

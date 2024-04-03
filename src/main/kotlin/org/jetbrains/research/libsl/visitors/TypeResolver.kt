@@ -132,7 +132,13 @@ class TypeResolver(
         ctx.targetType()?.typeList()?.typeIdentifier()?.forEach { forTypeList.add(it.name.text) }
         val generics = mutableListOf<Generic>()
         ctx.generic().typeIdentifier()
-            .forEach { generics.add(Generic(it.name.text, GenericTypeBound.EMPTY, mutableListOf())) }
+            .forEach {
+                val bound =
+                    if (it.genericBound() == null) GenericTypeBound.EMPTY else GenericTypeBound.fromString(
+                        it.genericBound().bound.text
+                    )
+                generics.add(Generic(it.name.text, bound, mutableListOf()))
+            }
 
         val variables = mutableListOf<Variable>()
         val functions = mutableListOf<org.jetbrains.research.libsl.nodes.Function>()
