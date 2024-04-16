@@ -127,12 +127,12 @@ class TypeResolver(
     }
 
     override fun visitTypeDefBlock(ctx: LibSLParser.TypeDefBlockContext) {
-        val name = ctx.name.asPeriodSeparatedString()
+        val name = ctx.type.name.asPeriodSeparatedString()
         val isTypeIdentifier = ctx.targetType()?.typeIdentifier()?.name?.text
         val forTypeList = mutableListOf<String>()
         ctx.targetType()?.typeList()?.typeIdentifier()?.forEach { forTypeList.add(it.name.text) }
         val generics = mutableListOf<Generic>()
-        ctx.generic().typeIdentifier()
+        ctx.type.generic().typeIdentifier()
             .forEach {
                 val bound =
                     if (it.genericBound() == null) GenericTypeBound.EMPTY else GenericTypeBound.fromString(
@@ -174,7 +174,7 @@ class TypeResolver(
         }
 
         val annotationReferences = getAnnotationUsages(ctx.annotationUsage())
-
+        val typeIdentifier = processTypeIdentifier(ctx.typeIdentifier())
         val type = StructuredType(
             name,
             variables,
@@ -184,7 +184,8 @@ class TypeResolver(
             forTypeList,
             annotationReferences,
             context,
-            posGetter.getCtxPosition(fileName, ctx)
+            posGetter.getCtxPosition(fileName, ctx),
+            typeIdentifier.genericReferences
         )
         if (type !in context.getAllTypes()) {
             context.storeType(type)

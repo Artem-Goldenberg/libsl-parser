@@ -25,12 +25,13 @@ type HashMapInOuParams  <in K, out V>
         K: any,
         V: any
 {
+    fun remove (key: K, value: V): void;
 }
 
 automaton A
 (
 )
-: Int
+: HashMap <K, V>
 {
 
     generic fun *.genericFun (): void where T: any, R: any, Q: any

@@ -4,8 +4,9 @@ typealias Int = int32;
 type HashMap <K, V> is java.util.HashMap for java.util.Map where K: any, V: any {
 }
 type HashMapInOuParams <in K, out V> is java.util.HashMap for java.util.Map where K: any, V: any {
+    fun remove(key: K, value: V): void;
 }
-automaton A : Int {
+automaton A : HashMap<K, V> {
     generic fun *.genericFun(): void where T: any, R: any, Q: any {
     }
 

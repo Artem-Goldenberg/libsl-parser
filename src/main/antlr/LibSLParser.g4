@@ -57,7 +57,7 @@ typealiasStatement
  * syntax: type full.name { field1: Type; field2: Type; ... }
  */
 typeDefBlock
-   :   annotationUsage* TYPE name=periodSeparatedFullName generic? targetType? whereConstraints? (L_BRACE typeDefBlockStatement* R_BRACE)?
+   :   annotationUsage* TYPE type=typeIdentifier targetType? whereConstraints? (L_BRACE typeDefBlockStatement* R_BRACE)?
    ;
 
 targetType

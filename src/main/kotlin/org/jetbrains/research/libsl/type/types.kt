@@ -138,11 +138,11 @@ data class StructuredType(
     val forTypeList: MutableList<String> = mutableListOf(),
     val annotationUsages: MutableList<AnnotationUsage>,
     override val context: LslContextBase,
-    val entityPosition: EntityPosition
+    val entityPosition: EntityPosition,
+    override val generics: MutableList<TypeReference>
 ) : Type {
     override val isPointer: Boolean = false
     override val isTopLevelType: Boolean = true
-    override val generics: MutableList<TypeReference> = mutableListOf()
 
     override fun dumpToString(): String = buildString {
         append(formatListEmptyLineAtEndIfNeeded(annotationUsages))
