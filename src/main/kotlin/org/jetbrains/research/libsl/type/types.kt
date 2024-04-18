@@ -288,3 +288,19 @@ data class NullType(
 
     override fun toString() = dumpToString()
 }
+
+data class GenericType(
+    override val name: String,
+    override val isPointer: Boolean = false,
+    override val generics: MutableList<TypeReference> = mutableListOf(),
+    val typeBound: GenericTypeBound,
+    val constraints: MutableList<String>,
+    override val context: LslContextBase
+) : Type {
+
+    override fun dumpToString(): String {
+        return BackticksPolitics.forTypeIdentifier(fullName)
+    }
+
+    override fun toString() = dumpToString()
+}

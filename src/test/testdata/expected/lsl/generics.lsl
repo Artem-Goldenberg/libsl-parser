@@ -7,21 +7,21 @@ type HashMapInOuParams <in K, out V> is java.util.HashMap for java.util.Map wher
     fun remove(key: K, value: V): void;
 }
 automaton A : HashMap<K, V> {
-    generic fun *.genericFun(): void where T: any, R: any, Q: any {
+    fun *.genericFun <T, R, Q> (): void where T: any, R: any, Q: any {
     }
 
     fun *.unGenericFun(): void {
     }
 
-    generic fun *.genericFunWithParams(a: T, b: Q): R where T: any, R: Int, Q: any {
+    fun *.genericFunWithParams <T, R, Q> (a: T, b: Q): R where T: any, R: Int, Q: any {
     }
 
-    generic fun *.genericFunWithParametrizedArray(a: T, b: Q): array<R> where T: any, R: Int, Q: any {
+    fun *.genericFunWithParametrizedArray <T, R, Q> (a: T, b: Q): array<R> where T: any, R: Int, Q: any {
     }
 
-    generic fun *.copy(from: R, to: T): void where T: in any, R: out Int {
+    fun *.copy <T, R> (from: R, to: T): void where T: in any, R: out Int {
     }
 
-    generic fun *.print(t: T, s: S, args: array<Q>): Q where T: in Int, Q: out Int, S: any {
+    fun *.print <T, S, Q> (t: T, s: S, args: array<Q>): Q where T: in Int, S: any, Q: out Int {
     }
 }

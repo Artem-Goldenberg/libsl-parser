@@ -3,6 +3,7 @@ package org.jetbrains.research.libsl.nodes
 import org.jetbrains.research.libsl.context.FunctionContext
 import org.jetbrains.research.libsl.nodes.references.AutomatonReference
 import org.jetbrains.research.libsl.nodes.references.TypeReference
+import org.jetbrains.research.libsl.type.GenericType
 import org.jetbrains.research.libsl.type.Type.Companion.UNRESOLVED_TYPE_SYMBOL
 import org.jetbrains.research.libsl.utils.BackticksPolitics
 import org.jetbrains.research.libsl.utils.EntityPosition
@@ -11,7 +12,6 @@ open class Function(
     open val kind: FunctionKind,
     open val name: String,
     open val automatonReference: AutomatonReference?,
-    open val funGenerics: MutableList<Generic>,
     open var args: MutableList<FunctionArgument> = mutableListOf(),
     open val returnType: TypeReference?,
     open val annotationUsages: MutableList<AnnotationUsage> = mutableListOf(),
@@ -32,29 +32,43 @@ open class Function(
         if (isStatic) {
             append("static ")
         }
-        if (funGenerics.isNotEmpty()) {
-            append("generic ")
-        }
+        val functionGenerics: MutableList<GenericType> = context.getFunctionGenericTypes()
+
         append("${kind.value} ")
         if (isMethod) {
             append("*.")
         }
         append(BackticksPolitics.forIdentifier(name))
+
+        if (functionGenerics.isNotEmpty()) {
+            append(" <")
+            append(functionGenerics.joinToString(separator = ", "))
+            append("> ")
+        }
+
         append(
             args.joinToString(separator = ", ", prefix = "(", postfix = ")") { arg -> arg.dumpToString() }
         )
 
         if (returnType != null) {
             append(": ")
-            if (funGenerics.contains(Generic(returnType!!.name, GenericTypeBound.EMPTY, mutableListOf())))
+            if (functionGenerics.contains(
+                    GenericType(
+                        returnType!!.name,
+                        typeBound = GenericTypeBound.EMPTY,
+                        constraints = mutableListOf(),
+                        context = context
+                    )
+                )
+            )
                 append(returnType!!.name)
             else
                 append(returnType!!.resolve()?.fullName ?: UNRESOLVED_TYPE_SYMBOL)
         }
 
-        if (funGenerics.isNotEmpty()) {
+        if (functionGenerics.isNotEmpty()) {
             var isWhereWasAdded = false
-            for (generic in funGenerics) {
+            for (generic in functionGenerics) {
                 if (generic.constraints.size > 0) {
                     if (!isWhereWasAdded) {
                         append(" where")
@@ -84,12 +98,6 @@ open class Function(
             appendLine("}")
         }
     }
-
-    private fun appendGeneric(t: StringBuilder, i: Int, addComma: Boolean) {
-        val type =
-            if (!funGenerics[i].typeBound.equals(GenericTypeBound.EMPTY)) funGenerics[i].typeBound.string + " " else ""
-        t.append(type + funGenerics[i].name + if (addComma) ", " else "")
-    }
 }
 
 enum class FunctionKind(val value: String) {
@@ -111,7 +119,7 @@ data class Constructor(
     override val isMethod: Boolean,
     override val entityPosition: EntityPosition
 ) : Function(
-    kind = FunctionKind.CONSTRUCTOR, name, automatonReference = null, mutableListOf(), args, returnType = null,
+    kind = FunctionKind.CONSTRUCTOR, name, automatonReference = null, args, returnType = null,
     annotationUsages, contracts,
     statements, hasBody, null, context, false, isMethod, entityPosition
 )
@@ -127,7 +135,7 @@ class Destructor(
     override val isMethod: Boolean,
     override val entityPosition: EntityPosition
 ) : Function(
-    kind = FunctionKind.DESTRUCTOR, name, null, mutableListOf(), args, null,
+    kind = FunctionKind.DESTRUCTOR, name, null, args, null,
     annotationUsages, contracts,
     statements, hasBody, null, context, false, isMethod, entityPosition
 )
@@ -144,7 +152,7 @@ class Procedure(
     override val isMethod: Boolean,
     override val entityPosition: EntityPosition
 ) : Function(
-    kind = FunctionKind.PROC, name, null, mutableListOf(), args, returnType,
+    kind = FunctionKind.PROC, name, null, args, returnType,
     annotationUsages, contracts,
     statements, hasBody, null, context, false, isMethod, entityPosition
 )

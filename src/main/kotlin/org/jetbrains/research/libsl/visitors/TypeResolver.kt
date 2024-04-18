@@ -234,7 +234,6 @@ class TypeResolver(
             kind = FunctionKind.FUNCTION,
             functionName,
             automatonReference = null,
-            mutableListOf(),
             args,
             returnType,
             annotationReferences,

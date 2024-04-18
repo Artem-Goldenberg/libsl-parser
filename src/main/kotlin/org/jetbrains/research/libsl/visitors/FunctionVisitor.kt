@@ -9,6 +9,7 @@ import org.jetbrains.research.libsl.nodes.Function
 import org.jetbrains.research.libsl.nodes.references.AutomatonReference
 import org.jetbrains.research.libsl.nodes.references.builders.AutomatonReferenceBuilder
 import org.jetbrains.research.libsl.nodes.references.builders.AutomatonReferenceBuilder.getReference
+import org.jetbrains.research.libsl.type.GenericType
 import org.jetbrains.research.libsl.utils.PositionGetter
 import kotlin.IllegalStateException
 
@@ -59,10 +60,12 @@ class FunctionVisitor(
         val targetAutomatonRef = args.getFunctionTargetByAnnotation ?: automatonReference
         val returnType = ctx.functionHeader().functionType?.let { processTypeIdentifier(it) }
 
-        val funGenerics: MutableList<Generic> = if (ctx.functionHeader().GENERIC() != null)
-            ctx.funGenerics
+        val funGenericTypes: MutableList<GenericType> = if (ctx.functionHeader().generic() != null)
+            ctx.functionGenerics
         else
             mutableListOf()
+
+        funGenericTypes.forEach { functionContext.storeFunctionType(it) }
 
         if (returnType != null) {
             val resultVariable = ResultVariable(
@@ -76,7 +79,6 @@ class FunctionVisitor(
             kind = FunctionKind.FUNCTION,
             functionName,
             automatonReference,
-            funGenerics,
             args,
             returnType,
             annotationReferences,
@@ -250,14 +252,22 @@ class FunctionVisitor(
         buildingFunction.contracts.add(contract)
     }
 
-    private val FunctionDeclContext.funGenerics: MutableList<Generic>
-        get() = getFunGenerics(this.functionHeader().whereConstraints())
 
-    private fun getFunGenerics(
-        whereConstraints: WhereConstraintsContext
-    ): MutableList<Generic> {
-        val funGenerics: MutableList<Generic> = mutableListOf()
-        for (typeConstraint in whereConstraints.typeConstraint()) {
+    private val FunctionDeclContext.functionGenerics: MutableList<GenericType>
+        get() = getFunctionGenerics(this.functionHeader())
+
+
+    private fun getFunctionGenerics(
+        functionHeader: FunctionHeaderContext
+    ): MutableList<GenericType> {
+
+        val funGenerics: MutableList<GenericType> = mutableListOf()
+        // GenericType? - this is bad; Only temporary
+        val functionGenericsOrdered: LinkedHashMap<String, GenericType?> = linkedMapOf()
+
+        functionHeader.generic().typeIdentifier().forEach { functionGenericsOrdered[it.name.text] = null }
+
+        for (typeConstraint in functionHeader.whereConstraints().typeConstraint()) {
             val paramName = typeConstraint.paramName.text
             val bound =
                 if (typeConstraint.paramConstraint.bound == null) GenericTypeBound.EMPTY else GenericTypeBound.fromString(
@@ -265,12 +275,21 @@ class FunctionVisitor(
                 )
             val constraints = mutableListOf<String>(typeConstraint.paramConstraint.constraintType.text)
 
-            if (!funGenerics.contains(Generic(paramName, bound, mutableListOf()))) {
-                funGenerics.add(Generic(paramName, bound, constraints))
+            if (
+                functionGenericsOrdered[paramName] == null
+            ) {
+                functionGenericsOrdered[paramName] = GenericType(
+                    paramName,
+                    typeBound = bound,
+                    constraints = constraints,
+                    context = functionContext
+                )
             } else {
-                funGenerics[funGenerics.indexOf(Generic(paramName, bound, constraints))].constraints.addAll(constraints)
+                functionGenericsOrdered[paramName]?.constraints?.addAll(constraints)
             }
         }
+
+        functionGenericsOrdered.forEach { it.value?.let { it1 -> funGenerics.add(it1) } }
         return funGenerics
     }
 }

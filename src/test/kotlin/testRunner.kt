@@ -101,19 +101,21 @@ private fun checkAutomatonIsResolved(automaton: Automaton) {
 private fun checkFunctionIsResolved(function: Function) {
     checkStatementIsResolved(function, function.statements)
 
-    if (!function.funGenerics.contains(function.returnType?.name?.let {
-            Generic(
+    if (!function.context.getFunctionGenericTypes().contains(function.returnType?.name?.let {
+            GenericType(
                 it,
-                GenericTypeBound.EMPTY,
-                mutableListOf()
+                typeBound = GenericTypeBound.EMPTY,
+                constraints = mutableListOf(),
+                context = function.context
             )
         })) function.returnType?.resolveOrError()
     function.args.forEach { arg ->
-        if (!function.funGenerics.contains(
-                Generic(
+        if (!function.context.getFunctionGenericTypes().contains(
+                GenericType(
                     arg.typeReference.name,
-                    GenericTypeBound.EMPTY,
-                    mutableListOf()
+                    typeBound = GenericTypeBound.EMPTY,
+                    constraints = mutableListOf(),
+                    context = function.context
                 )
             )
         ) arg.typeReference.resolveOrError()
@@ -165,6 +167,8 @@ private fun checkTypeIsResolved(type: Type) {
         is StructuredType -> {
             type.variables.forEach { v -> v.typeReference.resolveOrError() }
         }
+        // TODO
+        is GenericType -> {}
     }
 }
 

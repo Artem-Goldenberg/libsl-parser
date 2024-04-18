@@ -294,7 +294,7 @@ functionDecl
    ;
 
 functionHeader
-   :   annotationUsage* modifier=Identifier? GENERIC? FUN (automatonName=periodSeparatedFullName DOT)? headerWithAsterisk? functionName=Identifier
+   :   annotationUsage* modifier=Identifier? FUN (automatonName=periodSeparatedFullName DOT)? headerWithAsterisk? functionName=Identifier generic?
    L_BRACKET functionDeclArgList? R_BRACKET (COLON functionType=typeIdentifier)? whereConstraints?
    ;
 
