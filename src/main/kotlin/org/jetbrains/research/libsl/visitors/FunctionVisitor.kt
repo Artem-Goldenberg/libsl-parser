@@ -141,6 +141,13 @@ class FunctionVisitor(
         val procName = ctx.procHeader().functionName.text.extractIdentifier()
         val annotationReferences = getAnnotationUsages(ctx.procHeader().annotationUsage())
         val args = ctx.args.toMutableList()
+
+        val procGenericTypes: MutableList<GenericType> = if (ctx.procHeader().generic() != null)
+            ctx.procGenerics
+        else
+            mutableListOf()
+
+        procGenericTypes.forEach { functionContext.storeFunctionType(it) }
         args.forEach { arg -> functionContext.storeFunctionArgument(arg) }
         val returnType = ctx.procHeader().functionType?.let { processTypeIdentifier(it) }
 
@@ -254,20 +261,24 @@ class FunctionVisitor(
 
 
     private val FunctionDeclContext.functionGenerics: MutableList<GenericType>
-        get() = getFunctionGenerics(this.functionHeader())
+        get() = getGenerics(this.functionHeader().generic(), this.functionHeader().whereConstraints())
+
+    private val ProcDeclContext.procGenerics: MutableList<GenericType>
+        get() = getGenerics(this.procHeader().generic(), this.procHeader().whereConstraints())
 
 
-    private fun getFunctionGenerics(
-        functionHeader: FunctionHeaderContext
+    private fun getGenerics(
+        genericContext: GenericContext,
+        whereContext: WhereConstraintsContext
     ): MutableList<GenericType> {
 
         val funGenerics: MutableList<GenericType> = mutableListOf()
         // GenericType? - this is bad; Only temporary
         val functionGenericsOrdered: LinkedHashMap<String, GenericType?> = linkedMapOf()
 
-        functionHeader.generic().typeIdentifier().forEach { functionGenericsOrdered[it.name.text] = null }
+        genericContext.typeIdentifier().forEach { functionGenericsOrdered[it.name.text] = null }
 
-        for (typeConstraint in functionHeader.whereConstraints().typeConstraint()) {
+        for (typeConstraint in whereContext.typeConstraint()) {
             val paramName = typeConstraint.paramName.text
             val bound =
                 if (typeConstraint.paramConstraint.bound == null) GenericTypeBound.EMPTY else GenericTypeBound.fromString(

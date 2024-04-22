@@ -281,8 +281,8 @@ procDecl
    ;
 
 procHeader
-   :   annotationUsage* PROC headerWithAsterisk? functionName=Identifier L_BRACKET functionDeclArgList? R_BRACKET
-   (COLON functionType=typeIdentifier)?
+   :   annotationUsage* PROC headerWithAsterisk? functionName=Identifier generic? L_BRACKET functionDeclArgList? R_BRACKET
+   (COLON functionType=typeIdentifier)? whereConstraints?
    ;
 /*
  * syntax: @Annotation
