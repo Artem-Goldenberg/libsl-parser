@@ -6,6 +6,10 @@ type HashMap <K, V> is java.util.HashMap for java.util.Map where K: any, V: any 
 type HashMapInOuParams <in K, out V> is java.util.HashMap for java.util.Map where K: any, V: any {
     fun remove(key: K, value: V): void;
 }
+define action <T> PLAIN_GENERIC_ACTION(
+    x: Int,
+    s: T
+): T where T: any;
 automaton A : HashMap<K, V> {
     proc _genericFun <T, R, Q> (): void where T: any, R: any, Q: any {
     }

@@ -132,35 +132,38 @@ class TypeResolver(
         val forTypeList = mutableListOf<String>()
         ctx.targetType()?.typeList()?.typeIdentifier()?.forEach { forTypeList.add(it.name.text) }
         val generics = mutableListOf<Generic>()
-        ctx.type.generic().typeIdentifier()
-            .forEach {
-                val bound =
-                    if (it.genericBound() == null) GenericTypeBound.EMPTY else GenericTypeBound.fromString(
-                        it.genericBound().bound.text
-                    )
-                generics.add(Generic(it.name.text, bound, mutableListOf()))
-            }
-        if (ctx.whereConstraints() != null) {
-            ctx.whereConstraints().typeConstraint().forEach {
-                if (!generics.contains(Generic(it.paramName.text, GenericTypeBound.EMPTY, mutableListOf())))
-                    errorManager(
-                        UnresolvedType(
-                            "Unknown generic in where section",
-                            posGetter.getCtxPosition(context.fileName, ctx)
+        // TODO: refactor
+        if (ctx.type.generic() !=null) {
+            ctx.type.generic().typeIdentifier()
+                .forEach {
+                    val bound =
+                        if (it.genericBound() == null) GenericTypeBound.EMPTY else GenericTypeBound.fromString(
+                            it.genericBound().bound.text
                         )
-                    )
-                generics.get(
-                    generics.indexOf(
-                        Generic(
-                            it.paramName.text,
-                            GenericTypeBound.EMPTY,
-                            mutableListOf()
+                    generics.add(Generic(it.name.text, bound, mutableListOf()))
+                }
+            if (ctx.whereConstraints() != null) {
+                ctx.whereConstraints().typeConstraint().forEach {
+                    if (!generics.contains(Generic(it.paramName.text, GenericTypeBound.EMPTY, mutableListOf())))
+                        errorManager(
+                            UnresolvedType(
+                                "Unknown generic in where section",
+                                posGetter.getCtxPosition(context.fileName, ctx)
+                            )
                         )
-                    )
-                ).constraints.add(it.paramConstraint.text)
+                    generics.get(
+                        generics.indexOf(
+                            Generic(
+                                it.paramName.text,
+                                GenericTypeBound.EMPTY,
+                                mutableListOf()
+                            )
+                        )
+                    ).constraints.add(it.paramConstraint.text)
+                }
             }
         }
-
+        //
         val variables = mutableListOf<Variable>()
         val functions = mutableListOf<org.jetbrains.research.libsl.nodes.Function>()
         ctx.typeDefBlockStatement().forEach { statement ->

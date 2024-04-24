@@ -28,6 +28,9 @@ type HashMapInOuParams  <in K, out V>
     fun remove (key: K, value: V): void;
 }
 
+
+define action <T> PLAIN_GENERIC_ACTION(x: Int, s: T): T where T: any;
+
 automaton A
 (
 )

@@ -135,7 +135,7 @@ annotationDeclParamsPart
 
 actionDecl
    :   annotationUsage*
-   DEFINE ACTION actionName=Identifier L_BRACKET actionDeclParamList? R_BRACKET (COLON actionType=typeIdentifier)? SEMICOLON
+   DEFINE ACTION generic? actionName=Identifier L_BRACKET actionDeclParamList? R_BRACKET (COLON actionType=typeIdentifier)? whereConstraints? SEMICOLON
    ;
 
 actionDeclParamList
