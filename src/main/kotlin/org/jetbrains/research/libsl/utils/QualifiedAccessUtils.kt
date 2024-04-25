@@ -18,6 +18,8 @@ object QualifiedAccessUtils {
             is SimpleType -> null
             is PrimitiveType -> null
             is RealType -> null
+            // TODO
+            is GenericType -> null
         }
     }
 }
