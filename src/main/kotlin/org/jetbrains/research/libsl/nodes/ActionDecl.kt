@@ -2,6 +2,7 @@ package org.jetbrains.research.libsl.nodes
 
 import org.jetbrains.research.libsl.context.ActionContext
 import org.jetbrains.research.libsl.nodes.references.TypeReference
+import org.jetbrains.research.libsl.type.GenericTypeBound
 import org.jetbrains.research.libsl.type.Type
 import org.jetbrains.research.libsl.utils.BackticksPolitics
 import org.jetbrains.research.libsl.utils.EntityPosition

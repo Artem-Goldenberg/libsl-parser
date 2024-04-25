@@ -5,8 +5,8 @@ import org.jetbrains.research.libsl.context.ActionContext
 import org.jetbrains.research.libsl.context.LslGlobalContext
 import org.jetbrains.research.libsl.nodes.ActionArgumentDescriptor
 import org.jetbrains.research.libsl.nodes.ActionDecl
-import org.jetbrains.research.libsl.nodes.GenericTypeBound
 import org.jetbrains.research.libsl.type.GenericType
+import org.jetbrains.research.libsl.type.GenericTypeBound
 import org.jetbrains.research.libsl.utils.PositionGetter
 
 class ActionVisitor(

@@ -133,7 +133,7 @@ data class StructuredType(
     override val name: String,
     val variables: MutableList<Variable> = mutableListOf(),
     val functions: MutableList<Function> = mutableListOf(),
-    val genericsTypes: MutableList<Generic> = mutableListOf(),
+    val genericsTypes: MutableList<GenericType> = mutableListOf(),
     val isTypeIdentifier: String?,
     val forTypeList: MutableList<String> = mutableListOf(),
     val annotationUsages: MutableList<AnnotationUsage>,
@@ -289,6 +289,14 @@ data class NullType(
     override fun toString() = dumpToString()
 }
 
+enum class GenericTypeBound(val string: String) {
+    IN("in"), OUT("out"), EMPTY("");
+
+    companion object {
+        fun fromString(str: String) = values().first { op -> op.string == str }
+    }
+}
+
 data class GenericType(
     override val name: String,
     override val isPointer: Boolean = false,
@@ -303,4 +311,19 @@ data class GenericType(
     }
 
     override fun toString() = dumpToString()
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as GenericType
+
+        if (name != other.name) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        return name.hashCode()
+    }
+
 }

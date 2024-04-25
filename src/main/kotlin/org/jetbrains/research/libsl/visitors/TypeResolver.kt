@@ -131,20 +131,35 @@ class TypeResolver(
         val isTypeIdentifier = ctx.targetType()?.typeIdentifier()?.name?.text
         val forTypeList = mutableListOf<String>()
         ctx.targetType()?.typeList()?.typeIdentifier()?.forEach { forTypeList.add(it.name.text) }
-        val generics = mutableListOf<Generic>()
+        val generics = mutableListOf<GenericType>()
         // TODO: refactor
-        if (ctx.type.generic() !=null) {
+        if (ctx.type.generic() != null) {
             ctx.type.generic().typeIdentifier()
                 .forEach {
                     val bound =
                         if (it.genericBound() == null) GenericTypeBound.EMPTY else GenericTypeBound.fromString(
                             it.genericBound().bound.text
                         )
-                    generics.add(Generic(it.name.text, bound, mutableListOf()))
+                    generics.add(
+                        GenericType(
+                            name = it.name.text,
+                            typeBound = bound,
+                            constraints = mutableListOf(),
+                            context = context
+                        )
+                    )
                 }
             if (ctx.whereConstraints() != null) {
                 ctx.whereConstraints().typeConstraint().forEach {
-                    if (!generics.contains(Generic(it.paramName.text, GenericTypeBound.EMPTY, mutableListOf())))
+                    if (!generics.contains(
+                            GenericType(
+                                name = it.paramName.text,
+                                typeBound = GenericTypeBound.EMPTY,
+                                constraints = mutableListOf(),
+                                context = context
+                            )
+                        )
+                    )
                         errorManager(
                             UnresolvedType(
                                 "Unknown generic in where section",
@@ -153,10 +168,11 @@ class TypeResolver(
                         )
                     generics.get(
                         generics.indexOf(
-                            Generic(
-                                it.paramName.text,
-                                GenericTypeBound.EMPTY,
-                                mutableListOf()
+                            GenericType(
+                                name = it.paramName.text,
+                                typeBound = GenericTypeBound.EMPTY,
+                                constraints = mutableListOf(),
+                                context = context
                             )
                         )
                     ).constraints.add(it.paramConstraint.text)

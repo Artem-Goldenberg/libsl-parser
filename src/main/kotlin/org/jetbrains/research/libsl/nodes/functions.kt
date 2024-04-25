@@ -4,6 +4,7 @@ import org.jetbrains.research.libsl.context.FunctionContext
 import org.jetbrains.research.libsl.nodes.references.AutomatonReference
 import org.jetbrains.research.libsl.nodes.references.TypeReference
 import org.jetbrains.research.libsl.type.GenericType
+import org.jetbrains.research.libsl.type.GenericTypeBound
 import org.jetbrains.research.libsl.type.Type.Companion.UNRESOLVED_TYPE_SYMBOL
 import org.jetbrains.research.libsl.utils.BackticksPolitics
 import org.jetbrains.research.libsl.utils.EntityPosition

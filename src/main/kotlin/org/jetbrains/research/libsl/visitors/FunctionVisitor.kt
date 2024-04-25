@@ -10,6 +10,7 @@ import org.jetbrains.research.libsl.nodes.references.AutomatonReference
 import org.jetbrains.research.libsl.nodes.references.builders.AutomatonReferenceBuilder
 import org.jetbrains.research.libsl.nodes.references.builders.AutomatonReferenceBuilder.getReference
 import org.jetbrains.research.libsl.type.GenericType
+import org.jetbrains.research.libsl.type.GenericTypeBound
 import org.jetbrains.research.libsl.utils.PositionGetter
 import kotlin.IllegalStateException
 
