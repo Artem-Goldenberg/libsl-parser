@@ -241,7 +241,7 @@ class GeneratedTests {
     }
 
     @Test
-    fun testGnericsLsl() {
+    fun testGenericsLsl() {
         runLslTest("generics")
     }
 }

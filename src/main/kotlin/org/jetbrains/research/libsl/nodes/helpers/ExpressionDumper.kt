@@ -178,7 +178,13 @@ object ExpressionDumper {
     private fun dumpProcExpression(expression: ProcExpression): String {
         return buildString {
             // TODO()
-            append("${BackticksPolitics.forIdentifier(expression.procedureCall.name)}(")
+            append(BackticksPolitics.forIdentifier(expression.procedureCall.name))
+            if (expression.procedureCall.concreteGenericTypeNames.isNotEmpty()) {
+                append("<")
+                append(expression.procedureCall.concreteGenericTypeNames.joinToString(", "))
+                append(">")
+            }
+            append("(")
             if (expression.procedureCall.arguments.isNotEmpty()) {
                 val args = expression.procedureCall.arguments.map { dump(it) }
                 append(args.joinToString(separator = ", "))

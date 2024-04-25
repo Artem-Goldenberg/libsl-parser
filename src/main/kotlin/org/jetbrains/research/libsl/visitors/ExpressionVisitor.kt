@@ -4,15 +4,18 @@ import org.jetbrains.research.libsl.LibSLParser
 import org.jetbrains.research.libsl.LibSLParser.*
 import org.jetbrains.research.libsl.context.LslContextBase
 import org.jetbrains.research.libsl.nodes.*
-import org.jetbrains.research.libsl.nodes.references.builders.*
+import org.jetbrains.research.libsl.nodes.references.builders.ActionDeclReferenceBuilder
+import org.jetbrains.research.libsl.nodes.references.builders.AutomatonReferenceBuilder
+import org.jetbrains.research.libsl.nodes.references.builders.AutomatonStateReferenceBuilder
 import org.jetbrains.research.libsl.nodes.references.builders.TypeReferenceBuilder.getReference
+import org.jetbrains.research.libsl.nodes.references.builders.VariableReferenceBuilder
 import org.jetbrains.research.libsl.utils.PositionGetter
 import org.jetbrains.research.libsl.utils.getCharRepresentation
+import java.lang.Byte.parseByte
 import java.lang.Integer.parseInt
 import java.lang.Integer.parseUnsignedInt
 import java.lang.Long.parseLong
 import java.lang.Long.parseUnsignedLong
-import java.lang.Byte.parseByte
 import java.lang.Short.parseShort
 
 class ExpressionVisitor(
@@ -570,10 +573,15 @@ class ExpressionVisitor(
         }
         //val argTypes = args.map { argument -> context.typeInferrer.getExpressionType(argument).getReference(context) }
         //val procRef = FunctionReferenceBuilder.build(name, argTypes, context)
-
+        val concreteGenericTypeNames = mutableListOf<String>()
+        if (ctx.generic() != null) {
+            // TODO: add resolve type (check type name in globalContext)
+            ctx.generic().typeIdentifier().forEach { concreteGenericTypeNames.add(it.name.text) }
+        }
         val procCall = ProcedureCall(
             //procRef,
             name,
+            concreteGenericTypeNames,
             args,
             posGetter.getCtxPosition(fileName, ctx)
         )

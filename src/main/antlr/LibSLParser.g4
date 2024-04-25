@@ -348,7 +348,7 @@ actionUsage
    ;
 
 procUsage
-   :   qualifiedAccess L_BRACKET expressionsList? R_BRACKET
+   :   qualifiedAccess generic? L_BRACKET expressionsList? R_BRACKET
    ;
 
 expressionsList

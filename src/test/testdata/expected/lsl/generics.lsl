@@ -46,4 +46,8 @@ automaton A : HashMap<K, V> {
 
     fun *.print <T, S, Q> (t: T, s: S, args: array<Q>): Q where T: in Int, S: any, Q: out Int {
     }
+
+    fun *.procUsage(): void {
+        _genericFunWithParams<Int, Int, Int>(4, 5);
+    }
 }
