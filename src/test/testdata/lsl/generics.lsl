@@ -78,4 +78,7 @@ automaton A
     fun *.procUsage (): void {
         _genericFunWithParams<Int, Int, Int>(4, 5);
     }
+
+    fun *.genericTypeDefBlockReturnType (): HashMap <Int, Int> {
+    }
 }

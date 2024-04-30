@@ -61,10 +61,14 @@ open class Function(
                         context = context
                     )
                 )
-            )
+            ) {
                 append(returnType!!.name)
-            else
-                append(returnType!!.resolve()?.fullName ?: UNRESOLVED_TYPE_SYMBOL)
+            } else {
+                if (returnType!!.resolve()?.fullName != null)
+                    appendGeneric(this)
+                else
+                    append(UNRESOLVED_TYPE_SYMBOL)
+            }
         }
 
         if (functionGenerics.isNotEmpty()) {
@@ -97,6 +101,18 @@ open class Function(
 
             append(withIndent(formatListEmptyLineAtEndIfNeeded(statements)))
             appendLine("}")
+        }
+    }
+
+    private fun appendGeneric(stringBuilder: StringBuilder) {
+        stringBuilder.append(returnType!!.name)
+        stringBuilder.append(if (returnType!!.isPointer) "*" else "")
+        if (returnType!!.genericReferences.isNotEmpty()) {
+            stringBuilder.append("<")
+            stringBuilder.append(returnType!!.genericReferences.joinToString(separator = ", ") {
+                it.name
+            })
+            stringBuilder.append(">")
         }
     }
 }
