@@ -80,5 +80,6 @@ automaton A
     }
 
     fun *.genericTypeDefBlockReturnType (): HashMap <Int, Int> {
+        result = new A<Int, Int>(state = Initialized);
     }
 }

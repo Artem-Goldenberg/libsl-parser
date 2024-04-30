@@ -73,6 +73,7 @@ data class OldValue(
 
 data class CallAutomatonConstructor(
     val automatonRef: AutomatonReference,
+    val concreteGenericTypeNames: MutableList<String>,
     val args: List<NamedArgumentWithValue>,
     val stateRef: AutomatonStateReference,
     val entityPosition: EntityPosition

@@ -81,6 +81,11 @@ object ExpressionDumper {
         return buildString {
             append("new ${BackticksPolitics.forPeriodSeparated(expression.automatonRef.name)}")
 
+            if (expression.concreteGenericTypeNames.isNotEmpty()) {
+                append("<")
+                append(expression.concreteGenericTypeNames.joinToString(", "))
+                append(">")
+            }
             val formattedArgs = buildList {
                 add("state = ${BackticksPolitics.forIdentifier(expression.stateRef.name)}")
                 for (arg in expression.args) {

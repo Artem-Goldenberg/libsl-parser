@@ -493,6 +493,13 @@ class ExpressionVisitor(
     ): Expression {
         val automatonName = ctx.name.asPeriodSeparatedString()
         val automatonRef = AutomatonReferenceBuilder.build(automatonName, context)
+
+        val concreteGenericTypeNames = mutableListOf<String>()
+        if (ctx.generic() != null) {
+            // TODO: add resolve type (check type name in globalContext)
+            ctx.generic().typeIdentifier().forEach { concreteGenericTypeNames.add(it.name.text) }
+        }
+
         val args = ctx.namedArgs().argPair().mapNotNull { pair ->
             val name = pair.name.text.extractIdentifier()
             val value = when {
@@ -520,6 +527,7 @@ class ExpressionVisitor(
 
         return CallAutomatonConstructor(
             automatonRef,
+            concreteGenericTypeNames,
             args,
             stateRef,
             posGetter.getCtxPosition(fileName, ctx)

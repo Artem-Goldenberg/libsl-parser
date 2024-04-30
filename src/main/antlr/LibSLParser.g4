@@ -242,7 +242,7 @@ assignmentRight
    ;
 
 callAutomatonConstructorWithNamedArgs
-   :   NEW name=periodSeparatedFullName L_BRACKET (namedArgs)? R_BRACKET
+   :   NEW name=periodSeparatedFullName generic? L_BRACKET (namedArgs)? R_BRACKET
    ;
 
 namedArgs
