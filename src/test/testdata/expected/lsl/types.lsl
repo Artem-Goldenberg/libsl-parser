@@ -13,6 +13,7 @@ type BlackAndWhiteImage {
     var width: Int;
     var tpe: StructureType;
     var content: array<array<Boolean>>;
+    var mapContent: map<array<Boolean>, map<array<Boolean>, Boolean>>;
 }
 types {
     Int(int32);

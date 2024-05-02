@@ -6,6 +6,8 @@ import org.jetbrains.research.libsl.nodes.references.TypeReference
 import org.jetbrains.research.libsl.type.Type.Companion.UNRESOLVED_TYPE_SYMBOL
 import org.jetbrains.research.libsl.utils.BackticksPolitics
 import org.jetbrains.research.libsl.utils.EntityPosition
+import java.util.*
+import kotlin.NoSuchElementException
 
 enum class ArithmeticUnaryOp(val string: String) {
     PLUS("+"), MINUS("-"), INVERSION("!"), TILDE("~");
@@ -160,11 +162,67 @@ class VariableWithInitialValue(
     override fun dumpToString(): String = buildString {
         append(formatListEmptyLineAtEndIfNeeded(annotationUsage))
         append("${keyword.string} ${BackticksPolitics.forIdentifier(name)}: ")
-        append(BackticksPolitics.forTypeIdentifier(typeReference.resolve()?.fullName ?: UNRESOLVED_TYPE_SYMBOL))
+
+        if (typeReference.resolve()?.fullName != null)
+            appendGeneric(this, typeReference)
+        else
+            append(UNRESOLVED_TYPE_SYMBOL)
+
         if (initialValue != null) {
             append(" = ${initialValue.dumpToString()};")
         } else {
             append(";")
+        }
+    }
+
+    private fun appendGeneric(stringBuilder: StringBuilder, typeReference: TypeReference) {
+
+        // stringBuilder.append(if (typeReference!!.isPointer) "*" else "")
+
+        val queue = LinkedList<Pair<TypeReference, Int>>()
+
+        queue.addLast(Pair(typeReference, 0))
+
+        appendGenericsToQueue(queue, 1)
+        var prevDeepLevel = 0
+
+        val mainType = queue.removeFirst()
+        stringBuilder.append(mainType.first.name)
+        var counterOfClosedBrackets = 0
+
+        while (queue.isNotEmpty()) {
+
+            val currentTypeRef = queue.peek().first
+            val currentDeepLevel = queue.poll().second
+
+            if (currentDeepLevel > prevDeepLevel) {
+                stringBuilder.append("<${currentTypeRef.name}")
+                ++counterOfClosedBrackets
+            }
+
+            if (currentDeepLevel == prevDeepLevel) {
+                stringBuilder.append(", ${currentTypeRef.name}")
+            }
+
+            if (currentDeepLevel < prevDeepLevel){
+                stringBuilder.append(">, ${currentTypeRef.name}")
+                --counterOfClosedBrackets
+            }
+
+            prevDeepLevel = currentDeepLevel
+        }
+        while (counterOfClosedBrackets != 0) {
+            stringBuilder.append(">")
+            --counterOfClosedBrackets
+        }
+    }
+
+    private fun appendGenericsToQueue(queue: LinkedList<Pair<TypeReference, Int>>, deep: Int) {
+        val genericReferences = queue.peekLast().first.genericReferences
+        if (genericReferences.isEmpty()) return
+        genericReferences.forEach {
+            queue.addLast(Pair(it, deep))
+            appendGenericsToQueue(queue, deep + 1)
         }
     }
 }

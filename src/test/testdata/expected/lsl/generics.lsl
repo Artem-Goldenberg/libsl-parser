@@ -11,22 +11,22 @@ define action <T> PLAIN_GENERIC_ACTION(
     s: T
 ): T where T: any;
 automaton A : HashMap<K, V> {
-    proc _genericFun <T, R, Q> (): void where T: any, R: any, Q: any {
+    proc _genericProc <T, R, Q> (): void where T: any, R: any, Q: any {
     }
 
-    proc _unGenericFun(): void {
+    proc _unGenericProc(): void {
     }
 
-    proc _genericFunWithParams <T, R, Q> (a: T, b: Q): R where T: any, R: Int, Q: any {
+    proc _genericProcWithParams <T, R, Q> (a: T, b: Q): R where T: any, R: Int, Q: any {
     }
 
-    proc _genericFunWithParametrizedArray <T, R, Q> (a: T, b: Q): array<R> where T: any, R: Int, Q: any {
+    proc _genericProcWithParametrizedArray <T, R, Q> (a: T, b: Q): array<R> where T: any, R: Int, Q: any {
     }
 
-    proc _copy <T, R> (from: R, to: T): void where T: in any, R: out Int {
+    proc _copyProc <T, R> (from: R, to: T): void where T: in any, R: out Int {
     }
 
-    proc _print <T, S, Q> (t: T, s: S, args: array<Q>): Q where T: in Int, S: any, Q: out Int {
+    proc _printProc <T, S, Q> (t: T, s: S, args: array<Q>): Q where T: in Int, S: any, Q: out Int {
     }
 
     fun *.genericFun <T, R, Q> (): void where T: any, R: any, Q: any {
@@ -52,6 +52,8 @@ automaton A : HashMap<K, V> {
     }
 
     fun *.genericTypeDefBlockReturnType(): HashMap<Int, Int> {
-        result = new A<Int, Int>(state = Initialized);
+        var newHashMap: HashMap<Int, Int> = new A<Int, Int>(state = Initialized);
+        A(newHashMap)._genericProc<Int, Int, Int>();
+        result = newHashMap;
     }
 }
