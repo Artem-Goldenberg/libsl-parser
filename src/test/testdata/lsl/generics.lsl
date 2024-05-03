@@ -87,5 +87,6 @@ automaton A
         if (x is HashMap <Int, Int>) {
 
         }
+        var obj: HashMap <Int, Int> = x as HashMap <Int, Int>;
     }
 }
