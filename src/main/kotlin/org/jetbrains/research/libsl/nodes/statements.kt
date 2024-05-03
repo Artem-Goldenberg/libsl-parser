@@ -55,6 +55,7 @@ data class ElseStatement(
 
 data class ActionUsage(
     val actionReference: ActionDeclReference,
+    val concreteGenericTypeNames: MutableList<String>,
     val arguments: List<Expression>,
     val entityPosition: EntityPosition
 ) : Statement() {

@@ -55,5 +55,6 @@ automaton A : HashMap<K, V> {
         var newHashMap: HashMap<Int, Int> = new A<Int, Int>(state = Initialized);
         A(newHashMap)._genericProc<Int, Int, Int>();
         result = newHashMap;
+        action PLAIN_GENERIC_ACTION<Int>(5, 6);
     }
 }

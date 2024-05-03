@@ -344,7 +344,7 @@ elseStatement
  * syntax: action ActionName(args)
  */
 actionUsage
-   :   ACTION Identifier L_BRACKET expressionsList? R_BRACKET
+   :   ACTION Identifier generic? L_BRACKET expressionsList? R_BRACKET
    ;
 
 procUsage
