@@ -109,7 +109,7 @@ object ExpressionDumper {
     }
 
     private fun dumpLiteralWithSuffix(expression: LiteralWithSuffix): String {
-        return "${expression.value}${expression.suffix ?:""}"
+        return "${expression.value}${expression.suffix ?: ""}"
     }
 
     private fun dumpStringLiteral(expression: StringLiteral): String {
@@ -240,7 +240,11 @@ object ExpressionDumper {
     private fun dumpTypeOperationExpression(expression: TypeOperationExpression): String {
         val left = expression.expression.dumpToString()
         return buildString {
-            append("$left ${expression.opName} ${expression.typeReference.name}")
+            append("$left ${expression.opName} ")
+            if (expression.typeReference.genericReferences.isNotEmpty())
+                appendGeneric(this, expression.typeReference)
+            else
+                append(expression.typeReference.name)
         }
     }
 }
