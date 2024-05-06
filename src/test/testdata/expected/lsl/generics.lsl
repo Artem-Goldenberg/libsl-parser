@@ -3,7 +3,7 @@ library std version "11" language "Java" url "-";
 typealias Int = int32;
 type HashMap <K, V> is java.util.HashMap for java.util.Map where K: any, V: any {
 }
-type HashMapInOuParams <in K, out V> is java.util.HashMap for java.util.Map where K: any, V: any {
+type HashMapInOuParams <K, V> is java.util.HashMap for java.util.Map where K: in any, V: out any {
     fun remove(key: K, value: V): void;
 }
 define action <T> PLAIN_GENERIC_ACTION(

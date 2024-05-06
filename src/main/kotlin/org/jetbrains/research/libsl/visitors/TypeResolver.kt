@@ -175,7 +175,22 @@ class TypeResolver(
                                 context = context
                             )
                         )
-                    ).constraints.add(it.paramConstraint.text)
+                    ).constraints.add(it.paramConstraint.constraintType.text)
+
+                    val paramConstraint = it.paramConstraint.bound
+
+                    if (paramConstraint != null) {
+                        generics.get(
+                            generics.indexOf(
+                                GenericType(
+                                    name = it.paramName.text,
+                                    typeBound = GenericTypeBound.EMPTY,
+                                    constraints = mutableListOf(),
+                                    context = context
+                                )
+                            )
+                        ).typeBound = GenericTypeBound.fromString(paramConstraint.text)
+                    }
                 }
             }
         }

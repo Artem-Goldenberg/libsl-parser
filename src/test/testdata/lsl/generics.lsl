@@ -18,12 +18,12 @@ type HashMap  <K, V>
 {
 }
 
-type HashMapInOuParams  <in K, out V>
+type HashMapInOuParams  <K, V>
     is java.util.HashMap
     for java.util.Map
     where
-        K: any,
-        V: any
+        K: in any,
+        V: out any
 {
     fun remove (key: K, value: V): void;
 }

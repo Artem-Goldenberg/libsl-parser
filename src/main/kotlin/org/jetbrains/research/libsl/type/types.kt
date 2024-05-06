@@ -149,14 +149,7 @@ data class StructuredType(
         append("type $name ")
         if (genericsTypes.isNotEmpty()) {
             append("<")
-            for (i in 0 until genericsTypes.size - 1) {
-                val typeBound =
-                    if (GenericTypeBound.EMPTY != genericsTypes[i].typeBound) genericsTypes[i].typeBound.string + " " else ""
-                append(typeBound + genericsTypes[i].name + ", ")
-            }
-            val typeBound =
-                if (GenericTypeBound.EMPTY != genericsTypes[genericsTypes.size - 1].typeBound) genericsTypes[genericsTypes.size - 1].typeBound.string + " " else ""
-            append(typeBound + genericsTypes[genericsTypes.size - 1].name)
+            append(genericsTypes.joinToString(separator = ", "))
             append("> ")
         }
         if (isTypeIdentifier != null) {
@@ -167,14 +160,22 @@ data class StructuredType(
             append(forTypeList.joinToString(separator = ", "))
             append(" ")
         }
+        // TODO: refactor
         if (genericsTypes.size > 0) {
             append("where ")
             // TODO add case many constraints for one type!
             for (i in 0 until genericsTypes.size - 1)
-                for (j in 0 until genericsTypes[i].constraints.size)
-                    append(genericsTypes[i].name + ": " + genericsTypes[i].constraints[j] + ", ")
+                for (j in 0 until genericsTypes[i].constraints.size) {
+                    var typeBound = genericsTypes[i].typeBound.string
+                    if (typeBound != "")
+                        typeBound += " "
+                    append(genericsTypes[i].name + ": " + typeBound+ genericsTypes[i].constraints[j] + ", ")
+                }
             // TODO: bad style; it must be refactored
-            append(genericsTypes[genericsTypes.size - 1].name + ": " + genericsTypes[genericsTypes.size - 1].constraints[genericsTypes[genericsTypes.size - 1].constraints.size - 1] + " ")
+            var typeBound = genericsTypes[genericsTypes.size - 1].typeBound.string
+            if (typeBound != "")
+                typeBound += " "
+            append(genericsTypes[genericsTypes.size - 1].name + ": " + typeBound + genericsTypes[genericsTypes.size - 1].constraints[genericsTypes[genericsTypes.size - 1].constraints.size - 1] + " ")
         }
         appendLine("{")
         variables.forEach { v ->
@@ -301,7 +302,7 @@ data class GenericType(
     override val name: String,
     override val isPointer: Boolean = false,
     override val generics: MutableList<TypeReference> = mutableListOf(),
-    val typeBound: GenericTypeBound,
+    var typeBound: GenericTypeBound,
     val constraints: MutableList<String>,
     override val context: LslContextBase
 ) : Type {
