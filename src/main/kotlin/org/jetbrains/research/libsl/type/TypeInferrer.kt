@@ -63,7 +63,7 @@ class TypeInferrer(private val context: LslContextBase) {
     }
 
     private fun processIntegerLiteralType(literalWithSuffix: LiteralWithSuffix, context: LslContextBase): Type {
-        return when(literalWithSuffix.suffix) {
+        return when (literalWithSuffix.suffix) {
             "b" -> Int8Type(context)
             "ub" -> UnsignedInt8Type(context)
             "s" -> Int16Type(context)
@@ -77,7 +77,7 @@ class TypeInferrer(private val context: LslContextBase) {
     }
 
     private fun processFloatLiteralType(floatLiteral: FloatLiteral, context: LslContextBase): Type {
-        return when(floatLiteral.suffix) {
+        return when (floatLiteral.suffix) {
             "f" -> Float32Type(context)
             null -> Float64Type(context)
             else -> throw IllegalArgumentException("Unknown float literal, no such type")

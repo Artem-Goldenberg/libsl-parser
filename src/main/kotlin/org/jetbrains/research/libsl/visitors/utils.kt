@@ -20,7 +20,12 @@ fun String.extractIdentifier(): String = removeSurrounding("`", "`")
 fun PeriodSeparatedFullNameContext.asPeriodSeparatedString(): String =
     Identifier().joinToString(separator = ".") { it.asPeriodSeparatedString() }
 
-fun PeriodSeparatedFullNameContext.asPeriodSeparatedParts(): List<String> = this.Identifier().map { it.text }
+fun PeriodSeparatedFullNameContext.asPeriodSeparatedParts(): List<String> {
+    var result = this.Identifier().map { it.text }
+    if (result.size == 0)
+        result = listOf(this.UNBOUNDED().text)
+    return result
+}
 
 fun Token.position(): Position {
     return Position(this.line, this.charPositionInLine)

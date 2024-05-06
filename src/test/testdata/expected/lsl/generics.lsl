@@ -60,5 +60,6 @@ automaton A : HashMap<K, V> {
 
         }
         var obj: HashMap<Int, Int> = x as HashMap<Int, Int>;
+        var newHashMapUnbounded: HashMap<?, ?> = new A<?, ?>(state = Initialized);
     }
 }

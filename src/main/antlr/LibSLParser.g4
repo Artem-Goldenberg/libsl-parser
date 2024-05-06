@@ -498,6 +498,7 @@ periodSeparatedFullName
    :   Identifier
    |   Identifier (DOT Identifier)*
    |   BACK_QOUTE Identifier (DOT Identifier)* BACK_QOUTE
+   |   UNBOUNDED
    ;
 
 integerNumber
