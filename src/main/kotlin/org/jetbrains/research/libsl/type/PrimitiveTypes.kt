@@ -133,7 +133,7 @@ data class AnyType(
         const val ANY_TYPE_NAME = "any"
 
         fun getAnyTypeReference(context: LslContextBase): TypeReference{
-            return TypeReferenceBuilder.build(ANY_TYPE_NAME, genericReferences = mutableListOf(), isPointer = false, context)
+            return TypeReferenceBuilder.build(ANY_TYPE_NAME, genericReferences = mutableListOf(), isPointer = false, context = context)
         }
     }
 }
@@ -148,7 +148,7 @@ data class NothingType(
         const val Nothing_TYPE_NAME = "nothing"
 
         fun getNothingTypeReference(context: LslContextBase): TypeReference{
-            return TypeReferenceBuilder.build(Nothing_TYPE_NAME, genericReferences = mutableListOf(), isPointer = false, context)
+            return TypeReferenceBuilder.build(Nothing_TYPE_NAME, genericReferences = mutableListOf(), isPointer = false, context = context)
         }
     }
 }

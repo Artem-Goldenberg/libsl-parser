@@ -11,6 +11,7 @@ import org.jetbrains.research.libsl.nodes.references.builders.AnnotationReferenc
 import org.jetbrains.research.libsl.nodes.references.builders.TypeReferenceBuilder
 import org.jetbrains.research.libsl.nodes.references.builders.TypeReferenceBuilder.getReference
 import org.jetbrains.research.libsl.type.ArrayType
+import org.jetbrains.research.libsl.type.GenericTypeBound
 import org.jetbrains.research.libsl.type.RealType
 import org.jetbrains.research.libsl.type.Type
 import org.jetbrains.research.libsl.utils.PositionGetter
@@ -28,8 +29,11 @@ abstract class LibSLParserVisitor<T>(open val context: LslContextBase) : LibSLPa
             val genericTypeIdentifierContext = ctx.generic().typeIdentifier()
             genericReferences = processGenerics(genericTypeIdentifierContext)
         }
+        var bound = GenericTypeBound.EMPTY
+        if (ctx.genericBound() != null)
+            bound = GenericTypeBound.fromString(ctx.genericBound().bound.text)
 
-        return TypeReferenceBuilder.build(typeName, genericReferences, isPointer, context)
+        return TypeReferenceBuilder.build(typeName, bound, genericReferences, isPointer, context)
     }
 
     fun processGenerics(ctx: MutableList<TypeIdentifierContext>): MutableList<TypeReference> {
@@ -53,9 +57,14 @@ abstract class LibSLParserVisitor<T>(open val context: LslContextBase) : LibSLPa
             genericReferences = processGenerics(genericTypeIdentifierContext)
         }
 
+        var bound = GenericTypeBound.EMPTY
+        if (ctx.genericBound() != null)
+            bound = GenericTypeBound.fromString(ctx.genericBound().bound.text)
+
         val realType = RealType(
             typeNameParts,
             isPointer,
+            bound,
             genericReferences,
             context,
             posGetter.getCtxPosition(context.fileName, ctx)

@@ -14,6 +14,11 @@ sealed interface Type : IPrinter {
     val name: String
     val isPointer: Boolean
     val context: LslContextBase
+    var typeBound: GenericTypeBound
+        get() = GenericTypeBound.EMPTY
+        set(value) {
+            typeBound = value
+        }
     val generics: MutableList<TypeReference>
 
     val fullName: String
@@ -47,6 +52,7 @@ sealed interface LibslType : Type
 data class RealType(
     val nameParts: List<String>,
     override val isPointer: Boolean = false,
+    override var typeBound: GenericTypeBound,
     override val generics: MutableList<TypeReference>,
     override val context: LslContextBase,
     val entityPosition: EntityPosition
@@ -169,7 +175,7 @@ data class StructuredType(
                     var typeBound = genericsTypes[i].typeBound.string
                     if (typeBound != "")
                         typeBound += " "
-                    append(genericsTypes[i].name + ": " + typeBound+ genericsTypes[i].constraints[j] + ", ")
+                    append(genericsTypes[i].name + ": " + typeBound + genericsTypes[i].constraints[j] + ", ")
                 }
             // TODO: bad style; it must be refactored
             var typeBound = genericsTypes[genericsTypes.size - 1].typeBound.string
@@ -302,7 +308,7 @@ data class GenericType(
     override val name: String,
     override val isPointer: Boolean = false,
     override val generics: MutableList<TypeReference> = mutableListOf(),
-    var typeBound: GenericTypeBound,
+    override var typeBound: GenericTypeBound,
     val constraints: MutableList<String>,
     override val context: LslContextBase
 ) : Type {

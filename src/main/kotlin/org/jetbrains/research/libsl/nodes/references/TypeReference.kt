@@ -6,6 +6,7 @@ import org.jetbrains.research.libsl.type.*
 open class TypeReference(
     val name: String,
     val isPointer: Boolean,
+    var typeBound: GenericTypeBound = GenericTypeBound.EMPTY,
     val genericReferences: MutableList<TypeReference>,
     override val context: LslContextBase
 ) : LslReference<Type, TypeReference> {
@@ -94,7 +95,7 @@ open class TypeReference(
     }
 
     override fun toString(): String {
-        return "TypeReference(name=$name, isPointer=$isPointer, genericReferences=$genericReferences)"
+        return "TypeReference(name=$name, isPointer=$isPointer, typeBound=$typeBound, genericReferences=$genericReferences)"
     }
 
     override fun equals(other: Any?): Boolean {

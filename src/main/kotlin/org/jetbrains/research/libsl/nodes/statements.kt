@@ -2,6 +2,7 @@ package org.jetbrains.research.libsl.nodes
 
 import org.jetbrains.research.libsl.nodes.references.ActionDeclReference
 import org.jetbrains.research.libsl.nodes.references.FunctionReference
+import org.jetbrains.research.libsl.nodes.references.TypeReference
 import org.jetbrains.research.libsl.utils.BackticksPolitics
 import org.jetbrains.research.libsl.utils.EntityPosition
 
@@ -55,7 +56,7 @@ data class ElseStatement(
 
 data class ActionUsage(
     val actionReference: ActionDeclReference,
-    val concreteGenericTypeNames: MutableList<String>,
+    val generics: MutableList<TypeReference>,
     val arguments: List<Expression>,
     val entityPosition: EntityPosition
 ) : Statement() {
@@ -76,7 +77,7 @@ data class ActionUsage(
 
 data class ProcedureCall(
     val name: String,
-    val concreteGenericTypeNames: MutableList<String>,
+    val generics: MutableList<TypeReference>,
     val arguments: List<Expression>,
     val entityPosition: EntityPosition
 ) : Statement() {

@@ -1,6 +1,7 @@
 package org.jetbrains.research.libsl.nodes.helpers
 
 import org.jetbrains.research.libsl.nodes.*
+import org.jetbrains.research.libsl.type.GenericTypeBound
 import org.jetbrains.research.libsl.utils.BackticksPolitics
 import org.jetbrains.research.libsl.utils.escapeCharStringRepresentation
 import java.nio.charset.Charset
@@ -60,11 +61,8 @@ object ExpressionDumper {
         return buildString {
             append("action ${BackticksPolitics.forIdentifier(expression.actionUsage.actionReference.resolveOrError().name)}")
 
-            if (expression.actionUsage.concreteGenericTypeNames.isNotEmpty()) {
-                append("<")
-                append(expression.actionUsage.concreteGenericTypeNames.joinToString(", "))
-                append(">")
-            }
+            if (expression.actionUsage.generics.isNotEmpty())
+                appendGenericArray(this, expression.actionUsage.generics)
 
             append("(")
             if (expression.actionUsage.arguments.isNotEmpty()) {
@@ -89,11 +87,9 @@ object ExpressionDumper {
         return buildString {
             append("new ${BackticksPolitics.forPeriodSeparated(expression.automatonRef.name)}")
 
-            if (expression.concreteGenericTypeNames.isNotEmpty()) {
-                append("<")
-                append(expression.concreteGenericTypeNames.joinToString(", "))
-                append(">")
-            }
+            if (expression.generics.isNotEmpty())
+                appendGenericArray(this, expression.generics)
+
             val formattedArgs = buildList {
                 add("state = ${BackticksPolitics.forIdentifier(expression.stateRef.name)}")
                 for (arg in expression.args) {
@@ -192,11 +188,10 @@ object ExpressionDumper {
         return buildString {
             // TODO()
             append(BackticksPolitics.forIdentifier(expression.procedureCall.name))
-            if (expression.procedureCall.concreteGenericTypeNames.isNotEmpty()) {
-                append("<")
-                append(expression.procedureCall.concreteGenericTypeNames.joinToString(", "))
-                append(">")
-            }
+
+            if (expression.procedureCall.generics.isNotEmpty())
+                appendGenericArray(this, expression.procedureCall.generics)
+
             append("(")
             if (expression.procedureCall.arguments.isNotEmpty()) {
                 val args = expression.procedureCall.arguments.map { dump(it) }

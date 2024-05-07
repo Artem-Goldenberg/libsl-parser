@@ -1,6 +1,7 @@
 package org.jetbrains.research.libsl.nodes.helpers
 
 import org.jetbrains.research.libsl.nodes.references.TypeReference
+import org.jetbrains.research.libsl.type.GenericTypeBound
 import java.util.*
 
 fun appendGeneric(stringBuilder: StringBuilder, typeReference: TypeReference) {
@@ -15,7 +16,7 @@ fun appendGeneric(stringBuilder: StringBuilder, typeReference: TypeReference) {
     var prevDeepLevel = 0
 
     val mainType = queue.removeFirst()
-    stringBuilder.append(mainType.first.name)
+    stringBuilder.append("${getBound(mainType.first)}${mainType.first.name}")
     var counterOfClosedBrackets = 0
 
     while (queue.isNotEmpty()) {
@@ -24,15 +25,15 @@ fun appendGeneric(stringBuilder: StringBuilder, typeReference: TypeReference) {
         val currentDeepLevel = queue.poll().second
 
         if (currentDeepLevel > prevDeepLevel) {
-            stringBuilder.append("<${currentTypeRef.name}")
+            stringBuilder.append("<${getBound(currentTypeRef)}${currentTypeRef.name}")
             ++counterOfClosedBrackets
         }
 
         if (currentDeepLevel == prevDeepLevel) {
-            stringBuilder.append(", ${currentTypeRef.name}")
+            stringBuilder.append(", ${getBound(currentTypeRef)}${currentTypeRef.name}")
         }
 
-        if (currentDeepLevel < prevDeepLevel){
+        if (currentDeepLevel < prevDeepLevel) {
             stringBuilder.append(">, ${currentTypeRef.name}")
             --counterOfClosedBrackets
         }
@@ -52,4 +53,23 @@ private fun appendGenericsToQueue(queue: LinkedList<Pair<TypeReference, Int>>, d
         queue.addLast(Pair(it, deep))
         appendGenericsToQueue(queue, deep + 1)
     }
+}
+
+private fun getBound(type: TypeReference): String {
+    if (type.typeBound != GenericTypeBound.EMPTY) {
+        return type.typeBound.string + " "
+    }
+    return ""
+}
+
+
+fun appendGenericArray(stringBuilder: StringBuilder, generics: MutableList<TypeReference>) {
+    stringBuilder.append("<")
+    val size = generics.size - 1
+    for (i in 0 until size) {
+        appendGeneric(stringBuilder, generics[i])
+        stringBuilder.append(", ")
+    }
+    appendGeneric(stringBuilder, generics[size])
+    stringBuilder.append(">")
 }

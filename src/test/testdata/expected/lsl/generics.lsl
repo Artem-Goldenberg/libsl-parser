@@ -66,5 +66,13 @@ automaton A : HashMap<K, V> {
         if (x is HashMap<?, ?>) {
 
         }
+        var obj2: HashMap<?, ?> = x as HashMap<?, ?>;
+        var newHashMapBounded: HashMap<in Int, out String> = new A<in Int, out String>(state = Initialized);
+        A(newHashMapBounded)._genericProc<in Int, Int, out Int>();
+        action PLAIN_GENERIC_ACTION<in Int>(5, 6);
+        if (x is HashMap<in Int, out string>) {
+
+        }
+        var obj3: HashMap<in Int, out string> = x as HashMap<in Int, out string>;
     }
 }

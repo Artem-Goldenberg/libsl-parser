@@ -4,6 +4,7 @@ import org.jetbrains.research.libsl.LibSLParser
 import org.jetbrains.research.libsl.LibSLParser.*
 import org.jetbrains.research.libsl.context.LslContextBase
 import org.jetbrains.research.libsl.nodes.*
+import org.jetbrains.research.libsl.nodes.references.TypeReference
 import org.jetbrains.research.libsl.nodes.references.builders.ActionDeclReferenceBuilder
 import org.jetbrains.research.libsl.nodes.references.builders.AutomatonReferenceBuilder
 import org.jetbrains.research.libsl.nodes.references.builders.AutomatonStateReferenceBuilder
@@ -494,11 +495,11 @@ class ExpressionVisitor(
         val automatonName = ctx.name.asPeriodSeparatedString()
         val automatonRef = AutomatonReferenceBuilder.build(automatonName, context)
 
-        val concreteGenericTypeNames = mutableListOf<String>()
-        if (ctx.generic() != null) {
-            // TODO: add resolve type (check type name in globalContext)
-            ctx.generic().typeIdentifier().forEach { concreteGenericTypeNames.add(it.name.text) }
-        }
+        val generics = mutableListOf<TypeReference>()
+        if (ctx.generic() != null)
+            ctx.generic().typeIdentifier().forEach {
+                generics.add(processTypeIdentifier(it))
+            }
 
         val args = ctx.namedArgs().argPair().mapNotNull { pair ->
             val name = pair.name.text.extractIdentifier()
@@ -527,7 +528,7 @@ class ExpressionVisitor(
 
         return CallAutomatonConstructor(
             automatonRef,
-            concreteGenericTypeNames,
+            generics,
             args,
             stateRef,
             posGetter.getCtxPosition(fileName, ctx)
@@ -557,18 +558,18 @@ class ExpressionVisitor(
             ctx.expressionsList().expression().forEach { expr -> args.add(expressionVisitor.visitExpression(expr)) }
         }
 
-        val concreteGenericTypeNames = mutableListOf<String>()
-        if (ctx.generic() != null) {
-            // TODO: add resolve type (check type name in globalContext)
-            ctx.generic().typeIdentifier().forEach { concreteGenericTypeNames.add(it.name.text) }
-        }
+        val generics = mutableListOf<TypeReference>()
+        if (ctx.generic() != null)
+            ctx.generic().typeIdentifier().forEach {
+                generics.add(processTypeIdentifier(it))
+            }
 
         val argTypes = args.map { argument -> context.typeInferrer.getExpressionType(argument).getReference(context) }
         val actionRef = ActionDeclReferenceBuilder.build(name, argTypes, context)
 
         val actionUsage = ActionUsage(
             actionRef,
-            concreteGenericTypeNames,
+            generics,
             args,
             posGetter.getCtxPosition(fileName, ctx)
         )
@@ -588,15 +589,17 @@ class ExpressionVisitor(
         }
         //val argTypes = args.map { argument -> context.typeInferrer.getExpressionType(argument).getReference(context) }
         //val procRef = FunctionReferenceBuilder.build(name, argTypes, context)
-        val concreteGenericTypeNames = mutableListOf<String>()
-        if (ctx.generic() != null) {
-            // TODO: add resolve type (check type name in globalContext)
-            ctx.generic().typeIdentifier().forEach { concreteGenericTypeNames.add(it.name.text) }
-        }
+
+        val generics = mutableListOf<TypeReference>()
+        if (ctx.generic() != null)
+            ctx.generic().typeIdentifier().forEach {
+                generics.add(processTypeIdentifier(it))
+            }
+
         val procCall = ProcedureCall(
             //procRef,
             name,
-            concreteGenericTypeNames,
+            generics,
             args,
             posGetter.getCtxPosition(fileName, ctx)
         )

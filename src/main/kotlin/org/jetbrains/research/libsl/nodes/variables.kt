@@ -93,26 +93,10 @@ class FunctionArgument(
 
         append(BackticksPolitics.forIdentifier(name))
         append(": ")
-        if (targetAutomaton != null) {
+        if (targetAutomaton != null)
             append(targetAutomaton!!.name)
-        } else {
-            append(typeReference.name)
-            if (typeReference.genericReferences.size > 0) {
-                append("<")
-                val lastIndex = typeReference.genericReferences.size - 1
-                for (i in 0 until lastIndex) {
-                    appendGeneric(this, i, true)
-                }
-                appendGeneric(this, lastIndex, false)
-                append(">")
-            }
-        }
-    }
-
-    private fun appendGeneric(t: StringBuilder, i: Int, addComma: Boolean) {
-        val type =
-            typeReference.genericReferences[i].name + if (addComma) ", " else ""
-        t.append(type)
+        else
+            appendGeneric(this, typeReference)
     }
 }
 
