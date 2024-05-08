@@ -34,8 +34,11 @@ fun appendGeneric(stringBuilder: StringBuilder, typeReference: TypeReference) {
         }
 
         if (currentDeepLevel < prevDeepLevel) {
-            stringBuilder.append(">, ${addAsteriskForPointer(mainType.first)}${getBound(currentTypeRef)}${currentTypeRef.name}")
-            --counterOfClosedBrackets
+            while (counterOfClosedBrackets != currentDeepLevel) {
+                stringBuilder.append(">")
+                --counterOfClosedBrackets
+            }
+            stringBuilder.append(", ${addAsteriskForPointer(mainType.first)}${getBound(currentTypeRef)}${currentTypeRef.name}")
         }
 
         prevDeepLevel = currentDeepLevel

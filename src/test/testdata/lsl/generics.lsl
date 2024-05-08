@@ -8,6 +8,7 @@ library std
 
 typealias Int = int32;
 typealias IntHashMap = HashMap<Int, Int>;
+typealias ArrayOfMaps = HashMap<HashMap<Int, map<Int, Int>>, Int>;
 
 // automata
 type HashMap  <K, V>

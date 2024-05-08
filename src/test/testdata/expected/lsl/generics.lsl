@@ -2,6 +2,7 @@ libsl "1.1.0";
 library std version "11" language "Java" url "-";
 typealias Int = int32;
 typealias IntHashMap = HashMap<Int, Int>;
+typealias ArrayOfMaps = HashMap<HashMap<Int, map<Int, Int>>, Int>;
 type HashMap <K, V> is java.util.HashMap for java.util.Map where K: any, V: any {
 }
 type HashMapInOuParams <K, V> is java.util.HashMap for java.util.Map where K: in any, V: out any {
