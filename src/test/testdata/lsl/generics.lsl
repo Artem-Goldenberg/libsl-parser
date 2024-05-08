@@ -7,6 +7,7 @@ library std
     url "-";
 
 typealias Int = int32;
+typealias IntHashMap = HashMap<Int, Int>;
 
 // automata
 type HashMap  <K, V>

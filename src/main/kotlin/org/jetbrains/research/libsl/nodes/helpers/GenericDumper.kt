@@ -16,7 +16,7 @@ fun appendGeneric(stringBuilder: StringBuilder, typeReference: TypeReference) {
     var prevDeepLevel = 0
 
     val mainType = queue.removeFirst()
-    stringBuilder.append("${getBound(mainType.first)}${mainType.first.name}")
+    stringBuilder.append("${addAsteriskForPointer(mainType.first)}${getBound(mainType.first)}${mainType.first.name}")
     var counterOfClosedBrackets = 0
 
     while (queue.isNotEmpty()) {
@@ -25,16 +25,16 @@ fun appendGeneric(stringBuilder: StringBuilder, typeReference: TypeReference) {
         val currentDeepLevel = queue.poll().second
 
         if (currentDeepLevel > prevDeepLevel) {
-            stringBuilder.append("<${getBound(currentTypeRef)}${currentTypeRef.name}")
+            stringBuilder.append("<${addAsteriskForPointer(mainType.first)}${getBound(currentTypeRef)}${currentTypeRef.name}")
             ++counterOfClosedBrackets
         }
 
         if (currentDeepLevel == prevDeepLevel) {
-            stringBuilder.append(", ${getBound(currentTypeRef)}${currentTypeRef.name}")
+            stringBuilder.append(", ${addAsteriskForPointer(mainType.first)}${getBound(currentTypeRef)}${currentTypeRef.name}")
         }
 
         if (currentDeepLevel < prevDeepLevel) {
-            stringBuilder.append(">, ${currentTypeRef.name}")
+            stringBuilder.append(">, ${addAsteriskForPointer(mainType.first)}${getBound(currentTypeRef)}${currentTypeRef.name}")
             --counterOfClosedBrackets
         }
 
@@ -72,4 +72,8 @@ fun appendGenericArray(stringBuilder: StringBuilder, generics: MutableList<TypeR
     }
     appendGeneric(stringBuilder, generics[size])
     stringBuilder.append(">")
+}
+
+private fun addAsteriskForPointer(type: TypeReference): String {
+    return (if (type.isPointer) "*" else "")
 }

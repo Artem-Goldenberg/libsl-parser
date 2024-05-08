@@ -5,6 +5,7 @@ import org.jetbrains.research.libsl.nodes.*
 import org.jetbrains.research.libsl.nodes.Function
 import org.jetbrains.research.libsl.nodes.IPrinter
 import org.jetbrains.research.libsl.nodes.Variable
+import org.jetbrains.research.libsl.nodes.helpers.appendGeneric
 import org.jetbrains.research.libsl.nodes.references.TypeReference
 import org.jetbrains.research.libsl.type.Type.Companion.UNRESOLVED_TYPE_SYMBOL
 import org.jetbrains.research.libsl.utils.BackticksPolitics
@@ -104,7 +105,9 @@ data class TypeAlias(
             append("typealias ")
             append(BackticksPolitics.forTypeIdentifier(name))
             append(" = ")
-            append(BackticksPolitics.forTypeIdentifier(originalType.resolve()?.fullName ?: UNRESOLVED_TYPE_SYMBOL))
+            // TODO: add resolve of the type !
+            appendGeneric(this, originalType)
+            // append(BackticksPolitics.forTypeIdentifier(originalType.resolve()?.fullName ?: UNRESOLVED_TYPE_SYMBOL))
             append(";")
         }
     }
