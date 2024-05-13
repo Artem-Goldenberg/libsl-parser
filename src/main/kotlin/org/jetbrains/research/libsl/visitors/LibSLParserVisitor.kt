@@ -20,46 +20,48 @@ abstract class LibSLParserVisitor<T>(open val context: LslContextBase) : LibSLPa
 
     private val posGetter = PositionGetter()
 
-    internal fun processTypeIdentifier(ctx: TypeIdentifierContext): TypeReference {
+    internal fun processTypeIdentifier(
+        ctx: TypeIdentifierContext,
+        typeBound: String = GenericTypeBound.EMPTY.string
+    ): TypeReference {
         val typeName = ctx.name.asPeriodSeparatedString()
         val isPointer = ctx.asterisk != null
         var genericReferences = mutableListOf<TypeReference>()
 
-        if(ctx.generic() != null) {
-            val genericTypeIdentifierContext = ctx.generic().typeIdentifier()
+        if (ctx.generic() != null) {
+            val genericTypeIdentifierContext = ctx.generic().typeArgument()
             genericReferences = processGenerics(genericTypeIdentifierContext)
         }
-        var bound = GenericTypeBound.EMPTY
-        if (ctx.genericBound() != null)
-            bound = GenericTypeBound.fromString(ctx.genericBound().bound.text)
+        val bound = GenericTypeBound.fromString(typeBound)
 
         return TypeReferenceBuilder.build(typeName, bound, genericReferences, isPointer, context)
     }
 
-    fun processGenerics(ctx: MutableList<TypeIdentifierContext>): MutableList<TypeReference> {
+    fun processGenerics(ctx: MutableList<LibSLParser.TypeArgumentContext>): MutableList<TypeReference> {
         val genericReferences = mutableListOf<TypeReference>()
         ctx.forEach {
-            val generic = getRealType(it)
+            val generic = if (it.typeIdentifierBounded() != null) getRealType(
+                it.typeIdentifierBounded().typeIdentifier(),
+                it.typeIdentifierBounded().genericBound().text
+            ) else getRealType(it.typeIdentifier())
             val genericRef = generic.getReference(context)
             genericReferences.add(genericRef)
         }
         return genericReferences
     }
 
-    private fun getRealType(ctx: TypeIdentifierContext): RealType {
+    private fun getRealType(ctx: TypeIdentifierContext, typeBound: String = GenericTypeBound.EMPTY.string): RealType {
         val typeNameParts = ctx.name.asPeriodSeparatedParts()
         val isPointer = ctx.asterisk != null
 
         var genericReferences = mutableListOf<TypeReference>()
 
-        if(ctx.generic() != null) {
-            val genericTypeIdentifierContext = ctx.generic().typeIdentifier()
+        if (ctx.generic() != null) {
+            val genericTypeIdentifierContext = ctx.generic().typeArgument()
             genericReferences = processGenerics(genericTypeIdentifierContext)
         }
 
-        var bound = GenericTypeBound.EMPTY
-        if (ctx.genericBound() != null)
-            bound = GenericTypeBound.fromString(ctx.genericBound().bound.text)
+        val bound = GenericTypeBound.fromString(typeBound)
 
         val realType = RealType(
             typeNameParts,
@@ -86,8 +88,8 @@ abstract class LibSLParserVisitor<T>(open val context: LslContextBase) : LibSLPa
         val isPointer = ctx.asterisk != null
         var genericReferences = mutableListOf<TypeReference>()
 
-        if(ctx.generic() != null) {
-            val genericTypeIdentifierContext = ctx.generic().typeIdentifier()
+        if (ctx.generic() != null) {
+            val genericTypeIdentifierContext = ctx.generic().typeArgument()
             genericReferences = processGenerics(genericTypeIdentifierContext)
         }
         val arrayType = ArrayType(isPointer, genericReferences, context)
@@ -111,13 +113,14 @@ abstract class LibSLParserVisitor<T>(open val context: LslContextBase) : LibSLPa
 
     private fun processAnnotationUsage(ctx: LibSLParser.AnnotationUsageContext): AnnotationUsage {
         val name = ctx.Identifier().asPeriodSeparatedString()
-        val args = if(ctx.annotationArgs() != null) {
+        val args = if (ctx.annotationArgs() != null) {
             processAnnotationArgs(ctx)
         } else {
             emptyList()
         }
 
-        val argTypes = args.map { argument -> context.typeInferrer.getExpressionType(argument.value).getReference(context) }
+        val argTypes =
+            args.map { argument -> context.typeInferrer.getExpressionType(argument.value).getReference(context) }
         val annotationRef = AnnotationReferenceBuilder.build(name, argTypes, context)
 
         return AnnotationUsage(

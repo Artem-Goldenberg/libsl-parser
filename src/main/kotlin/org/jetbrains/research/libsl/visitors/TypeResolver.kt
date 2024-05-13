@@ -134,20 +134,21 @@ class TypeResolver(
         val generics = mutableListOf<GenericType>()
         // TODO: refactor
         if (ctx.type.generic() != null) {
-            ctx.type.generic().typeIdentifier()
+            ctx.type.generic().typeArgument()
                 .forEach {
                     val bound =
-                        if (it.genericBound() == null) GenericTypeBound.EMPTY else GenericTypeBound.fromString(
-                            it.genericBound().bound.text
+                        if (it.typeIdentifierBounded() == null) GenericTypeBound.EMPTY else GenericTypeBound.fromString(
+                            it.typeIdentifierBounded().genericBound().text
                         )
-                    generics.add(
-                        GenericType(
-                            name = it.name.text,
-                            typeBound = bound,
-                            constraints = mutableListOf(),
-                            context = context
+                    val name = if (it.typeIdentifierBounded() != null) it.typeIdentifierBounded().typeIdentifier().name.text else it.typeIdentifier().name.text
+                        generics.add(
+                            GenericType(
+                                name = name,
+                                typeBound = bound,
+                                constraints = mutableListOf(),
+                                context = context
+                            )
                         )
-                    )
                 }
             if (ctx.whereConstraints() != null) {
                 ctx.whereConstraints().typeConstraint().forEach {

@@ -69,7 +69,12 @@ class ActionVisitor(
         // GenericType? - this is bad; Only temporary
         val actionGenericsOrdered: LinkedHashMap<String, GenericType?> = linkedMapOf()
 
-        genericContext.typeIdentifier().forEach { actionGenericsOrdered[it.name.text] = null }
+        genericContext.typeArgument().forEach {
+            if (it.typeIdentifier() != null)
+                actionGenericsOrdered[it.typeIdentifier().name.text] = null
+            else
+                actionGenericsOrdered[it.typeIdentifierBounded().typeIdentifier().name.text] = null
+        }
 
         for (typeConstraint in whereContext.typeConstraint()) {
             val paramName = typeConstraint.paramName.text

@@ -222,12 +222,21 @@ nameWithType
  * syntax: one.two.three<T>
  */
 typeIdentifier
-   :   (asterisk=ASTERISK)? genericBound? name=periodSeparatedFullName generic?
+   :   (asterisk=ASTERISK)? name=periodSeparatedFullName generic?
    ;
 
 generic
-   :   (L_ARROW typeIdentifier (COMMA typeIdentifier)* R_ARROW)
+   :   (L_ARROW typeArgument (COMMA typeArgument)* R_ARROW)
    ;
+
+typeArgument
+    : typeIdentifier
+    | typeIdentifierBounded
+    ;
+
+typeIdentifierBounded
+    : genericBound typeIdentifier
+    ;
 
 variableAssignment
    :   qualifiedAccess op=ASSIGN_OP assignmentRight SEMICOLON

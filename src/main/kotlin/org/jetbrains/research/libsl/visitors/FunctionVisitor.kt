@@ -277,7 +277,12 @@ class FunctionVisitor(
         // GenericType? - this is bad; Only temporary
         val functionGenericsOrdered: LinkedHashMap<String, GenericType?> = linkedMapOf()
 
-        genericContext.typeIdentifier().forEach { functionGenericsOrdered[it.name.text] = null }
+        genericContext.typeArgument().forEach {
+            if (it.typeIdentifier() != null)
+                functionGenericsOrdered[it.typeIdentifier().name.text] = null
+            else
+                functionGenericsOrdered[it.typeIdentifierBounded().typeIdentifier().name.text] = null
+        }
 
         for (typeConstraint in whereContext.typeConstraint()) {
             val paramName = typeConstraint.paramName.text
