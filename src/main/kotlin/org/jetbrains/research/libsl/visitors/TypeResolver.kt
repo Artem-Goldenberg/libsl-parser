@@ -140,15 +140,15 @@ class TypeResolver(
                         if (it.typeIdentifierBounded() == null) GenericTypeBound.EMPTY else GenericTypeBound.fromString(
                             it.typeIdentifierBounded().genericBound().text
                         )
-                    val name = if (it.typeIdentifierBounded() != null) it.typeIdentifierBounded().typeIdentifier().name.text else it.typeIdentifier().name.text
-                        generics.add(
-                            GenericType(
-                                name = name,
-                                typeBound = bound,
-                                constraints = mutableListOf(),
-                                context = context
-                            )
+                    val name = if (it.typeIdentifierBounded() != null) it.typeIdentifierBounded()
+                        .typeIdentifier().name.text else it.typeIdentifier().name.text
+                    generics.add(
+                        GenericType(
+                            name = name,
+                            typeBound = bound,
+                            context = context
                         )
+                    )
                 }
             if (ctx.whereConstraints() != null) {
                 ctx.whereConstraints().typeConstraint().forEach {
@@ -156,7 +156,6 @@ class TypeResolver(
                             GenericType(
                                 name = it.paramName.text,
                                 typeBound = GenericTypeBound.EMPTY,
-                                constraints = mutableListOf(),
                                 context = context
                             )
                         )
@@ -172,13 +171,17 @@ class TypeResolver(
                             GenericType(
                                 name = it.paramName.text,
                                 typeBound = GenericTypeBound.EMPTY,
-                                constraints = mutableListOf(),
                                 context = context
                             )
                         )
-                    ).constraints.add(it.paramConstraint.constraintType.text)
+                    ).constraints.add(
+                        if (it.typeArgument().typeIdentifierBounded() == null)
+                            processTypeIdentifier(it.typeArgument().typeIdentifier())
+                        else
+                            processTypeIdentifier(it.typeArgument().typeIdentifierBounded().typeIdentifier())
+                    )
 
-                    val paramConstraint = it.paramConstraint.bound
+                    val paramConstraint = if (it.typeArgument().typeIdentifierBounded() == null) null else it.typeArgument().typeIdentifierBounded().genericBound()
 
                     if (paramConstraint != null) {
                         generics.get(

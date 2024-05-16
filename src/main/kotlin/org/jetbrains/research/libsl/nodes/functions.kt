@@ -1,6 +1,7 @@
 package org.jetbrains.research.libsl.nodes
 
 import org.jetbrains.research.libsl.context.FunctionContext
+import org.jetbrains.research.libsl.nodes.helpers.appendGeneric
 import org.jetbrains.research.libsl.nodes.references.AutomatonReference
 import org.jetbrains.research.libsl.nodes.references.TypeReference
 import org.jetbrains.research.libsl.type.GenericType
@@ -79,10 +80,12 @@ open class Function(
                         append(" where")
                         isWhereWasAdded = true
                     }
-                    for (constraint in generic.constraints) {
+                    for (constraint: TypeReference in generic.constraints) {
                         val typeBound =
                             if (!GenericTypeBound.EMPTY.equals(generic.typeBound)) generic.typeBound.string + " " else ""
-                        append(" " + generic.name + ": " + typeBound + constraint + ",")
+                        append(" " + generic.name + ": " + typeBound)
+                        appendGeneric(this, constraint)
+                        append(",")
                     }
                 }
             }

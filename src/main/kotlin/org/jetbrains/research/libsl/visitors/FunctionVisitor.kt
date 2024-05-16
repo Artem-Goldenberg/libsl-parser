@@ -287,11 +287,15 @@ class FunctionVisitor(
         for (typeConstraint in whereContext.typeConstraint()) {
             val paramName = typeConstraint.paramName.text
             val bound =
-                if (typeConstraint.paramConstraint.bound == null) GenericTypeBound.EMPTY else GenericTypeBound.fromString(
-                    typeConstraint.paramConstraint.bound.text
+                if (typeConstraint.paramConstraint.typeIdentifierBounded() == null) GenericTypeBound.EMPTY else GenericTypeBound.fromString(
+                    typeConstraint.paramConstraint.typeIdentifierBounded().genericBound().text
                 )
-            val constraints = mutableListOf<String>(typeConstraint.paramConstraint.constraintType.text)
-
+            val constraints = mutableListOf(
+                if (typeConstraint.paramConstraint.typeIdentifier() != null)
+                    processTypeIdentifier(typeConstraint.paramConstraint.typeIdentifier())
+                else
+                    processTypeIdentifier(typeConstraint.paramConstraint.typeIdentifierBounded().typeIdentifier())
+            )
             if (
                 functionGenericsOrdered[paramName] == null
             ) {

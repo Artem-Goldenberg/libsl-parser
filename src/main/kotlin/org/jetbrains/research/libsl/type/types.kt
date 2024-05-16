@@ -178,13 +178,20 @@ data class StructuredType(
                     var typeBound = genericsTypes[i].typeBound.string
                     if (typeBound != "")
                         typeBound += " "
-                    append(genericsTypes[i].name + ": " + typeBound + genericsTypes[i].constraints[j] + ", ")
+                    append(genericsTypes[i].name + ": " + typeBound)
+                    appendGeneric(this, genericsTypes[i].constraints[j])
+                    append(", ")
                 }
             // TODO: bad style; it must be refactored
             var typeBound = genericsTypes[genericsTypes.size - 1].typeBound.string
             if (typeBound != "")
                 typeBound += " "
-            append(genericsTypes[genericsTypes.size - 1].name + ": " + typeBound + genericsTypes[genericsTypes.size - 1].constraints[genericsTypes[genericsTypes.size - 1].constraints.size - 1] + " ")
+            append(genericsTypes[genericsTypes.size - 1].name + ": " + typeBound)
+            appendGeneric(
+                this,
+                genericsTypes[genericsTypes.size - 1].constraints[genericsTypes[genericsTypes.size - 1].constraints.size - 1]
+            )
+            append(" ")
         }
         appendLine("{")
         variables.forEach { v ->
@@ -312,7 +319,7 @@ data class GenericType(
     override val isPointer: Boolean = false,
     override val generics: MutableList<TypeReference> = mutableListOf(),
     override var typeBound: GenericTypeBound,
-    val constraints: MutableList<String>,
+    val constraints: MutableList<TypeReference> = mutableListOf(),
     override val context: LslContextBase
 ) : Type {
 

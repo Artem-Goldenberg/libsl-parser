@@ -522,12 +522,8 @@ suffix
    :   Identifier
    ;
 
-constraint
-    : (bound=(IN | OUT))? constraintType=Identifier (L_ARROW Identifier R_ARROW)?
-    ;
-
 typeConstraint
-    : paramName=Identifier COLON paramConstraint=constraint
+    : paramName=Identifier COLON paramConstraint=typeArgument
     ;
 
 whereConstraints

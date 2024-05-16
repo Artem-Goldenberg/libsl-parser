@@ -8,10 +8,15 @@ type HashMap <K, V> is java.util.HashMap for java.util.Map where K: any, V: any 
 type HashMapInOuParams <K, V> is java.util.HashMap for java.util.Map where K: in any, V: out any {
     fun remove(key: K, value: V): void;
 }
+enum foo.vldf.Type<T,H> {
+}
 define action <T> PLAIN_GENERIC_ACTION(
     x: Int,
     s: T
 ): T where T: any;
+define action <T, R> COMPLICATED_GENERIC_ACTION(
+    s: T
+): R where T: array<HashMap<in Int, out string>>, R: HashMap<HashMap<in string, out Int>, HashMap<string, Int>>;
 automaton A : HashMap<K, V> {
     proc _genericProc <T, R, Q> (): void where T: any, R: any, Q: any {
     }
@@ -76,5 +81,8 @@ automaton A : HashMap<K, V> {
 
         }
         var obj3: HashMap<in Int, out string> = x as HashMap<in Int, out string>;
+    }
+
+    fun *.ComplicatedWhere <T, R> (from: R, to: T): void where T: HashMap<HashMap<Int, map<Int, Int>>, Int>, R: out Int {
     }
 }
