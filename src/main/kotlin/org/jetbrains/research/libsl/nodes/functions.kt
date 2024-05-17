@@ -1,7 +1,7 @@
 package org.jetbrains.research.libsl.nodes
 
 import org.jetbrains.research.libsl.context.FunctionContext
-import org.jetbrains.research.libsl.nodes.helpers.appendGeneric
+import org.jetbrains.research.libsl.nodes.helpers.appendWhereSection
 import org.jetbrains.research.libsl.nodes.references.AutomatonReference
 import org.jetbrains.research.libsl.nodes.references.TypeReference
 import org.jetbrains.research.libsl.type.GenericType
@@ -34,7 +34,7 @@ open class Function(
         if (isStatic) {
             append("static ")
         }
-        val functionGenerics: MutableList<GenericType> = context.getFunctionGenericTypes()
+        val funGenerics: MutableList<GenericType> = context.getFunctionGenericTypes()
 
         append("${kind.value} ")
         if (isMethod) {
@@ -42,9 +42,9 @@ open class Function(
         }
         append(BackticksPolitics.forIdentifier(name))
 
-        if (functionGenerics.isNotEmpty()) {
+        if (funGenerics.isNotEmpty()) {
             append(" <")
-            append(functionGenerics.joinToString(separator = ", "))
+            append(funGenerics.joinToString(separator = ", "))
             append("> ")
         }
 
@@ -54,7 +54,7 @@ open class Function(
 
         if (returnType != null) {
             append(": ")
-            if (functionGenerics.contains(
+            if (funGenerics.contains(
                     GenericType(
                         returnType!!.name,
                         typeBound = GenericTypeBound.EMPTY,
@@ -72,25 +72,8 @@ open class Function(
             }
         }
 
-        if (functionGenerics.isNotEmpty()) {
-            var isWhereWasAdded = false
-            for (generic in functionGenerics) {
-                if (generic.constraints.size > 0) {
-                    if (!isWhereWasAdded) {
-                        append(" where")
-                        isWhereWasAdded = true
-                    }
-                    for (constraint: TypeReference in generic.constraints) {
-                        val typeBound =
-                            if (!GenericTypeBound.EMPTY.equals(generic.typeBound)) generic.typeBound.string + " " else ""
-                        append(" " + generic.name + ": " + typeBound)
-                        appendGeneric(this, constraint)
-                        append(",")
-                    }
-                }
-            }
-            if (isWhereWasAdded)
-                deleteCharAt(this.length - 1)
+        if (funGenerics.isNotEmpty()) {
+            appendWhereSection(this, funGenerics)
         }
         if (!hasBody && contracts.isEmpty()) {
             appendLine(";")

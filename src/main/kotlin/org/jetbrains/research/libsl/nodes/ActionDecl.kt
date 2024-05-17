@@ -1,9 +1,8 @@
 package org.jetbrains.research.libsl.nodes
 
 import org.jetbrains.research.libsl.context.ActionContext
-import org.jetbrains.research.libsl.nodes.helpers.appendGeneric
+import org.jetbrains.research.libsl.nodes.helpers.appendWhereSection
 import org.jetbrains.research.libsl.nodes.references.TypeReference
-import org.jetbrains.research.libsl.type.GenericTypeBound
 import org.jetbrains.research.libsl.type.Type
 import org.jetbrains.research.libsl.utils.BackticksPolitics
 import org.jetbrains.research.libsl.utils.EntityPosition
@@ -46,24 +45,7 @@ data class ActionDecl(
         }
 
         if (actionGenericTypes.isNotEmpty()) {
-            var isWhereWasAdded = false
-            for (generic in actionGenericTypes) {
-                if (generic.constraints.size > 0) {
-                    if (!isWhereWasAdded) {
-                        append(" where")
-                        isWhereWasAdded = true
-                    }
-                    for (constraint: TypeReference in generic.constraints) {
-                        val typeBound =
-                            if (!GenericTypeBound.EMPTY.equals(generic.typeBound)) generic.typeBound.string + " " else ""
-                        append(" " + generic.name + ": " + typeBound)
-                        appendGeneric(this, constraint)
-                        append(",")
-                    }
-                }
-            }
-            if (isWhereWasAdded)
-                deleteCharAt(this.length - 1)
+            appendWhereSection(this, actionGenericTypes)
         }
         appendLine(";")
     }

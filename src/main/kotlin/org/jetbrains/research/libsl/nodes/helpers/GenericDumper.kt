@@ -1,6 +1,7 @@
 package org.jetbrains.research.libsl.nodes.helpers
 
 import org.jetbrains.research.libsl.nodes.references.TypeReference
+import org.jetbrains.research.libsl.type.GenericType
 import org.jetbrains.research.libsl.type.GenericTypeBound
 import java.util.*
 
@@ -79,4 +80,18 @@ fun appendGenericArray(stringBuilder: StringBuilder, generics: MutableList<TypeR
 
 private fun addAsteriskForPointer(type: TypeReference): String {
     return (if (type.isPointer) "*" else "")
+}
+
+fun appendWhereSection(stringBuilder: StringBuilder, generics: MutableList<GenericType>) {
+    stringBuilder.append(" where")
+    for (generic in generics) {
+        for (constraint: TypeReference in generic.constraints) {
+            val typeBound =
+                if (!GenericTypeBound.EMPTY.equals(generic.typeBound)) generic.typeBound.string + " " else ""
+            stringBuilder.append(" " + generic.name + ": " + typeBound)
+            appendGeneric(stringBuilder, constraint)
+            stringBuilder.append(",")
+        }
+    }
+    stringBuilder.deleteCharAt(stringBuilder.length - 1)
 }

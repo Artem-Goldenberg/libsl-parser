@@ -33,12 +33,12 @@ class ActionVisitor(
 
         val actionAnnotations = getAnnotationUsages(ctx.annotationUsage())
 
-        val funGenericTypes: MutableList<GenericType> = if (ctx.generic() != null)
+        val actionGenericTypes = if (ctx.generic() != null)
             ctx.actionGenerics
         else
             mutableListOf()
 
-        funGenericTypes.forEach { actionContext.storeActionType(it) }
+        actionGenericTypes.forEach { actionContext.storeActionType(it) }
 
         val declaredAction =
             ActionDecl(

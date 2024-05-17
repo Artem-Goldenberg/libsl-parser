@@ -150,15 +150,13 @@ abstract class LibSLParserVisitor<T>(open val context: LslContextBase) : LibSLPa
         context: LslContextBase
     ): MutableList<GenericType> {
 
-        val funGenerics: MutableList<GenericType> = mutableListOf()
-        // GenericType? - this is bad; Only temporary
-        val functionGenericsOrdered: LinkedHashMap<String, GenericType?> = linkedMapOf()
+        val genericTypesOrdered: LinkedHashMap<String, GenericType?> = linkedMapOf()
 
         genericContext.typeArgument().forEach {
             if (it.typeIdentifier() != null)
-                functionGenericsOrdered[it.typeIdentifier().name.text] = null
+                genericTypesOrdered[it.typeIdentifier().name.text] = null
             else
-                functionGenericsOrdered[it.typeIdentifierBounded().typeIdentifier().name.text] = null
+                genericTypesOrdered[it.typeIdentifierBounded().typeIdentifier().name.text] = null
         }
 
         for (typeConstraint in whereContext.typeConstraint()) {
@@ -174,20 +172,19 @@ abstract class LibSLParserVisitor<T>(open val context: LslContextBase) : LibSLPa
                     processTypeIdentifier(typeConstraint.paramConstraint.typeIdentifierBounded().typeIdentifier())
             )
             if (
-                functionGenericsOrdered[paramName] == null
+                genericTypesOrdered[paramName] == null
             ) {
-                functionGenericsOrdered[paramName] = GenericType(
+                genericTypesOrdered[paramName] = GenericType(
                     paramName,
                     typeBound = bound,
                     constraints = constraints,
                     context = context
                 )
             } else {
-                functionGenericsOrdered[paramName]?.constraints?.addAll(constraints)
+                genericTypesOrdered[paramName]?.constraints?.addAll(constraints)
             }
         }
 
-        functionGenericsOrdered.forEach { it.value?.let { it1 -> funGenerics.add(it1) } }
-        return funGenerics
+        return genericTypesOrdered.values.filterNotNull().toMutableList()
     }
 }
