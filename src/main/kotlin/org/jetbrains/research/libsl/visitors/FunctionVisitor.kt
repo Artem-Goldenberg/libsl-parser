@@ -10,9 +10,7 @@ import org.jetbrains.research.libsl.nodes.references.AutomatonReference
 import org.jetbrains.research.libsl.nodes.references.builders.AutomatonReferenceBuilder
 import org.jetbrains.research.libsl.nodes.references.builders.AutomatonReferenceBuilder.getReference
 import org.jetbrains.research.libsl.type.GenericType
-import org.jetbrains.research.libsl.type.GenericTypeBound
 import org.jetbrains.research.libsl.utils.PositionGetter
-import kotlin.IllegalStateException
 
 class FunctionVisitor(
     private val functionContext: FunctionContext,
@@ -262,55 +260,9 @@ class FunctionVisitor(
 
 
     private val FunctionDeclContext.functionGenerics: MutableList<GenericType>
-        get() = getGenerics(this.functionHeader().generic(), this.functionHeader().whereConstraints())
+        get() = getGenericTypes(this.functionHeader().generic(), this.functionHeader().whereConstraints(), context)
 
     private val ProcDeclContext.procGenerics: MutableList<GenericType>
-        get() = getGenerics(this.procHeader().generic(), this.procHeader().whereConstraints())
+        get() = getGenericTypes(this.procHeader().generic(), this.procHeader().whereConstraints(), context)
 
-
-    private fun getGenerics(
-        genericContext: GenericContext,
-        whereContext: WhereConstraintsContext
-    ): MutableList<GenericType> {
-
-        val funGenerics: MutableList<GenericType> = mutableListOf()
-        // GenericType? - this is bad; Only temporary
-        val functionGenericsOrdered: LinkedHashMap<String, GenericType?> = linkedMapOf()
-
-        genericContext.typeArgument().forEach {
-            if (it.typeIdentifier() != null)
-                functionGenericsOrdered[it.typeIdentifier().name.text] = null
-            else
-                functionGenericsOrdered[it.typeIdentifierBounded().typeIdentifier().name.text] = null
-        }
-
-        for (typeConstraint in whereContext.typeConstraint()) {
-            val paramName = typeConstraint.paramName.text
-            val bound =
-                if (typeConstraint.paramConstraint.typeIdentifierBounded() == null) GenericTypeBound.EMPTY else GenericTypeBound.fromString(
-                    typeConstraint.paramConstraint.typeIdentifierBounded().genericBound().text
-                )
-            val constraints = mutableListOf(
-                if (typeConstraint.paramConstraint.typeIdentifier() != null)
-                    processTypeIdentifier(typeConstraint.paramConstraint.typeIdentifier())
-                else
-                    processTypeIdentifier(typeConstraint.paramConstraint.typeIdentifierBounded().typeIdentifier())
-            )
-            if (
-                functionGenericsOrdered[paramName] == null
-            ) {
-                functionGenericsOrdered[paramName] = GenericType(
-                    paramName,
-                    typeBound = bound,
-                    constraints = constraints,
-                    context = functionContext
-                )
-            } else {
-                functionGenericsOrdered[paramName]?.constraints?.addAll(constraints)
-            }
-        }
-
-        functionGenericsOrdered.forEach { it.value?.let { it1 -> funGenerics.add(it1) } }
-        return funGenerics
-    }
 }

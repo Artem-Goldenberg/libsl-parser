@@ -131,76 +131,14 @@ class TypeResolver(
         val isTypeIdentifier = ctx.targetType()?.typeIdentifier()?.name?.text
         val forTypeList = mutableListOf<String>()
         ctx.targetType()?.typeList()?.typeIdentifier()?.forEach { forTypeList.add(it.name.text) }
-        val generics = mutableListOf<GenericType>()
-        // TODO: refactor
-        if (ctx.type.generic() != null) {
-            ctx.type.generic().typeArgument()
-                .forEach {
-                    val bound =
-                        if (it.typeIdentifierBounded() == null) GenericTypeBound.EMPTY else GenericTypeBound.fromString(
-                            it.typeIdentifierBounded().genericBound().text
-                        )
-                    val name = if (it.typeIdentifierBounded() != null) it.typeIdentifierBounded()
-                        .typeIdentifier().name.text else it.typeIdentifier().name.text
-                    generics.add(
-                        GenericType(
-                            name = name,
-                            typeBound = bound,
-                            context = context
-                        )
-                    )
-                }
-            if (ctx.whereConstraints() != null) {
-                ctx.whereConstraints().typeConstraint().forEach {
-                    if (!generics.contains(
-                            GenericType(
-                                name = it.paramName.text,
-                                typeBound = GenericTypeBound.EMPTY,
-                                context = context
-                            )
-                        )
-                    )
-                        errorManager(
-                            UnresolvedType(
-                                "Unknown generic in where section",
-                                posGetter.getCtxPosition(context.fileName, ctx)
-                            )
-                        )
-                    generics.get(
-                        generics.indexOf(
-                            GenericType(
-                                name = it.paramName.text,
-                                typeBound = GenericTypeBound.EMPTY,
-                                context = context
-                            )
-                        )
-                    ).constraints.add(
-                        if (it.typeArgument().typeIdentifierBounded() == null)
-                            processTypeIdentifier(it.typeArgument().typeIdentifier())
-                        else
-                            processTypeIdentifier(it.typeArgument().typeIdentifierBounded().typeIdentifier())
-                    )
 
-                    val paramConstraint = if (it.typeArgument().typeIdentifierBounded() == null) null else it.typeArgument().typeIdentifierBounded().genericBound()
+        val genericTypes: MutableList<GenericType> = if (ctx.typeIdentifier().generic() != null)
+            ctx.typeDefBlockGenerics
+        else
+            mutableListOf()
 
-                    if (paramConstraint != null) {
-                        generics.get(
-                            generics.indexOf(
-                                GenericType(
-                                    name = it.paramName.text,
-                                    typeBound = GenericTypeBound.EMPTY,
-                                    constraints = mutableListOf(),
-                                    context = context
-                                )
-                            )
-                        ).typeBound = GenericTypeBound.fromString(paramConstraint.text)
-                    }
-                }
-            }
-        }
-        //
         val variables = mutableListOf<Variable>()
-        val functions = mutableListOf<org.jetbrains.research.libsl.nodes.Function>()
+        val functions = mutableListOf<Function>()
         ctx.typeDefBlockStatement().forEach { statement ->
             when {
                 statement.variableDecl() != null ->
@@ -217,7 +155,7 @@ class TypeResolver(
             name,
             variables,
             functions,
-            generics,
+            genericTypes,
             isTypeIdentifier,
             forTypeList,
             annotationReferences,
@@ -229,6 +167,9 @@ class TypeResolver(
             context.storeType(type)
         }
     }
+
+    private val LibSLParser.TypeDefBlockContext.typeDefBlockGenerics: MutableList<GenericType>
+        get() = getGenericTypes(this.typeIdentifier().generic(), this.whereConstraints(), context)
 
     private fun processVariableDecl(ctx: LibSLParser.VariableDeclContext): Variable {
         val keyword = VariableKind.fromString(ctx.keyword.text)
@@ -248,7 +189,7 @@ class TypeResolver(
         )
     }
 
-    private fun processFunctionDecl(ctx: FunctionDeclContext): org.jetbrains.research.libsl.nodes.Function {
+    private fun processFunctionDecl(ctx: FunctionDeclContext): Function {
         val isMethod = ctx.functionHeader().headerWithAsterisk() != null
         val functionContext = FunctionContext(context)
         var isStatic = false
