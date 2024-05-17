@@ -1,6 +1,7 @@
 package org.jetbrains.research.libsl.nodes
 
 import org.jetbrains.research.libsl.context.FunctionContext
+import org.jetbrains.research.libsl.nodes.helpers.appendGeneric
 import org.jetbrains.research.libsl.nodes.helpers.appendWhereSection
 import org.jetbrains.research.libsl.nodes.references.AutomatonReference
 import org.jetbrains.research.libsl.nodes.references.TypeReference
@@ -66,7 +67,7 @@ open class Function(
                 append(returnType!!.name)
             } else {
                 if (returnType!!.resolve()?.fullName != null)
-                    appendGeneric(this)
+                    appendGeneric(this, returnType!!)
                 else
                     append(UNRESOLVED_TYPE_SYMBOL)
             }
@@ -87,18 +88,6 @@ open class Function(
 
             append(withIndent(formatListEmptyLineAtEndIfNeeded(statements)))
             appendLine("}")
-        }
-    }
-
-    private fun appendGeneric(stringBuilder: StringBuilder) {
-        stringBuilder.append(returnType!!.name)
-        stringBuilder.append(if (returnType!!.isPointer) "*" else "")
-        if (returnType!!.genericReferences.isNotEmpty()) {
-            stringBuilder.append("<")
-            stringBuilder.append(returnType!!.genericReferences.joinToString(separator = ", ") {
-                it.name
-            })
-            stringBuilder.append(">")
         }
     }
 }

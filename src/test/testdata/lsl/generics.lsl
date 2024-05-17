@@ -35,6 +35,7 @@ enum foo.vldf.Type <T, H> {
 
 define action <T> PLAIN_GENERIC_ACTION(x: Int, s: T): T where T: any;
 define action <T, R> COMPLICATED_GENERIC_ACTION(s: T): R where T: array<HashMap<in Int, out string>>, R: HashMap<HashMap<in string, out Int>, HashMap<string, Int>>;
+define action <T> COMPLICATED_RETURN_TYPE_OF_GENERIC_ACTION(x: Int, s: T): HashMap<HashMap<T, R>, HashMap<T, R>> where T: any;
 
 automaton A
 (
@@ -111,5 +112,8 @@ automaton A
     }
 
     fun *.ComplicatedWhere <T, R> (from: R, to: T): void where T: HashMap<HashMap<Int, map<Int, Int>>, Int>, R: out Int {
+    }
+
+    fun *.genericReturnType <T, R> (): HashMap<HashMap<T, R>, HashMap<T, R>> where T: any, R: any {
     }
 }
