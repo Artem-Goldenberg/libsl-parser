@@ -6,7 +6,6 @@ import org.jetbrains.research.libsl.nodes.helpers.appendWhereSection
 import org.jetbrains.research.libsl.nodes.references.AutomatonReference
 import org.jetbrains.research.libsl.nodes.references.TypeReference
 import org.jetbrains.research.libsl.type.GenericType
-import org.jetbrains.research.libsl.type.GenericTypeBound
 import org.jetbrains.research.libsl.type.Type.Companion.UNRESOLVED_TYPE_SYMBOL
 import org.jetbrains.research.libsl.utils.BackticksPolitics
 import org.jetbrains.research.libsl.utils.EntityPosition
@@ -58,8 +57,6 @@ open class Function(
             if (funGenerics.contains(
                     GenericType(
                         returnType!!.name,
-                        typeBound = GenericTypeBound.EMPTY,
-                        constraints = mutableListOf(),
                         context = context
                     )
                 )

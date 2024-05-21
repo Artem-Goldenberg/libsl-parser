@@ -4,6 +4,7 @@ import org.jetbrains.research.libsl.context.LslContextBase
 import org.jetbrains.research.libsl.nodes.*
 import org.jetbrains.research.libsl.nodes.Function
 import org.jetbrains.research.libsl.nodes.helpers.appendGeneric
+import org.jetbrains.research.libsl.nodes.helpers.appendWhereSection
 import org.jetbrains.research.libsl.nodes.references.TypeReference
 import org.jetbrains.research.libsl.utils.BackticksPolitics
 import org.jetbrains.research.libsl.utils.EntityPosition
@@ -166,29 +167,8 @@ data class StructuredType(
             append(forTypeList.joinToString(separator = ", "))
             append(" ")
         }
-        // TODO: refactor
-        if (genericsTypes.size > 0) {
-            append("where ")
-            // TODO add case many constraints for one type!
-            for (i in 0 until genericsTypes.size - 1)
-                for (j in 0 until genericsTypes[i].constraints.size) {
-                    var typeBound = genericsTypes[i].typeBound.string
-                    if (typeBound != "")
-                        typeBound += " "
-                    append(genericsTypes[i].name + ": " + typeBound)
-                    appendGeneric(this, genericsTypes[i].constraints[j])
-                    append(", ")
-                }
-            // TODO: bad style; it must be refactored
-            var typeBound = genericsTypes[genericsTypes.size - 1].typeBound.string
-            if (typeBound != "")
-                typeBound += " "
-            append(genericsTypes[genericsTypes.size - 1].name + ": " + typeBound)
-            appendGeneric(
-                this,
-                genericsTypes[genericsTypes.size - 1].constraints[genericsTypes[genericsTypes.size - 1].constraints.size - 1]
-            )
-            append(" ")
+        if (genericsTypes.isNotEmpty()) {
+            appendWhereSection(this, genericsTypes)
         }
         appendLine("{")
         variables.forEach { v ->
@@ -315,7 +295,7 @@ data class GenericType(
     override val name: String,
     override val isPointer: Boolean = false,
     override val generics: MutableList<TypeReference> = mutableListOf(),
-    override var typeBound: GenericTypeBound,
+    override var typeBound: GenericTypeBound = GenericTypeBound.EMPTY,
     val constraints: MutableList<TypeReference> = mutableListOf(),
     override val context: LslContextBase
 ) : Type {

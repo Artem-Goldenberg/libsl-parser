@@ -5,7 +5,6 @@ import org.jetbrains.research.libsl.nodes.helpers.appendGeneric
 import org.jetbrains.research.libsl.nodes.helpers.appendWhereSection
 import org.jetbrains.research.libsl.nodes.references.TypeReference
 import org.jetbrains.research.libsl.type.GenericType
-import org.jetbrains.research.libsl.type.GenericTypeBound
 import org.jetbrains.research.libsl.type.Type
 import org.jetbrains.research.libsl.utils.BackticksPolitics
 import org.jetbrains.research.libsl.utils.EntityPosition
@@ -46,17 +45,15 @@ data class ActionDecl(
             append(": ")
             if (actionGenericTypes.contains(
                     GenericType(
-                        returnType!!.name,
-                        typeBound = GenericTypeBound.EMPTY,
-                        constraints = mutableListOf(),
+                        returnType.name,
                         context = context
                     )
                 )
             ) {
-                append(returnType!!.name)
+                append(returnType.name)
             } else {
-                if (returnType!!.resolve()?.fullName != null)
-                    appendGeneric(this, returnType!!)
+                if (returnType.resolve()?.fullName != null)
+                    appendGeneric(this, returnType)
                 else
                     append(Type.UNRESOLVED_TYPE_SYMBOL)
             }
