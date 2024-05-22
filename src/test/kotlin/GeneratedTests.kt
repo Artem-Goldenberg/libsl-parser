@@ -244,5 +244,10 @@ class GeneratedTests {
     fun testGenericsLsl() {
         runLslTest("generics")
     }
+
+    @Test
+    fun testAVLTreeArkTsLsl() {
+        runLslTest("AVLTreeArkTsFunSignatures")
+    }
 }
 
