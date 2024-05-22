@@ -104,8 +104,6 @@ private fun checkFunctionIsResolved(function: Function) {
     if (!function.context.getFunctionGenericTypes().contains(function.returnType?.name?.let {
             GenericType(
                 it,
-                typeBound = GenericTypeBound.EMPTY,
-                constraints = mutableListOf(),
                 context = function.context
             )
         })) function.returnType?.resolveOrError()
@@ -113,8 +111,6 @@ private fun checkFunctionIsResolved(function: Function) {
         if (!function.context.getFunctionGenericTypes().contains(
                 GenericType(
                     arg.typeReference.name,
-                    typeBound = GenericTypeBound.EMPTY,
-                    constraints = mutableListOf(),
                     context = function.context
                 )
             )

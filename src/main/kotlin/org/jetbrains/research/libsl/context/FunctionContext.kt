@@ -7,7 +7,7 @@ import org.jetbrains.research.libsl.nodes.references.VariableReference
 import org.jetbrains.research.libsl.type.GenericType
 import org.jetbrains.research.libsl.type.Type
 
-open class FunctionContext(
+class FunctionContext(
     override val parentContext: LslContextBase
 ) : LslContextBase(parentContext.fileName) {
     private val functionArguments = mutableListOf<FunctionArgument>()
@@ -26,8 +26,7 @@ open class FunctionContext(
     }
 
     fun storeFunctionType(type: GenericType) {
-        // TODO
-        // Maybe exception ?
+        // TODO: maybe add exception if such type was stored previously ?
         if (type in functionGenericTypes)
             return
 

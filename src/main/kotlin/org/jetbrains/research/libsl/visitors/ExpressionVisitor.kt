@@ -495,19 +495,7 @@ class ExpressionVisitor(
         val automatonName = ctx.name.asPeriodSeparatedString()
         val automatonRef = AutomatonReferenceBuilder.build(automatonName, context)
 
-        val generics = mutableListOf<TypeReference>()
-        if (ctx.generic() != null)
-            ctx.generic().typeArgument().forEach {
-                if (it.typeIdentifier() != null)
-                    generics.add(processTypeIdentifier(it.typeIdentifier()))
-                else
-                    generics.add(
-                        processTypeIdentifier(
-                            it.typeIdentifierBounded().typeIdentifier(),
-                            it.typeIdentifierBounded().genericBound().text
-                        )
-                    )
-            }
+        val generics = processGenerics(ctx.generic())
 
         val args = ctx.namedArgs().argPair().mapNotNull { pair ->
             val name = pair.name.text.extractIdentifier()
@@ -566,19 +554,7 @@ class ExpressionVisitor(
             ctx.expressionsList().expression().forEach { expr -> args.add(expressionVisitor.visitExpression(expr)) }
         }
 
-        val generics = mutableListOf<TypeReference>()
-        if (ctx.generic() != null)
-            ctx.generic().typeArgument().forEach {
-                if (it.typeIdentifier() != null)
-                    generics.add(processTypeIdentifier(it.typeIdentifier()))
-                else
-                    generics.add(
-                        processTypeIdentifier(
-                            it.typeIdentifierBounded().typeIdentifier(),
-                            it.typeIdentifierBounded().genericBound().text
-                        )
-                    )
-            }
+        val generics = processGenerics(ctx.generic())
 
         val argTypes = args.map { argument -> context.typeInferrer.getExpressionType(argument).getReference(context) }
         val actionRef = ActionDeclReferenceBuilder.build(name, argTypes, context)
@@ -606,19 +582,7 @@ class ExpressionVisitor(
         //val argTypes = args.map { argument -> context.typeInferrer.getExpressionType(argument).getReference(context) }
         //val procRef = FunctionReferenceBuilder.build(name, argTypes, context)
 
-        val generics = mutableListOf<TypeReference>()
-        if (ctx.generic() != null)
-            ctx.generic().typeArgument().forEach {
-                if (it.typeIdentifier() != null)
-                    generics.add(processTypeIdentifier(it.typeIdentifier()))
-                else
-                    generics.add(
-                        processTypeIdentifier(
-                            it.typeIdentifierBounded().typeIdentifier(),
-                            it.typeIdentifierBounded().genericBound().text
-                        )
-                    )
-            }
+        val generics = processGenerics(ctx.generic())
 
         val procCall = ProcedureCall(
             //procRef,
@@ -655,5 +619,23 @@ class ExpressionVisitor(
             automatonReference,
             posGetter.getCtxPosition(fileName, ctx)
         )
+    }
+
+    private fun processGenerics(ctx: GenericContext?): MutableList<TypeReference> {
+        val generics = mutableListOf<TypeReference>()
+        if (ctx != null) {
+            ctx.typeArgument().forEach {
+                if (it.typeIdentifier() != null)
+                    generics.add(processTypeIdentifier(it.typeIdentifier()))
+                else
+                    generics.add(
+                        processTypeIdentifier(
+                            it.typeIdentifierBounded().typeIdentifier(),
+                            it.typeIdentifierBounded().genericBound().text
+                        )
+                    )
+            }
+        }
+        return generics
     }
 }

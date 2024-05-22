@@ -6,8 +6,7 @@ import org.jetbrains.research.libsl.type.GenericTypeBound
 import java.util.*
 
 fun appendGeneric(stringBuilder: StringBuilder, typeReference: TypeReference) {
-
-    // stringBuilder.append(if (typeReference!!.isPointer) "*" else "")
+    // TODO: think about pointers (typeReference.isPointer) for generic;
 
     val queue = LinkedList<Pair<TypeReference, Int>>()
 

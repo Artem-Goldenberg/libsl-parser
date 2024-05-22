@@ -10,8 +10,7 @@ open class ActionContext(
     private val actionGenericTypes = mutableListOf<GenericType>()
 
     fun storeActionType(type: GenericType) {
-        // TODO
-        // Maybe exception ?
+        // TODO: maybe add exception if such type was stored previously ?
         if (type in actionGenericTypes)
             return
 
