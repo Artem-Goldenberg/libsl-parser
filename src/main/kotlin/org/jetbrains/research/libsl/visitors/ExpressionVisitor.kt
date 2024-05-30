@@ -28,6 +28,7 @@ class ExpressionVisitor(
     private val HEX_PREFIX = "0x"
     private val OCT_PREFIX = "0"
     private val BIN_PREFIX = "0b"
+    var typeOfVariable: TypeReference? = null
 
     override fun visitExpression(ctx: ExpressionContext): Expression {
         return when {
@@ -502,6 +503,13 @@ class ExpressionVisitor(
             if (!GenericTypeBound.EMPTY.equals(it.typeBound) || "?".equals(it.name))
                 // TODO: add for all exceptions in parser concrete places where it was appeared.
                 throw error("Constructor invoke can't contain WildCards")
+
+        }
+        
+        typeOfVariable?.genericReferences?.forEach {
+            if (!GenericTypeBound.EMPTY.equals(it.typeBound) || "?".equals(it.name))
+            // TODO: add for all exceptions in parser concrete places where it was appeared.
+                throw error("Type of variable which assigns to invokation of the constructor can't contain generics with wildcard int type")
 
         }
 
