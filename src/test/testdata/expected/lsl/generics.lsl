@@ -1,5 +1,5 @@
 libsl "1.1.0";
-library std version "11" language "Java" url "-";
+library std version "11" language "unknown" url "-";
 typealias Int = int32;
 typealias IntHashMap = HashMap<Int, Int>;
 typealias ArrayOfMaps = HashMap<HashMap<Int, map<Int, Int>>, Int>;

@@ -3,7 +3,7 @@ libsl "1.1.0";
 
 library std
     version "11"
-    language "Java"
+    language "unknown"
     url "-";
 
 typealias Int = int32;

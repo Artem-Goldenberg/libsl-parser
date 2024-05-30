@@ -1,5 +1,5 @@
 libsl "1.1.0";
-library std version "11" language "Java" url "https://gitee.com/openharmony/arkcompiler_runtime_core/blob/master/static_core/plugins/ets/stdlib/std/containers/AVLTree.ets";
+library std version "11" language "unknown" url "-";
 
 typealias int = int32;
 typealias Object = any;
