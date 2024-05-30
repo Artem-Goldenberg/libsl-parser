@@ -1,4 +1,3 @@
-///#! pragma: non-synthesizable
 libsl "1.1.0";
 
 library std
@@ -24,6 +23,7 @@ type HashMapInOuParams  <K, V>
     for java.util.Map
     where
         K: in any,
+        K: out any,
         V: out any
 {
     fun remove (key: K, value: V): void;
