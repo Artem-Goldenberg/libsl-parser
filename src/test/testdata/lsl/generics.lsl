@@ -94,14 +94,14 @@ automaton A
         }
         var obj: HashMap <Int, Int> = x as HashMap <Int, Int>;
 
-        var newHashMapUnbounded: HashMap<?, ?> = new A<?, ?>(state = Initialized);
+        // var newHashMapUnbounded: HashMap<?, ?> = new A<?, ?>(state = Initialized);
         A(newHashMapUnbounded)._genericProc<?, ?, ?>();
         action PLAIN_GENERIC_ACTION<?>(5, 6);
         if (x is HashMap<?, ?>) {
 
         }
         var obj2: HashMap <?, ?> = x as HashMap <?, ?>;
-        var newHashMapBounded: HashMap<in Int, out String> = new A<in Int, out String>(state = Initialized);
+        // var newHashMapBounded: HashMap<in Int, out String> = new A<in Int, out String>(state = Initialized);
         A(newHashMapBounded)._genericProc<in Int, Int, out Int>();
         action PLAIN_GENERIC_ACTION<in Int>(5, 6);
         if (x is HashMap<in Int, out string>) {

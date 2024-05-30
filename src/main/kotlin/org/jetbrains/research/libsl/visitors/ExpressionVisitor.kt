@@ -10,6 +10,7 @@ import org.jetbrains.research.libsl.nodes.references.builders.AutomatonReference
 import org.jetbrains.research.libsl.nodes.references.builders.AutomatonStateReferenceBuilder
 import org.jetbrains.research.libsl.nodes.references.builders.TypeReferenceBuilder.getReference
 import org.jetbrains.research.libsl.nodes.references.builders.VariableReferenceBuilder
+import org.jetbrains.research.libsl.type.GenericTypeBound
 import org.jetbrains.research.libsl.utils.PositionGetter
 import org.jetbrains.research.libsl.utils.getCharRepresentation
 import java.lang.Byte.parseByte
@@ -496,6 +497,13 @@ class ExpressionVisitor(
         val automatonRef = AutomatonReferenceBuilder.build(automatonName, context)
 
         val generics = processGenerics(ctx.generic())
+
+        generics.forEach {
+            if (!GenericTypeBound.EMPTY.equals(it.typeBound) || "?".equals(it.name))
+                // TODO: add for all exceptions in parser concrete places where it was appeared.
+                throw error("Constructor invoke can't contain WildCards")
+
+        }
 
         val args = ctx.namedArgs().argPair().mapNotNull { pair ->
             val name = pair.name.text.extractIdentifier()
