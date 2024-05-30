@@ -295,7 +295,6 @@ data class GenericType(
     override val name: String,
     override val isPointer: Boolean = false,
     override val generics: MutableList<TypeReference> = mutableListOf(),
-    override var typeBound: GenericTypeBound = GenericTypeBound.EMPTY,
     val constraints: MutableList<TypeReference> = mutableListOf(),
     override val context: LslContextBase
 ) : Type {

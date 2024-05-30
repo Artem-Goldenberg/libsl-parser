@@ -85,9 +85,7 @@ fun appendWhereSection(stringBuilder: StringBuilder, generics: MutableList<Gener
     stringBuilder.append(" where")
     for (generic in generics) {
         for (constraint: TypeReference in generic.constraints) {
-            val typeBound =
-                if (!GenericTypeBound.EMPTY.equals(generic.typeBound)) generic.typeBound.string + " " else ""
-            stringBuilder.append(" " + generic.name + ": " + typeBound)
+            stringBuilder.append(" " + generic.name + ": ")
             appendGeneric(stringBuilder, constraint)
             stringBuilder.append(",")
         }

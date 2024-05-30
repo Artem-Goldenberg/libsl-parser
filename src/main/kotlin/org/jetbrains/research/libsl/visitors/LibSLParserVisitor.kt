@@ -161,22 +161,17 @@ abstract class LibSLParserVisitor<T>(open val context: LslContextBase) : LibSLPa
 
         for (typeConstraint in whereContext.typeConstraint()) {
             val paramName = typeConstraint.paramName.text
-            val bound =
-                if (typeConstraint.paramConstraint.typeIdentifierBounded() == null) GenericTypeBound.EMPTY else GenericTypeBound.fromString(
-                    typeConstraint.paramConstraint.typeIdentifierBounded().genericBound().text
-                )
             val constraints: MutableList<TypeReference> = mutableListOf(
                 if (typeConstraint.paramConstraint.typeIdentifier() != null)
                     processTypeIdentifier(typeConstraint.paramConstraint.typeIdentifier())
                 else
-                    processTypeIdentifier(typeConstraint.paramConstraint.typeIdentifierBounded().typeIdentifier())
+                    processTypeIdentifier(typeConstraint.paramConstraint.typeIdentifierBounded().typeIdentifier(), typeConstraint.paramConstraint.typeIdentifierBounded().genericBound().text)
             )
             if (
                 genericTypesOrdered[paramName] == null
             ) {
                 genericTypesOrdered[paramName] = GenericType(
-                    paramName,
-                    typeBound = bound,
+                    name = paramName,
                     constraints = constraints,
                     context = context
                 )
