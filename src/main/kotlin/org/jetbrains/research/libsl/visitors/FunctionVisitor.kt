@@ -7,6 +7,7 @@ import org.jetbrains.research.libsl.errors.ErrorManager
 import org.jetbrains.research.libsl.nodes.*
 import org.jetbrains.research.libsl.nodes.Function
 import org.jetbrains.research.libsl.nodes.references.AutomatonReference
+import org.jetbrains.research.libsl.nodes.references.TypeReference
 import org.jetbrains.research.libsl.nodes.references.builders.AutomatonReferenceBuilder
 import org.jetbrains.research.libsl.nodes.references.builders.AutomatonReferenceBuilder.getReference
 import org.jetbrains.research.libsl.type.GenericType
@@ -57,7 +58,8 @@ class FunctionVisitor(
         args.forEach { arg -> functionContext.storeFunctionArgument(arg) }
 
         val targetAutomatonRef = args.getFunctionTargetByAnnotation ?: automatonReference
-        val returnType = ctx.functionHeader().functionType?.let { processTypeIdentifier(it) }
+        val returnType: MutableList<TypeReference> = mutableListOf()
+        ctx.functionHeader().functionType?.let { it.typeIdentifier().forEach { cur -> returnType.add(processTypeIdentifier(cur)) } }
 
         val funGenericTypes: MutableList<GenericType> = if (ctx.functionHeader().generic() != null)
             ctx.functionGenerics
@@ -148,8 +150,9 @@ class FunctionVisitor(
 
         procGenericTypes.forEach { functionContext.storeFunctionType(it) }
         args.forEach { arg -> functionContext.storeFunctionArgument(arg) }
-        val returnType = ctx.procHeader().functionType?.let { processTypeIdentifier(it) }
-
+//        val returnType = ctx.procHeader().functionType?.let { processTypeIdentifier(it) }
+        val returnType: MutableList<TypeReference> = mutableListOf()
+        ctx.procHeader().functionType?.let { it.typeIdentifier().forEach { cur -> returnType.add(processTypeIdentifier(cur)) } }
         if (returnType != null) {
             val resultVariable = ResultVariable(
                 returnType,
@@ -187,7 +190,8 @@ class FunctionVisitor(
 
     private fun getDeclArgs(functionDeclArgList: FunctionDeclArgListContext?): List<FunctionArgument> {
         return functionDeclArgList?.parameter()?.mapIndexed { i, parameter ->
-            val typeRef = processTypeIdentifier(parameter.type)
+            val typeRef: MutableList<TypeReference> = mutableListOf()
+            parameter.typesIdentifiersArray().typeIdentifier().forEach { typeRef.add(processTypeIdentifier(it)) }
             val annotationsReferences = getAnnotationUsages(parameter.annotationUsage())
             val arg = FunctionArgument(
                 parameter.name.text.extractIdentifier(),
@@ -229,7 +233,8 @@ class FunctionVisitor(
             val targetArg = firstOrNull { arg ->
                 arg.annotationUsages.any { it.annotationReference.name == "target" }
             } ?: return null
-            val automatonName = targetArg.typeReference.name
+            //?
+            val automatonName = targetArg.typeReference[0].name
             return AutomatonReferenceBuilder.build(automatonName, functionContext)
         }
 

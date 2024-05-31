@@ -33,11 +33,11 @@ open class Automaton(
         append("automaton ${BackticksPolitics.forPeriodSeparated(name)}")
 
         if (constructorVariables.isNotEmpty()) {
-            append(" (${constructorVariables.joinToString(", ") { v -> v.dumpToString() } })")
+            append(" (${constructorVariables.joinToString(", ") { v -> v.dumpToString() }})")
         }
         append(" : ${BackticksPolitics.forPeriodSeparated(typeReference.resolve()?.fullName ?: UNRESOLVED_TYPE_SYMBOL)}")
 
-        if(implementedConcepts.isNotEmpty()) {
+        if (implementedConcepts.isNotEmpty()) {
             append(" implements ")
             append(implementedConcepts.joinToString(separator = ", ") {
                 it.name
@@ -108,11 +108,11 @@ data class AutomatonConcept(
         append(formatListEmptyLineAtEndIfNeeded(annotationUsages))
         append("automaton concept ${BackticksPolitics.forPeriodSeparated(name)}")
         if (constructorVariables.isNotEmpty()) {
-            append(" (${constructorVariables.joinToString(", ") { v -> v.dumpToString() } })")
+            append(" (${constructorVariables.joinToString(", ") { v -> v.dumpToString() }})")
         }
         append(" : ${BackticksPolitics.forPeriodSeparated(typeReference.resolve()?.fullName ?: UNRESOLVED_TYPE_SYMBOL)}")
 
-        if(implementedConcepts.isNotEmpty()) {
+        if (implementedConcepts.isNotEmpty()) {
             append(" implements ")
             append(implementedConcepts.joinToString(separator = ", ") {
                 it.name
@@ -189,7 +189,8 @@ data class Shift(
                     if (function.argTypes.isNotEmpty()) {
                         val argTypeNames =
                             function.argTypes.joinToString(separator = ", ", prefix = "(", postfix = ")") {
-                                it.name
+                                it.withIndex()
+                                    .joinToString { (i, cur) -> if (i < it.size - 1) cur.name + " |" else cur.name }
                             }
                         "$functionName$argTypeNames"
                     } else {

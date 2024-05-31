@@ -8,7 +8,7 @@ import org.jetbrains.research.libsl.nodes.references.TypeReference
 object FunctionReferenceBuilder {
     fun build(
         name: String,
-        argTypes: List<TypeReference>,
+        argTypes: List<MutableList<TypeReference>>,
         context: LslContextBase
     ): FunctionReference {
         return FunctionReference(name, argTypes, context)

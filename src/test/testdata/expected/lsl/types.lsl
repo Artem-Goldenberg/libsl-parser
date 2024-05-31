@@ -17,6 +17,8 @@ type BlackAndWhiteImage {
 }
 types {
     Int(int32);
+    Long(int64);
+    Byte(int8);
     Type(Int) {
         variant1: 0;
         variant2: 1;
@@ -30,5 +32,12 @@ automaton Image : BlackAndWhiteImage {
 
         img.content[y][x] = !img.content[y][x];
         img.tpe.field = 1;
+    }
+}
+
+automaton UnionTypesAutomaton : Int {
+    fun *.unionLocalVaribles() {
+        var a: Int | Long | Byte = 5;
+        var b: array<array<Boolean>> | Byte = 6;
     }
 }

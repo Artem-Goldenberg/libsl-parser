@@ -6,7 +6,8 @@ object QualifiedAccessUtils {
     fun resolveFieldType(parentType: Type, name: String): Type? {
 
         return when (parentType) {
-            is StructuredType -> parentType.variables.firstOrNull {it.name == name}?.typeReference?.resolve()
+            is StructuredType -> null
+//            is StructuredType -> parentType.variables.firstOrNull {it.name == name}?.typeReference?.forEach{cur -> cur.resolve()}
             is ArrayType -> parentType.generics.firstOrNull()?.resolve()?.let { resolveFieldType(it, name) }
             is ListType -> parentType.generics.firstOrNull()?.resolve()?.let { resolveFieldType(it, name) }
             is MapType -> parentType.generics.firstOrNull()?.resolve()?.let { resolveFieldType(it, name) }

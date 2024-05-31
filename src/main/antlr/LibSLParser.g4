@@ -203,7 +203,7 @@ functionsList
    ;
 
 functionsListPart
-   :   name=Identifier (L_BRACKET typeIdentifier? (COMMA typeIdentifier)* R_BRACKET)?
+   :   name=Identifier (L_BRACKET typesIdentifiersArray? (COMMA typesIdentifiersArray)* R_BRACKET)?
    ;
 
 /* variable declaration with optional initializers
@@ -215,7 +215,7 @@ variableDecl
    ;
 
 nameWithType
-   :  name=Identifier COLON type=typeIdentifier
+   :  name=Identifier COLON type=typesIdentifiersArray
    ;
 
 /*
@@ -223,6 +223,10 @@ nameWithType
  */
 typeIdentifier
    :   (asterisk=ASTERISK)? name=periodSeparatedFullName generic?
+   ;
+
+typesIdentifiersArray
+   :   typeIdentifier (BIT_OR typeIdentifier)*
    ;
 
 generic
@@ -291,7 +295,7 @@ procDecl
 
 procHeader
    :   annotationUsage* PROC headerWithAsterisk? functionName=Identifier generic? L_BRACKET functionDeclArgList? R_BRACKET
-   (COLON functionType=typeIdentifier)? whereConstraints?
+   (COLON functionType=typesIdentifiersArray)? whereConstraints?
    ;
 /*
  * syntax: @Annotation
@@ -304,7 +308,7 @@ functionDecl
 
 functionHeader
    :   annotationUsage* modifier=Identifier? FUN (automatonName=periodSeparatedFullName DOT)? headerWithAsterisk? functionName=Identifier generic?
-   L_BRACKET functionDeclArgList? R_BRACKET (COLON functionType=typeIdentifier)? whereConstraints?
+   L_BRACKET functionDeclArgList? R_BRACKET (COLON functionType=typesIdentifiersArray)? whereConstraints?
    ;
 
 functionDeclArgList
@@ -312,7 +316,7 @@ functionDeclArgList
    ;
 
 parameter
-   :   annotationUsage* name=Identifier COLON type=typeIdentifier
+   :   annotationUsage* name=Identifier COLON type=typesIdentifiersArray
    ;
 
 /* annotation

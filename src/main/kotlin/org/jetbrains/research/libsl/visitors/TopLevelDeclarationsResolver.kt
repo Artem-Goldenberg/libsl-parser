@@ -10,6 +10,7 @@ import org.jetbrains.research.libsl.nodes.Annotation
 import org.jetbrains.research.libsl.nodes.AnnotationArgumentDescriptor
 import org.jetbrains.research.libsl.nodes.VariableKind
 import org.jetbrains.research.libsl.nodes.VariableWithInitialValue
+import org.jetbrains.research.libsl.nodes.references.TypeReference
 import org.jetbrains.research.libsl.nodes.references.builders.AutomatonReferenceBuilder
 import org.jetbrains.research.libsl.utils.PositionGetter
 
@@ -29,7 +30,7 @@ class TopLevelDeclarationsResolver(
         ctx.annotationDeclParams()?.annotationDeclParamsPart()?.forEach { parameterCtx ->
             val param = AnnotationArgumentDescriptor(
                 parameterCtx.nameWithType().name.text.extractIdentifier(),
-                processTypeIdentifier(parameterCtx.nameWithType().type),
+                processTypeIdentifier(parameterCtx.nameWithType().type.typeIdentifier()[0]),
                 parameterCtx.expression()?.let {
                     expressionVisitor.visitExpression(it)
                 },
@@ -73,8 +74,8 @@ class TopLevelDeclarationsResolver(
     override fun visitVariableDecl(ctx: LibSLParser.VariableDeclContext) {
         val keyword = VariableKind.fromString(ctx.keyword.text)
         val variableName = ctx.nameWithType().name.text.extractIdentifier()
-        val typeRef = processTypeIdentifier(ctx.nameWithType().type)
-
+        val typeRef: MutableList<TypeReference> = mutableListOf()
+        ctx.nameWithType().typesIdentifiersArray().typeIdentifier().forEach { typeRef.add(processTypeIdentifier(it)) }
         val expressionVisitor = ExpressionVisitor(context)
         val initValue = ctx.assignmentRight()?.let { right ->
             when {

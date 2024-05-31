@@ -15,7 +15,7 @@ open class Function(
     open val name: String,
     open val automatonReference: AutomatonReference?,
     open var args: MutableList<FunctionArgument> = mutableListOf(),
-    open val returnType: TypeReference?,
+    open val returnType: MutableList<TypeReference>?,
     open val annotationUsages: MutableList<AnnotationUsage> = mutableListOf(),
     open var contracts: MutableList<Contract> = mutableListOf(),
     open var statements: MutableList<Statement> = mutableListOf(),
@@ -52,22 +52,27 @@ open class Function(
             args.joinToString(separator = ", ", prefix = "(", postfix = ")") { arg -> arg.dumpToString() }
         )
 
-        if (returnType != null) {
+        if (returnType?.isNotEmpty() == true) {
             append(": ")
-            if (funGenerics.contains(
-                    GenericType(
-                        returnType!!.name,
-                        context = context
+            returnType?.withIndex()?.forEach { (i, type) ->
+                if (funGenerics.contains(
+                        GenericType(
+                            type!!.name,
+                            context = context
+                        )
                     )
-                )
-            ) {
-                append(returnType!!.name)
-            } else {
-                if (returnType!!.resolve()?.fullName != null)
-                    appendGeneric(this, returnType!!)
-                else
-                    append(UNRESOLVED_TYPE_SYMBOL)
+                ) {
+                    append(type!!.name)
+                } else {
+                    if (type!!.resolve()?.fullName != null)
+                        appendGeneric(this, type!!)
+                    else
+                        append(UNRESOLVED_TYPE_SYMBOL)
+                }
+                if (i < (returnType?.size?.minus(1) ?: -1))
+                append(" | ")
             }
+            // TODO
         }
 
         if (funGenerics.isNotEmpty()) {
@@ -132,7 +137,7 @@ class Destructor(
 class Procedure(
     override val name: String,
     override var args: MutableList<FunctionArgument> = mutableListOf(),
-    override val returnType: TypeReference?,
+    override val returnType: MutableList<TypeReference>,
     override val annotationUsages: MutableList<AnnotationUsage> = mutableListOf(),
     override var contracts: MutableList<Contract> = mutableListOf(),
     override var statements: MutableList<Statement> = mutableListOf(),

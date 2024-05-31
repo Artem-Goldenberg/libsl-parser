@@ -5,7 +5,7 @@ import org.jetbrains.research.libsl.nodes.Function
 
 data class FunctionReference(
     val name: String,
-    val argTypes: List<TypeReference>,
+    val argTypes: List<MutableList<TypeReference>>,
     override val context: LslContextBase
 ) : LslReference<Function, FunctionReference> {
     override fun resolve(): Function? {
@@ -28,12 +28,12 @@ data class FunctionReference(
         return this.name == other.name && areArgsMatch(other.argTypes)
     }
 
-    private fun areArgsMatch(args: List<TypeReference>): Boolean {
+    private fun areArgsMatch(args: List<MutableList<TypeReference>>): Boolean {
         if (args.size != this.argTypes.size) {
             return false
         }
 
-        return args.withIndex().all { (i, a) -> a.isSameReference(args[i]) }
+        return args.withIndex().all { (j, cur) -> cur.withIndex().all { (i, a) -> a.isSameReference(args[j][i]) } }
     }
 
     override fun toString(): String {

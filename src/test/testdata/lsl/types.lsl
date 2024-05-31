@@ -22,6 +22,8 @@ type BlackAndWhiteImage {
 
 types {
     Int(int32); // simple type
+    Long(int64); // simple type
+    Byte(int8); // simple type
     Type(Int) { // enum-like type
         variant1: 0;
         variant2: 1;
@@ -34,5 +36,12 @@ automaton Image : BlackAndWhiteImage {
         ensures img.content[y][x] != img.content[y][x]';
         img.content[y][x] = !img.content[y][x];
         img.tpe.field = 1;
+    }
+}
+
+automaton UnionTypesAutomaton : Int {
+    fun *.unionLocalVaribles() {
+        var a: Int | Long | Byte = 5;
+        var b: array<array<Int>> | Byte = 6;
     }
 }

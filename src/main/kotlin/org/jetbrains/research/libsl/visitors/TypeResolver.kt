@@ -8,6 +8,7 @@ import org.jetbrains.research.libsl.context.LslContextBase
 import org.jetbrains.research.libsl.errors.ErrorManager
 import org.jetbrains.research.libsl.nodes.*
 import org.jetbrains.research.libsl.nodes.Function
+import org.jetbrains.research.libsl.nodes.references.TypeReference
 import org.jetbrains.research.libsl.type.*
 import org.jetbrains.research.libsl.utils.PositionGetter
 
@@ -173,7 +174,8 @@ class TypeResolver(
     private fun processVariableDecl(ctx: LibSLParser.VariableDeclContext): Variable {
         val keyword = VariableKind.fromString(ctx.keyword.text)
         val name = ctx.nameWithType().name.asPeriodSeparatedString()
-        val typeReference = processTypeIdentifier(ctx.nameWithType().type)
+        val typeReference: MutableList<TypeReference> = mutableListOf()
+        ctx.nameWithType().type.typeIdentifier().forEach { typeReference.add(processTypeIdentifier(it)) }
         val expressionVisitor = ExpressionVisitor(context)
         val initValue = ctx.assignmentRight()?.let { right -> expressionVisitor.visitAssignmentRight(right) }
 
@@ -206,7 +208,8 @@ class TypeResolver(
         val args = ctx.args.toMutableList()
         args.forEach { arg -> functionContext.storeFunctionArgument(arg) }
 
-        val returnType = ctx.functionHeader().functionType?.let { processTypeIdentifier(it) }
+        val returnType: MutableList<TypeReference> = mutableListOf()
+        ctx.functionHeader().functionType.typeIdentifier().forEach { returnType.add(processTypeIdentifier(it)) }
 
         return Function(
             kind = FunctionKind.FUNCTION,
@@ -229,7 +232,8 @@ class TypeResolver(
             .functionHeader().functionDeclArgList()
             ?.parameter()
             ?.mapIndexed { i, parameter ->
-                val typeRef = processTypeIdentifier(parameter.type)
+                val typeRef: MutableList<TypeReference> = mutableListOf()
+                parameter.typesIdentifiersArray().typeIdentifier().forEach { typeRef.add(processTypeIdentifier(it)) }
                 val annotationsReferences = getAnnotationUsages(parameter.annotationUsage())
                 val arg = FunctionArgument(
                     parameter.name.text.extractIdentifier(), typeRef, i,

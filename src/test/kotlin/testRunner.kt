@@ -92,8 +92,8 @@ private fun checkEverythingIsResolved(library: Library) {
 
 private fun checkAutomatonIsResolved(automaton: Automaton) {
     automaton.typeReference.resolveOrError()
-    automaton.constructorVariables.forEach { it.typeReference.resolveOrError() }
-    automaton.internalVariables.forEach { it.typeReference.resolveOrError() }
+    automaton.constructorVariables.forEach { it.typeReference.forEach { cur -> cur.resolveOrError() } }
+    automaton.internalVariables.forEach { it.typeReference.forEach { cur -> cur.resolveOrError() } }
 
     automaton.functions.forEach { func -> checkFunctionIsResolved(func) }
 }
@@ -101,20 +101,22 @@ private fun checkAutomatonIsResolved(automaton: Automaton) {
 private fun checkFunctionIsResolved(function: Function) {
     checkStatementIsResolved(function, function.statements)
 
-    if (!function.context.getFunctionGenericTypes().contains(function.returnType?.name?.let {
-            GenericType(
-                it,
-                context = function.context
-            )
-        })) function.returnType?.resolveOrError()
+//    if (!function.context.getFunctionGenericTypes().contains(function.returnType?.name?.let {
+//            GenericType(
+//                it,
+//                context = function.context
+//            )
+//        })) function.returnType?.resolveOrError()
     function.args.forEach { arg ->
-        if (!function.context.getFunctionGenericTypes().contains(
-                GenericType(
-                    arg.typeReference.name,
-                    context = function.context
+        arg.typeReference.forEach {
+            if (!function.context.getFunctionGenericTypes().contains(
+                    GenericType(
+                        it.name,
+                        context = function.context
+                    )
                 )
-            )
-        ) arg.typeReference.resolveOrError()
+            ) it.resolveOrError()
+        }
     }
 }
 
@@ -127,7 +129,7 @@ private fun checkStatementIsResolved(function: Function, statements: List<Statem
             // is ProcedureCall -> {s.procReference.resolveOrError()}
             is ProcedureCall -> {}
             is VariableDeclaration -> {
-                s.variable.typeReference.resolveOrError()
+                s.variable.typeReference.forEach { it.resolveOrError() }
             }
             is Assignment -> {
                 function.context.typeInferrer.getExpressionType(s.left)
@@ -161,7 +163,7 @@ private fun checkTypeIsResolved(type: Type) {
         is PrimitiveType -> {}
         is RealType -> {}
         is StructuredType -> {
-            type.variables.forEach { v -> v.typeReference.resolveOrError() }
+            type.variables.forEach { v -> v.typeReference.forEach { it.resolveOrError() } }
         }
         // TODO
         is GenericType -> {}

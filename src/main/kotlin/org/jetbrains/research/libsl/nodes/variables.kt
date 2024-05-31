@@ -32,7 +32,7 @@ enum class VariableKind(val string: String) {
 
 open class Variable(
     open var name: String,
-    open var typeReference: TypeReference,
+    open var typeReference: MutableList<TypeReference>,
     open val entityPosition: EntityPosition
 ) : Expression() {
     open val fullName: String
@@ -56,19 +56,19 @@ open class Variable(
 }
 
 data class ResultVariable(
-    override var typeReference: TypeReference,
+    override var typeReference: MutableList<TypeReference>,
     override val entityPosition: EntityPosition
 ) : Variable(name = "result", typeReference, entityPosition)
 
 data class NullVariable(
-    override var typeReference: TypeReference,
+    override var typeReference: MutableList<TypeReference>,
     override val entityPosition: EntityPosition
 ) : Variable(name = "null", typeReference, entityPosition)
 
 @Suppress("unused")
 class FunctionArgument(
     name: String,
-    typeReference: TypeReference,
+    typeReference: MutableList<TypeReference>,
     val index: Int,
     var annotationUsages: MutableList<AnnotationUsage> = mutableListOf(),
     var targetAutomaton: AutomatonReference? = null,
@@ -96,14 +96,15 @@ class FunctionArgument(
         if (targetAutomaton != null)
             append(targetAutomaton!!.name)
         else
-            appendGeneric(this, typeReference)
+            typeReference.forEach { appendGeneric(this, it) }
+
     }
 }
 
 @Suppress("unused")
 class ActionParameter(
     name: String,
-    typeReference: TypeReference,
+    typeReference: MutableList<TypeReference>,
     val index: Int,
     var annotation: AnnotationReference? = null,
     override val entityPosition: EntityPosition
@@ -112,7 +113,7 @@ class ActionParameter(
 class ConstructorArgument(
     val keyword: VariableKind,
     name: String,
-    typeReference: TypeReference,
+    typeReference: MutableList<TypeReference>,
     val annotationUsages: MutableList<AnnotationUsage> = mutableListOf(),
     val initialValue: Expression?,
     override val entityPosition: EntityPosition
@@ -128,7 +129,13 @@ class ConstructorArgument(
             append(IPrinter.SPACE)
         }
         append("${keyword.string} ${BackticksPolitics.forIdentifier(name)}: ")
-        append(BackticksPolitics.forTypeIdentifier(typeReference.resolve()?.fullName ?: UNRESOLVED_TYPE_SYMBOL))
+        typeReference.forEach {
+            append(
+                BackticksPolitics.forTypeIdentifier(
+                    it.resolve()?.fullName ?: UNRESOLVED_TYPE_SYMBOL
+                )
+            )
+        }
         if (initialValue != null) {
             append(" = ${initialValue.dumpToString()};")
         }
@@ -139,7 +146,7 @@ class ConstructorArgument(
 class VariableWithInitialValue(
     val keyword: VariableKind,
     name: String,
-    typeReference: TypeReference,
+    typeReference: MutableList<TypeReference>,
     val annotationUsage: MutableList<AnnotationUsage> = mutableListOf(),
     val initialValue: Expression?,
     override val entityPosition: EntityPosition
@@ -147,12 +154,14 @@ class VariableWithInitialValue(
     override fun dumpToString(): String = buildString {
         append(formatListEmptyLineAtEndIfNeeded(annotationUsage))
         append("${keyword.string} ${BackticksPolitics.forIdentifier(name)}: ")
-
-        if (typeReference.resolve()?.fullName != null)
-            appendGeneric(this, typeReference)
-        else
-            append(UNRESOLVED_TYPE_SYMBOL)
-
+        typeReference.withIndex().forEach { (i, it) ->
+            if (it.resolve()?.fullName != null) {
+                appendGeneric(this, it)
+                if (i < typeReference.size - 1)
+                    append(" | ")
+            } else
+                append(UNRESOLVED_TYPE_SYMBOL)
+        }
         if (initialValue != null) {
             append(" = ${initialValue.dumpToString()};")
         } else {

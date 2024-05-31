@@ -68,7 +68,9 @@ class AutomatonResolver(
     override fun visitConstructorVariables(ctx: LibSLParser.ConstructorVariablesContext) {
         val keyword = VariableKind.fromString(ctx.keyword.text)
         val name = ctx.nameWithType().name.asPeriodSeparatedString()
-        val typeReference = processTypeIdentifier(ctx.nameWithType().type)
+        val typeReference: MutableList<TypeReference> = mutableListOf()
+        ctx.nameWithType().typesIdentifiersArray().typeIdentifier()
+            .forEach { typeReference.add(processTypeIdentifier(it)) }
         val expressionVisitor = ExpressionVisitor(context)
         val initValue = ctx.assignmentRight()?.let { expressionVisitor.visitAssignmentRight(it) }
 
@@ -158,10 +160,14 @@ class AutomatonResolver(
 
             if (functionsList() == null && functionsListPart() != null) {
                 val functionName = functionsListPart().name.asPeriodSeparatedString()
-                val argTypes = mutableListOf<TypeReference>()
-                functionsListPart().typeIdentifier()?.forEach { t ->
-                    argTypes.add(processTypeIdentifier(t))
+                val argTypes: MutableList<MutableList<TypeReference>> = mutableListOf()
+                functionsListPart().typesIdentifiersArray()?.forEach { compositeType ->
+                    argTypes.add(compositeType.typeIdentifier().map { t ->
+                        processTypeIdentifier(t)
+                    }.toMutableList())
+                    println(argTypes)
                 }
+                println(argTypes)
                 val ref = FunctionReferenceBuilder.build(
                     name = functionName,
                     argTypes = argTypes,
@@ -171,10 +177,14 @@ class AutomatonResolver(
             } else {
                 functionsList()?.functionsListPart()?.forEach { f ->
                     val functionName = f.name.asPeriodSeparatedString()
-                    val argTypes = mutableListOf<TypeReference>()
-                    f.typeIdentifier()?.forEach { t ->
-                        argTypes.add(processTypeIdentifier(t))
+                    val argTypes: MutableList<MutableList<TypeReference>> = mutableListOf()
+                    f.typesIdentifiersArray().forEach { compositeType ->
+                        argTypes.add(compositeType.typeIdentifier().map { t ->
+                            processTypeIdentifier(t)
+                        }.toMutableList())
+                        println(argTypes)
                     }
+                    println(argTypes)
                     val ref = FunctionReferenceBuilder.build(
                         name = functionName,
                         argTypes = argTypes,
@@ -189,7 +199,9 @@ class AutomatonResolver(
     override fun visitVariableDecl(ctx: LibSLParser.VariableDeclContext) {
         val keyword = VariableKind.fromString(ctx.keyword.text)
         val name = ctx.nameWithType().name.asPeriodSeparatedString()
-        val typeReference = processTypeIdentifier(ctx.nameWithType().type)
+        val typeReference: MutableList<TypeReference> = mutableListOf()
+        ctx.nameWithType().typesIdentifiersArray().typeIdentifier()
+            .forEach { typeReference.add(processTypeIdentifier(it)) }
         val expressionVisitor = ExpressionVisitor(context)
         val initValue = ctx.assignmentRight()?.let { expressionVisitor.visitAssignmentRight(it) }
 
