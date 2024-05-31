@@ -70,7 +70,6 @@ class BlockStatementVisitor(
         val typeReference = processTypeIdentifier(ctx.nameWithType().type)
         val expressionVisitor = ExpressionVisitor(context)
         val initValue = ctx.assignmentRight()?.let { 
-            expressionVisitor.typeOfVariable = typeReference
             expressionVisitor.visitAssignmentRight(it) 
         }
 
