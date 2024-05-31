@@ -14,10 +14,7 @@ sealed interface Type : IPrinter {
     val isPointer: Boolean
     val context: LslContextBase
     var typeBound: GenericTypeBound
-        get() = GenericTypeBound.EMPTY
-        set(value) {
-            typeBound = value
-        }
+
     val generics: MutableList<TypeReference>
 
     val fullName: String
@@ -74,6 +71,7 @@ data class SimpleType(
 ) : LibslType {
     override val generics: MutableList<TypeReference> = mutableListOf()
     override val isTypeBlockType: Boolean = true
+    override var typeBound: GenericTypeBound = GenericTypeBound.EMPTY
 
     override fun dumpToString(): String {
         return buildString {
@@ -94,6 +92,7 @@ data class TypeAlias(
 ) : LibslType {
     override val isPointer: Boolean = false
     override val generics: MutableList<TypeReference> = mutableListOf()
+    override var typeBound: GenericTypeBound = GenericTypeBound.EMPTY
 
     override val isTopLevelType: Boolean = true
 
@@ -124,6 +123,7 @@ data class EnumLikeSemanticType(
     override val isPointer: Boolean = false
     override val generics: MutableList<TypeReference> = mutableListOf()
     override val isTypeBlockType: Boolean = true
+    override var typeBound: GenericTypeBound = GenericTypeBound.EMPTY
 
     override fun dumpToString(): String = buildString {
         append(formatListEmptyLineAtEndIfNeeded(annotationUsages))
@@ -150,6 +150,7 @@ data class StructuredType(
 ) : Type {
     override val isPointer: Boolean = false
     override val isTopLevelType: Boolean = true
+    override var typeBound: GenericTypeBound = GenericTypeBound.EMPTY
 
     override fun dumpToString(): String = buildString {
         append(formatListEmptyLineAtEndIfNeeded(annotationUsages))
@@ -215,6 +216,7 @@ data class EnumType(
     override val isPointer: Boolean = false
     override val generics: MutableList<TypeReference> = mutableListOf()
     override val isTopLevelType: Boolean = true
+    override var typeBound: GenericTypeBound = GenericTypeBound.EMPTY
 
     override fun dumpToString(): String = buildString {
         append(formatListEmptyLineAtEndIfNeeded(annotationUsages))
@@ -233,6 +235,7 @@ data class ArrayType(
     override val context: LslContextBase
 ) : Type {
     override val name: String = "array"
+    override var typeBound: GenericTypeBound = GenericTypeBound.EMPTY
 
     override fun dumpToString(): String {
         return BackticksPolitics.forTypeIdentifier(fullName)
@@ -247,6 +250,7 @@ data class ListType(
     override val context: LslContextBase
 ) : Type {
     override val name: String = "list"
+    override var typeBound: GenericTypeBound = GenericTypeBound.EMPTY
 
     override fun dumpToString(): String {
         return BackticksPolitics.forTypeIdentifier(fullName)
@@ -261,6 +265,7 @@ data class MapType(
     override val context: LslContextBase
 ) : Type {
     override val name: String = "map"
+    override var typeBound: GenericTypeBound = GenericTypeBound.EMPTY
 
     override fun dumpToString(): String {
         return BackticksPolitics.forTypeIdentifier(fullName)
@@ -275,6 +280,7 @@ data class NullType(
     override val context: LslContextBase
 ) : Type {
     override val name: String = "null"
+    override var typeBound: GenericTypeBound = GenericTypeBound.EMPTY
 
     override fun dumpToString(): String {
         return BackticksPolitics.forTypeIdentifier(fullName)
@@ -298,7 +304,7 @@ data class GenericType(
     val constraints: MutableList<TypeReference> = mutableListOf(),
     override val context: LslContextBase
 ) : Type {
-
+    override var typeBound: GenericTypeBound = GenericTypeBound.EMPTY
     override fun dumpToString(): String {
         return BackticksPolitics.forTypeIdentifier(fullName)
     }
