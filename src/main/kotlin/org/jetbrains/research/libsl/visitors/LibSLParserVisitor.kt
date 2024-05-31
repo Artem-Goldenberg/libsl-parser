@@ -38,16 +38,18 @@ abstract class LibSLParserVisitor<T>(open val context: LslContextBase) : LibSLPa
         val genericReferences = mutableListOf<TypeReference>()
         ctx.forEach {
             val generic = if (it.typeIdentifierBounded() != null) getRealType(
-                it.typeIdentifierBounded().typeIdentifier(),
-                it.typeIdentifierBounded().genericBound().text
+                it.typeIdentifierBounded().typeIdentifier()
             ) else getRealType(it.typeIdentifier())
-            val genericRef = generic.getReference(context)
+            val genericRef = if ((it.typeIdentifierBounded() != null)) generic.getReference(
+                context,
+                GenericTypeBound.fromString(it.typeIdentifierBounded().genericBound().text)
+            ) else generic.getReference(context)
             genericReferences.add(genericRef)
         }
         return genericReferences
     }
 
-    private fun getRealType(ctx: TypeIdentifierContext, typeBound: String = GenericTypeBound.EMPTY.string): RealType {
+    private fun getRealType(ctx: TypeIdentifierContext): RealType {
         val typeNameParts = ctx.name.asPeriodSeparatedParts()
         val isPointer = ctx.asterisk != null
 
@@ -58,12 +60,10 @@ abstract class LibSLParserVisitor<T>(open val context: LslContextBase) : LibSLPa
             genericReferences = processGenerics(genericTypeIdentifierContext)
         }
 
-        val bound = GenericTypeBound.fromString(typeBound)
 
         val realType = RealType(
             typeNameParts,
             isPointer,
-            bound,
             genericReferences,
             context,
             posGetter.getCtxPosition(context.fileName, ctx)
@@ -165,7 +165,10 @@ abstract class LibSLParserVisitor<T>(open val context: LslContextBase) : LibSLPa
                 if (typeConstraint.paramConstraint.typeIdentifier() != null)
                     processTypeIdentifier(typeConstraint.paramConstraint.typeIdentifier())
                 else
-                    processTypeIdentifier(typeConstraint.paramConstraint.typeIdentifierBounded().typeIdentifier(), typeConstraint.paramConstraint.typeIdentifierBounded().genericBound().text)
+                    processTypeIdentifier(
+                        typeConstraint.paramConstraint.typeIdentifierBounded().typeIdentifier(),
+                        typeConstraint.paramConstraint.typeIdentifierBounded().genericBound().text
+                    )
             )
             if (
                 genericTypesOrdered[paramName] == null

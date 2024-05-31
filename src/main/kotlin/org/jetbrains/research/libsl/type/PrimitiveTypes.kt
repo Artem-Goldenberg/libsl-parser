@@ -15,7 +15,6 @@ data class Int8Type(
     override val isPointer: Boolean = false
 ) : PrimitiveType {
     override val generics: MutableList<TypeReference> = mutableListOf()
-    override var typeBound: GenericTypeBound = GenericTypeBound.EMPTY
     override val name: String = "int8"
 }
 
@@ -24,7 +23,6 @@ data class Int16Type(
     override val isPointer: Boolean = false
 ) : PrimitiveType {
     override val generics: MutableList<TypeReference> = mutableListOf()
-    override var typeBound: GenericTypeBound = GenericTypeBound.EMPTY
     override val name: String = "int16"
 }
 
@@ -33,7 +31,6 @@ data class Int32Type(
     override val isPointer: Boolean = false
 ) : PrimitiveType {
     override val generics: MutableList<TypeReference> = mutableListOf()
-    override var typeBound: GenericTypeBound = GenericTypeBound.EMPTY
     override val name: String = "int32"
 }
 
@@ -42,7 +39,6 @@ data class Int64Type(
     override val isPointer: Boolean = false
 ) : PrimitiveType {
     override val generics: MutableList<TypeReference> = mutableListOf()
-    override var typeBound: GenericTypeBound = GenericTypeBound.EMPTY
     override val name: String = "int64"
 }
 
@@ -51,7 +47,6 @@ data class UnsignedInt8Type(
     override val isPointer: Boolean = false
 ) : PrimitiveType {
     override val generics: MutableList<TypeReference> = mutableListOf()
-    override var typeBound: GenericTypeBound = GenericTypeBound.EMPTY
     override val name: String = "unsigned8"
 }
 
@@ -60,7 +55,6 @@ data class UnsignedInt16Type(
     override val isPointer: Boolean = false
 ) : PrimitiveType {
     override val generics: MutableList<TypeReference> = mutableListOf()
-    override var typeBound: GenericTypeBound = GenericTypeBound.EMPTY
     override val name: String = "unsigned16"
 }
 
@@ -69,7 +63,6 @@ data class UnsignedInt32Type(
     override val isPointer: Boolean = false
 ) : PrimitiveType {
     override val generics: MutableList<TypeReference> = mutableListOf()
-    override var typeBound: GenericTypeBound = GenericTypeBound.EMPTY
     override val name: String = "unsigned32"
 }
 
@@ -78,7 +71,6 @@ data class UnsignedInt64Type(
     override val isPointer: Boolean = false
 ) : PrimitiveType {
     override val generics: MutableList<TypeReference> = mutableListOf()
-    override var typeBound: GenericTypeBound = GenericTypeBound.EMPTY
     override val name: String = "unsigned64"
 }
 
@@ -87,7 +79,6 @@ data class Float32Type(
     override val isPointer: Boolean = false
 ) : PrimitiveType {
     override val generics: MutableList<TypeReference> = mutableListOf()
-    override var typeBound: GenericTypeBound = GenericTypeBound.EMPTY
     override val name: String = "float32"
 }
 
@@ -96,7 +87,6 @@ data class Float64Type(
     override val isPointer: Boolean = false
 ) : PrimitiveType {
     override val generics: MutableList<TypeReference> = mutableListOf()
-    override var typeBound: GenericTypeBound = GenericTypeBound.EMPTY
     override val name: String = "float64"
 }
 
@@ -105,7 +95,6 @@ data class BoolType(
     override val isPointer: Boolean = false
 ) : PrimitiveType {
     override val generics: MutableList<TypeReference> = mutableListOf()
-    override var typeBound: GenericTypeBound = GenericTypeBound.EMPTY
     override val name: String = "bool"
 }
 
@@ -114,7 +103,6 @@ data class CharType(
     override val isPointer: Boolean = false
 ) : PrimitiveType {
     override val generics: MutableList<TypeReference> = mutableListOf()
-    override var typeBound: GenericTypeBound = GenericTypeBound.EMPTY
     override val name: String = "char"
 }
 
@@ -123,7 +111,6 @@ data class StringType(
     override val isPointer: Boolean = false
 ) : PrimitiveType {
     override val generics: MutableList<TypeReference> = mutableListOf()
-    override var typeBound: GenericTypeBound = GenericTypeBound.EMPTY
     override val name: String = "string"
 }
 
@@ -133,7 +120,6 @@ data class VoidType(
 ) : PrimitiveType {
     override val name: String = "void"
     override val generics: MutableList<TypeReference> = mutableListOf()
-    override var typeBound: GenericTypeBound = GenericTypeBound.EMPTY
 }
 
 data class AnyType(
@@ -142,7 +128,6 @@ data class AnyType(
     override val name: String = ANY_TYPE_NAME
     override val isPointer: Boolean = false
     override val generics: MutableList<TypeReference> = mutableListOf()
-    override var typeBound: GenericTypeBound = GenericTypeBound.EMPTY
 
     companion object {
         const val ANY_TYPE_NAME = "any"
@@ -159,7 +144,6 @@ data class NothingType(
     override val name: String = Nothing_TYPE_NAME
     override val isPointer: Boolean = false
     override val generics: MutableList<TypeReference> = mutableListOf()
-    override var typeBound: GenericTypeBound = GenericTypeBound.EMPTY
     companion object {
         const val Nothing_TYPE_NAME = "nothing"
 
