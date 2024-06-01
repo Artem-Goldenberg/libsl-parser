@@ -3,7 +3,6 @@ package org.jetbrains.research.libsl.nodes.helpers
 import org.jetbrains.research.libsl.nodes.*
 import org.jetbrains.research.libsl.utils.BackticksPolitics
 import org.jetbrains.research.libsl.utils.escapeCharStringRepresentation
-import java.nio.charset.Charset
 
 object ExpressionDumper {
     fun dump(expression: Expression): String = dump(expression, priority = Int.MAX_VALUE)
@@ -58,7 +57,12 @@ object ExpressionDumper {
 
     private fun dumpActionExpression(expression: ActionExpression): String {
         return buildString {
-            append("action ${BackticksPolitics.forIdentifier(expression.actionUsage.actionReference.resolveOrError().name)}(")
+            append("action ${BackticksPolitics.forIdentifier(expression.actionUsage.actionReference.resolveOrError().name)}")
+
+            if (expression.actionUsage.generics.isNotEmpty())
+                appendGenericArray(this, expression.actionUsage.generics)
+
+            append("(")
             if (expression.actionUsage.arguments.isNotEmpty()) {
                 val args = expression.actionUsage.arguments.map { dump(it) }
                 append(args.joinToString(separator = ", "))
@@ -81,6 +85,9 @@ object ExpressionDumper {
         return buildString {
             append("new ${BackticksPolitics.forPeriodSeparated(expression.automatonRef.name)}")
 
+            if (expression.generics.isNotEmpty())
+                appendGenericArray(this, expression.generics)
+
             val formattedArgs = buildList {
                 add("state = ${BackticksPolitics.forIdentifier(expression.stateRef.name)}")
                 for (arg in expression.args) {
@@ -96,7 +103,7 @@ object ExpressionDumper {
     }
 
     private fun dumpLiteralWithSuffix(expression: LiteralWithSuffix): String {
-        return "${expression.value}${expression.suffix ?:""}"
+        return "${expression.value}${expression.suffix ?: ""}"
     }
 
     private fun dumpStringLiteral(expression: StringLiteral): String {
@@ -178,7 +185,12 @@ object ExpressionDumper {
     private fun dumpProcExpression(expression: ProcExpression): String {
         return buildString {
             // TODO()
-            append("${BackticksPolitics.forIdentifier(expression.procedureCall.name)}(")
+            append(BackticksPolitics.forIdentifier(expression.procedureCall.name))
+
+            if (expression.procedureCall.generics.isNotEmpty())
+                appendGenericArray(this, expression.procedureCall.generics)
+
+            append("(")
             if (expression.procedureCall.arguments.isNotEmpty()) {
                 val args = expression.procedureCall.arguments.map { dump(it) }
                 append(args.joinToString(separator = ", "))
@@ -221,7 +233,11 @@ object ExpressionDumper {
     private fun dumpTypeOperationExpression(expression: TypeOperationExpression): String {
         val left = expression.expression.dumpToString()
         return buildString {
-            append("$left ${expression.opName} ${expression.typeReference.name}")
+            append("$left ${expression.opName} ")
+            if (expression.typeReference.genericReferences.isNotEmpty())
+                appendGeneric(this, expression.typeReference)
+            else
+                append(expression.typeReference.name)
         }
     }
 }

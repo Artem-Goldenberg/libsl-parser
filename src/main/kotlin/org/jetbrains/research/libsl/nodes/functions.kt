@@ -1,8 +1,11 @@
 package org.jetbrains.research.libsl.nodes
 
 import org.jetbrains.research.libsl.context.FunctionContext
+import org.jetbrains.research.libsl.nodes.helpers.appendGeneric
+import org.jetbrains.research.libsl.nodes.helpers.appendWhereSection
 import org.jetbrains.research.libsl.nodes.references.AutomatonReference
 import org.jetbrains.research.libsl.nodes.references.TypeReference
+import org.jetbrains.research.libsl.type.GenericType
 import org.jetbrains.research.libsl.type.Type.Companion.UNRESOLVED_TYPE_SYMBOL
 import org.jetbrains.research.libsl.utils.BackticksPolitics
 import org.jetbrains.research.libsl.utils.EntityPosition
@@ -24,27 +27,52 @@ open class Function(
     open val entityPosition: EntityPosition
 ) : Node() {
     val fullName: String
-        get() = if(automatonReference?.name?.isEmpty() == true) "${automatonReference!!.name}.$name" else name
+        get() = if (automatonReference?.name?.isEmpty() == true) "${automatonReference!!.name}.$name" else name
 
     override fun dumpToString(): String = buildString {
         append(formatListEmptyLineAtEndIfNeeded(annotationUsages))
-        if(isStatic) {
+        if (isStatic) {
             append("static ")
         }
+        val funGenerics: MutableList<GenericType> = context.getFunctionGenericTypes()
+
         append("${kind.value} ")
-        if(isMethod) {
+        if (isMethod) {
             append("*.")
         }
         append(BackticksPolitics.forIdentifier(name))
+
+        if (funGenerics.isNotEmpty()) {
+            append(" <")
+            append(funGenerics.joinToString(separator = ", "))
+            append("> ")
+        }
+
         append(
             args.joinToString(separator = ", ", prefix = "(", postfix = ")") { arg -> arg.dumpToString() }
         )
 
         if (returnType != null) {
             append(": ")
-            append(returnType!!.resolve()?.fullName ?: UNRESOLVED_TYPE_SYMBOL)
+            if (funGenerics.contains(
+                    GenericType(
+                        returnType!!.name,
+                        context = context
+                    )
+                )
+            ) {
+                append(returnType!!.name)
+            } else {
+                if (returnType!!.resolve()?.fullName != null)
+                    appendGeneric(this, returnType!!)
+                else
+                    append(UNRESOLVED_TYPE_SYMBOL)
+            }
         }
 
+        if (funGenerics.isNotEmpty()) {
+            appendWhereSection(this, funGenerics)
+        }
         if (!hasBody && contracts.isEmpty()) {
             appendLine(";")
         } else {

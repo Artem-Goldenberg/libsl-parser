@@ -32,10 +32,10 @@ class TypeResolver(
             context = context,
             entityPosition = posGetter.getCtxPosition(fileName, ctx)
         )
-        if(originType !in context.getAllTypes()) {
+        if (originType !in context.getAllTypes()) {
             context.storeType(originType)
         }
-        if(type !in context.getAllTypes()) {
+        if (type !in context.getAllTypes()) {
             context.storeType(type)
         }
     }
@@ -57,10 +57,10 @@ class TypeResolver(
             posGetter.getCtxPosition(fileName, ctx)
         )
 
-        if(originType !in context.getAllTypes()) {
+        if (originType !in context.getAllTypes()) {
             context.storeType(originType)
         }
-        if(type !in context.getAllTypes()) {
+        if (type !in context.getAllTypes()) {
             context.storeType(type)
         }
     }
@@ -126,13 +126,18 @@ class TypeResolver(
     }
 
     override fun visitTypeDefBlock(ctx: LibSLParser.TypeDefBlockContext) {
-        val name = ctx.name.asPeriodSeparatedString()
+        val name = ctx.type.name.asPeriodSeparatedString()
         val isTypeIdentifier = ctx.targetType()?.typeIdentifier()?.name?.text
         val forTypeList = mutableListOf<String>()
-        ctx.targetType()?.typeList()?.typeIdentifier()?.forEach { forTypeList.add(it.name.text)}
+        ctx.targetType()?.typeList()?.typeIdentifier()?.forEach { forTypeList.add(it.name.text) }
+
+        val genericTypes: MutableList<GenericType> = if (ctx.typeIdentifier().generic() != null)
+            ctx.typeDefBlockGenerics
+        else
+            mutableListOf()
 
         val variables = mutableListOf<Variable>()
-        val functions = mutableListOf<org.jetbrains.research.libsl.nodes.Function>()
+        val functions = mutableListOf<Function>()
         ctx.typeDefBlockStatement().forEach { statement ->
             when {
                 statement.variableDecl() != null ->
@@ -144,21 +149,26 @@ class TypeResolver(
         }
 
         val annotationReferences = getAnnotationUsages(ctx.annotationUsage())
-
+        val typeIdentifier = processTypeIdentifier(ctx.typeIdentifier())
         val type = StructuredType(
             name,
             variables,
             functions,
+            genericTypes,
             isTypeIdentifier,
             forTypeList,
             annotationReferences,
             context,
-            posGetter.getCtxPosition(fileName, ctx)
+            posGetter.getCtxPosition(fileName, ctx),
+            typeIdentifier.genericReferences
         )
-        if(type !in context.getAllTypes()) {
+        if (type !in context.getAllTypes()) {
             context.storeType(type)
         }
     }
+
+    private val LibSLParser.TypeDefBlockContext.typeDefBlockGenerics: MutableList<GenericType>
+        get() = getGenericTypes(this.typeIdentifier().generic(), this.whereConstraints(), context)
 
     private fun processVariableDecl(ctx: LibSLParser.VariableDeclContext): Variable {
         val keyword = VariableKind.fromString(ctx.keyword.text)
@@ -178,12 +188,12 @@ class TypeResolver(
         )
     }
 
-    private fun processFunctionDecl(ctx: FunctionDeclContext): org.jetbrains.research.libsl.nodes.Function {
+    private fun processFunctionDecl(ctx: FunctionDeclContext): Function {
         val isMethod = ctx.functionHeader().headerWithAsterisk() != null
         val functionContext = FunctionContext(context)
         var isStatic = false
-        if(ctx.functionHeader().modifier != null) {
-            if(ctx.functionHeader().modifier.text == "static") {
+        if (ctx.functionHeader().modifier != null) {
+            if (ctx.functionHeader().modifier.text == "static") {
                 isStatic = true
             } else {
                 throw IllegalStateException("Unknown modifier, only static allowed")
@@ -221,7 +231,8 @@ class TypeResolver(
             ?.mapIndexed { i, parameter ->
                 val typeRef = processTypeIdentifier(parameter.type)
                 val annotationsReferences = getAnnotationUsages(parameter.annotationUsage())
-                val arg = FunctionArgument(parameter.name.text.extractIdentifier(), typeRef, i,
+                val arg = FunctionArgument(
+                    parameter.name.text.extractIdentifier(), typeRef, i,
                     annotationsReferences,
                     targetAutomaton = null,
                     entityPosition = posGetter.getCtxPosition(fileName, parameter)

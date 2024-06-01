@@ -57,7 +57,7 @@ typealiasStatement
  * syntax: type full.name { field1: Type; field2: Type; ... }
  */
 typeDefBlock
-   :   annotationUsage* TYPE name=periodSeparatedFullName generic? targetType? (L_BRACE typeDefBlockStatement* R_BRACE)?
+   :   annotationUsage* TYPE type=typeIdentifier targetType? whereConstraints? (L_BRACE typeDefBlockStatement* R_BRACE)?
    ;
 
 targetType
@@ -135,7 +135,7 @@ annotationDeclParamsPart
 
 actionDecl
    :   annotationUsage*
-   DEFINE ACTION actionName=Identifier L_BRACKET actionDeclParamList? R_BRACKET (COLON actionType=typeIdentifier)? SEMICOLON
+   DEFINE ACTION generic? actionName=Identifier L_BRACKET actionDeclParamList? R_BRACKET (COLON actionType=typeIdentifier)? whereConstraints? SEMICOLON
    ;
 
 actionDeclParamList
@@ -226,8 +226,17 @@ typeIdentifier
    ;
 
 generic
-   :   (L_ARROW typeIdentifier (COMMA typeIdentifier)* R_ARROW)
+   :   (L_ARROW typeArgument (COMMA typeArgument)* R_ARROW)
    ;
+
+typeArgument
+    : typeIdentifier
+    | typeIdentifierBounded
+    ;
+
+typeIdentifierBounded
+    : genericBound typeIdentifier
+    ;
 
 variableAssignment
    :   qualifiedAccess op=ASSIGN_OP assignmentRight SEMICOLON
@@ -242,7 +251,7 @@ assignmentRight
    ;
 
 callAutomatonConstructorWithNamedArgs
-   :   NEW name=periodSeparatedFullName L_BRACKET (namedArgs)? R_BRACKET
+   :   NEW name=periodSeparatedFullName generic? L_BRACKET (namedArgs)? R_BRACKET
    ;
 
 namedArgs
@@ -281,8 +290,8 @@ procDecl
    ;
 
 procHeader
-   :   annotationUsage* PROC headerWithAsterisk? functionName=Identifier L_BRACKET functionDeclArgList? R_BRACKET
-   (COLON functionType=typeIdentifier)?
+   :   annotationUsage* PROC headerWithAsterisk? functionName=Identifier generic? L_BRACKET functionDeclArgList? R_BRACKET
+   (COLON functionType=typeIdentifier)? whereConstraints?
    ;
 /*
  * syntax: @Annotation
@@ -294,8 +303,8 @@ functionDecl
    ;
 
 functionHeader
-   :   annotationUsage* modifier=Identifier? FUN (automatonName=periodSeparatedFullName DOT)? headerWithAsterisk? functionName=Identifier
-   L_BRACKET functionDeclArgList? R_BRACKET (COLON functionType=typeIdentifier)?
+   :   annotationUsage* modifier=Identifier? FUN (automatonName=periodSeparatedFullName DOT)? headerWithAsterisk? functionName=Identifier generic?
+   L_BRACKET functionDeclArgList? R_BRACKET (COLON functionType=typeIdentifier)? whereConstraints?
    ;
 
 functionDeclArgList
@@ -344,11 +353,11 @@ elseStatement
  * syntax: action ActionName(args)
  */
 actionUsage
-   :   ACTION Identifier L_BRACKET expressionsList? R_BRACKET
+   :   ACTION Identifier generic? L_BRACKET expressionsList? R_BRACKET
    ;
 
 procUsage
-   :   qualifiedAccess L_BRACKET expressionsList? R_BRACKET
+   :   qualifiedAccess generic? L_BRACKET expressionsList? R_BRACKET
    ;
 
 expressionsList
@@ -498,6 +507,7 @@ periodSeparatedFullName
    :   Identifier
    |   Identifier (DOT Identifier)*
    |   BACK_QOUTE Identifier (DOT Identifier)* BACK_QOUTE
+   |   UNBOUNDED
    ;
 
 integerNumber
@@ -510,4 +520,16 @@ floatNumber
 
 suffix
    :   Identifier
+   ;
+
+typeConstraint
+    : paramName=Identifier COLON paramConstraint=typeArgument
+    ;
+
+whereConstraints
+    : WHERE typeConstraint (',' typeConstraint)*
+    ;
+
+genericBound
+   :   bound=(IN | OUT)
    ;

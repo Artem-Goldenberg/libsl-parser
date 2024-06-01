@@ -10,33 +10,40 @@ import org.jetbrains.research.libsl.nodes.references.TypeReference
 import org.jetbrains.research.libsl.nodes.references.builders.AnnotationReferenceBuilder
 import org.jetbrains.research.libsl.nodes.references.builders.TypeReferenceBuilder
 import org.jetbrains.research.libsl.nodes.references.builders.TypeReferenceBuilder.getReference
-import org.jetbrains.research.libsl.type.ArrayType
-import org.jetbrains.research.libsl.type.RealType
-import org.jetbrains.research.libsl.type.Type
+import org.jetbrains.research.libsl.type.*
 import org.jetbrains.research.libsl.utils.PositionGetter
 
 abstract class LibSLParserVisitor<T>(open val context: LslContextBase) : LibSLParserBaseVisitor<T>() {
 
     private val posGetter = PositionGetter()
 
-    internal fun processTypeIdentifier(ctx: TypeIdentifierContext): TypeReference {
+    internal fun processTypeIdentifier(
+        ctx: TypeIdentifierContext,
+        typeBound: String = GenericTypeBound.EMPTY.string
+    ): TypeReference {
         val typeName = ctx.name.asPeriodSeparatedString()
         val isPointer = ctx.asterisk != null
         var genericReferences = mutableListOf<TypeReference>()
 
-        if(ctx.generic() != null) {
-            val genericTypeIdentifierContext = ctx.generic().typeIdentifier()
+        if (ctx.generic() != null) {
+            val genericTypeIdentifierContext = ctx.generic().typeArgument()
             genericReferences = processGenerics(genericTypeIdentifierContext)
         }
+        val bound = GenericTypeBound.fromString(typeBound)
 
-        return TypeReferenceBuilder.build(typeName, genericReferences, isPointer, context)
+        return TypeReferenceBuilder.build(typeName, bound, genericReferences, isPointer, context)
     }
 
-    fun processGenerics(ctx: MutableList<TypeIdentifierContext>): MutableList<TypeReference> {
+    fun processGenerics(ctx: MutableList<LibSLParser.TypeArgumentContext>): MutableList<TypeReference> {
         val genericReferences = mutableListOf<TypeReference>()
         ctx.forEach {
-            val generic = getRealType(it)
-            val genericRef = generic.getReference(context)
+            val generic = if (it.typeIdentifierBounded() != null) getRealType(
+                it.typeIdentifierBounded().typeIdentifier()
+            ) else getRealType(it.typeIdentifier())
+            val genericRef = if ((it.typeIdentifierBounded() != null)) generic.getReference(
+                context,
+                GenericTypeBound.fromString(it.typeIdentifierBounded().genericBound().text)
+            ) else generic.getReference(context)
             genericReferences.add(genericRef)
         }
         return genericReferences
@@ -48,10 +55,11 @@ abstract class LibSLParserVisitor<T>(open val context: LslContextBase) : LibSLPa
 
         var genericReferences = mutableListOf<TypeReference>()
 
-        if(ctx.generic() != null) {
-            val genericTypeIdentifierContext = ctx.generic().typeIdentifier()
+        if (ctx.generic() != null) {
+            val genericTypeIdentifierContext = ctx.generic().typeArgument()
             genericReferences = processGenerics(genericTypeIdentifierContext)
         }
+
 
         val realType = RealType(
             typeNameParts,
@@ -77,8 +85,8 @@ abstract class LibSLParserVisitor<T>(open val context: LslContextBase) : LibSLPa
         val isPointer = ctx.asterisk != null
         var genericReferences = mutableListOf<TypeReference>()
 
-        if(ctx.generic() != null) {
-            val genericTypeIdentifierContext = ctx.generic().typeIdentifier()
+        if (ctx.generic() != null) {
+            val genericTypeIdentifierContext = ctx.generic().typeArgument()
             genericReferences = processGenerics(genericTypeIdentifierContext)
         }
         val arrayType = ArrayType(isPointer, genericReferences, context)
@@ -102,13 +110,14 @@ abstract class LibSLParserVisitor<T>(open val context: LslContextBase) : LibSLPa
 
     private fun processAnnotationUsage(ctx: LibSLParser.AnnotationUsageContext): AnnotationUsage {
         val name = ctx.Identifier().asPeriodSeparatedString()
-        val args = if(ctx.annotationArgs() != null) {
+        val args = if (ctx.annotationArgs() != null) {
             processAnnotationArgs(ctx)
         } else {
             emptyList()
         }
 
-        val argTypes = args.map { argument -> context.typeInferrer.getExpressionType(argument.value).getReference(context) }
+        val argTypes =
+            args.map { argument -> context.typeInferrer.getExpressionType(argument.value).getReference(context) }
         val annotationRef = AnnotationReferenceBuilder.build(name, argTypes, context)
 
         return AnnotationUsage(
@@ -133,5 +142,47 @@ abstract class LibSLParserVisitor<T>(open val context: LslContextBase) : LibSLPa
         }
 
         return namedArgs
+    }
+
+    fun getGenericTypes(
+        genericContext: LibSLParser.GenericContext,
+        whereContext: LibSLParser.WhereConstraintsContext,
+        context: LslContextBase
+    ): MutableList<GenericType> {
+
+        val genericTypesOrdered: LinkedHashMap<String, GenericType?> = linkedMapOf()
+
+        genericContext.typeArgument().forEach {
+            if (it.typeIdentifier() != null)
+                genericTypesOrdered[it.typeIdentifier().name.text] = null
+            else
+                genericTypesOrdered[it.typeIdentifierBounded().typeIdentifier().name.text] = null
+        }
+
+        for (typeConstraint in whereContext.typeConstraint()) {
+            val paramName = typeConstraint.paramName.text
+            val constraints: MutableList<TypeReference> = mutableListOf(
+                if (typeConstraint.paramConstraint.typeIdentifier() != null)
+                    processTypeIdentifier(typeConstraint.paramConstraint.typeIdentifier())
+                else
+                    processTypeIdentifier(
+                        typeConstraint.paramConstraint.typeIdentifierBounded().typeIdentifier(),
+                        typeConstraint.paramConstraint.typeIdentifierBounded().genericBound().text
+                    )
+            )
+            if (
+                genericTypesOrdered[paramName] == null
+            ) {
+                genericTypesOrdered[paramName] = GenericType(
+                    name = paramName,
+                    constraints = constraints,
+                    context = context
+                )
+            } else {
+                genericTypesOrdered[paramName]?.constraints?.addAll(constraints)
+            }
+        }
+
+        return genericTypesOrdered.values.filterNotNull().toMutableList()
     }
 }

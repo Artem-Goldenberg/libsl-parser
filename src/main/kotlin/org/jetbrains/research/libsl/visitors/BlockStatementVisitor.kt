@@ -69,7 +69,9 @@ class BlockStatementVisitor(
         val name = ctx.nameWithType().name.asPeriodSeparatedString()
         val typeReference = processTypeIdentifier(ctx.nameWithType().type)
         val expressionVisitor = ExpressionVisitor(context)
-        val initValue = ctx.assignmentRight()?.let { expressionVisitor.visitAssignmentRight(it) }
+        val initValue = ctx.assignmentRight()?.let { 
+            expressionVisitor.visitAssignmentRight(it) 
+        }
 
             val variable = VariableWithInitialValue(
             keyword,

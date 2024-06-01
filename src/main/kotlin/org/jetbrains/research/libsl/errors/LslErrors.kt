@@ -87,3 +87,11 @@ class UnresolvedImportOrInclude(
 ) : LslError {
     override fun toString(): String = "Unresolved import path $text on ${entityPosition.string}"
 }
+
+// TODO: maybe add this ?
+class WhereSectionGenericWasMissed(
+    override val text: String,
+    override val entityPosition: EntityPosition
+) : LslError {
+    override fun toString(): String = "Was missed generic param constraint in file $text on ${entityPosition.string}"
+}

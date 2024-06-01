@@ -254,6 +254,18 @@ NULL
    :   'null'
    ;
 
+IN
+   :   'in'
+   ;
+
+OUT
+   :   'out'
+   ;
+
+WHERE
+   :   'where'
+   ;
+
 IntegerLiteral:
     DecimalIntegerLiteral
     | HexIntegerLiteral
@@ -369,4 +381,8 @@ COMMENT
 
 LINE_COMMENT
    :   ('//' ~[\r\n]*) -> channel(HIDDEN)
+   ;
+
+UNBOUNDED
+   :   '?'
    ;

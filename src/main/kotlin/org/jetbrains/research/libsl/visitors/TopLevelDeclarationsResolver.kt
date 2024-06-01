@@ -1,12 +1,15 @@
 package org.jetbrains.research.libsl.visitors
 
 import org.jetbrains.research.libsl.LibSLParser
+import org.jetbrains.research.libsl.context.ActionContext
 import org.jetbrains.research.libsl.context.AutomatonContext
 import org.jetbrains.research.libsl.context.FunctionContext
 import org.jetbrains.research.libsl.context.LslGlobalContext
 import org.jetbrains.research.libsl.errors.ErrorManager
-import org.jetbrains.research.libsl.nodes.*
 import org.jetbrains.research.libsl.nodes.Annotation
+import org.jetbrains.research.libsl.nodes.AnnotationArgumentDescriptor
+import org.jetbrains.research.libsl.nodes.VariableKind
+import org.jetbrains.research.libsl.nodes.VariableWithInitialValue
 import org.jetbrains.research.libsl.nodes.references.builders.AutomatonReferenceBuilder
 import org.jetbrains.research.libsl.utils.PositionGetter
 
@@ -40,7 +43,7 @@ class TopLevelDeclarationsResolver(
             params,
             posGetter.getCtxPosition(fileName, ctx)
         )
-        if(annotation !in globalContext.getAllAnnotations()) {
+        if (annotation !in globalContext.getAllAnnotations()) {
             globalContext.storeAnnotation(annotation)
         }
     }
@@ -52,7 +55,8 @@ class TopLevelDeclarationsResolver(
 
     override fun visitFunctionDecl(ctx: LibSLParser.FunctionDeclContext) {
         val parentContext = if (ctx.functionHeader().automatonName != null) {
-            val automatonRef = AutomatonReferenceBuilder.build(ctx.functionHeader().automatonName.text.extractIdentifier(), context)
+            val automatonRef =
+                AutomatonReferenceBuilder.build(ctx.functionHeader().automatonName.text.extractIdentifier(), context)
             globalContext.resolveAutomaton(automatonRef)!!.context
         } else {
             globalContext
@@ -93,39 +97,13 @@ class TopLevelDeclarationsResolver(
             initValue,
             posGetter.getCtxPosition(fileName, ctx)
         )
-        if(variable !in globalContext.getAllVariables()) {
+        if (variable !in globalContext.getAllVariables()) {
             globalContext.storeVariable(variable)
         }
     }
 
     override fun visitActionDecl(ctx: LibSLParser.ActionDeclContext) {
-        val actionName = ctx.actionName.text.extractIdentifier()
-        val actionParams = mutableListOf<ActionArgumentDescriptor>()
-
-        ctx.actionDeclParamList()?.actionParameter()?.forEach { parameterCtx ->
-            val param = ActionArgumentDescriptor(
-                getAnnotationUsages(parameterCtx.annotationUsage()),
-                parameterCtx.name.text.extractIdentifier(),
-                processTypeIdentifier(parameterCtx.type),
-                posGetter.getCtxPosition(fileName, ctx)
-            )
-            actionParams.add(param)
-        }
-
-        val returnType = ctx.actionType?.let { processTypeIdentifier(it) }
-
-        val actionAnnotations = getAnnotationUsages(ctx.annotationUsage())
-
-        val declaredAction =
-            ActionDecl(
-                actionName,
-                actionParams,
-                actionAnnotations,
-                returnType,
-                posGetter.getCtxPosition(fileName, ctx)
-            )
-        if(declaredAction !in globalContext.getAllDeclaredActions()) {
-            globalContext.storeDeclaredAction(declaredAction)
-        }
+        val actionContext = ActionContext(globalContext)
+        ActionVisitor(actionContext, globalContext, fileName).visitActionDecl(ctx)
     }
 }

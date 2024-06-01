@@ -2,6 +2,7 @@ package org.jetbrains.research.libsl.nodes
 
 import org.jetbrains.research.libsl.nodes.references.ActionDeclReference
 import org.jetbrains.research.libsl.nodes.references.FunctionReference
+import org.jetbrains.research.libsl.nodes.references.TypeReference
 import org.jetbrains.research.libsl.utils.BackticksPolitics
 import org.jetbrains.research.libsl.utils.EntityPosition
 
@@ -23,7 +24,7 @@ data class IfStatement(
     val entityPosition: EntityPosition
 ) : Statement() {
     override fun dumpToString(): String = buildString {
-        if(ifStatements.size == 1) {
+        if (ifStatements.size == 1) {
             appendLine("if (${value.dumpToString()}) ")
             append(withIndent(formatListEmptyLineAtEndIfNeeded(ifStatements)))
         } else {
@@ -31,7 +32,7 @@ data class IfStatement(
             append(withIndent(formatListEmptyLineAtEndIfNeeded(ifStatements)))
             appendLine("}")
         }
-        if(elseStatements?.statements?.isNotEmpty() == true) {
+        if (elseStatements?.statements?.isNotEmpty() == true) {
             append(elseStatements.dumpToString())
         }
     }
@@ -42,7 +43,7 @@ data class ElseStatement(
     val entityPosition: EntityPosition
 ) : Statement() {
     override fun dumpToString(): String = buildString {
-        if(statements.size == 1) {
+        if (statements.size == 1) {
             appendLine("else")
             append(withIndent(formatListEmptyLineAtEndIfNeeded(statements)))
         } else {
@@ -55,6 +56,7 @@ data class ElseStatement(
 
 data class ActionUsage(
     val actionReference: ActionDeclReference,
+    val generics: MutableList<TypeReference>,
     val arguments: List<Expression>,
     val entityPosition: EntityPosition
 ) : Statement() {
@@ -75,6 +77,7 @@ data class ActionUsage(
 
 data class ProcedureCall(
     val name: String,
+    val generics: MutableList<TypeReference>,
     val arguments: List<Expression>,
     val entityPosition: EntityPosition
 ) : Statement() {

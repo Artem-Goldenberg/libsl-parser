@@ -4,15 +4,20 @@ import org.jetbrains.research.libsl.LibSLParser
 import org.jetbrains.research.libsl.LibSLParser.*
 import org.jetbrains.research.libsl.context.LslContextBase
 import org.jetbrains.research.libsl.nodes.*
-import org.jetbrains.research.libsl.nodes.references.builders.*
+import org.jetbrains.research.libsl.nodes.references.TypeReference
+import org.jetbrains.research.libsl.nodes.references.builders.ActionDeclReferenceBuilder
+import org.jetbrains.research.libsl.nodes.references.builders.AutomatonReferenceBuilder
+import org.jetbrains.research.libsl.nodes.references.builders.AutomatonStateReferenceBuilder
 import org.jetbrains.research.libsl.nodes.references.builders.TypeReferenceBuilder.getReference
+import org.jetbrains.research.libsl.nodes.references.builders.VariableReferenceBuilder
+import org.jetbrains.research.libsl.type.GenericTypeBound
 import org.jetbrains.research.libsl.utils.PositionGetter
 import org.jetbrains.research.libsl.utils.getCharRepresentation
+import java.lang.Byte.parseByte
 import java.lang.Integer.parseInt
 import java.lang.Integer.parseUnsignedInt
 import java.lang.Long.parseLong
 import java.lang.Long.parseUnsignedLong
-import java.lang.Byte.parseByte
 import java.lang.Short.parseShort
 
 class ExpressionVisitor(
@@ -486,10 +491,20 @@ class ExpressionVisitor(
     }
 
     override fun visitCallAutomatonConstructorWithNamedArgs(
-        ctx: LibSLParser.CallAutomatonConstructorWithNamedArgsContext
+        ctx: CallAutomatonConstructorWithNamedArgsContext
     ): Expression {
         val automatonName = ctx.name.asPeriodSeparatedString()
         val automatonRef = AutomatonReferenceBuilder.build(automatonName, context)
+
+        val generics = processGenerics(ctx.generic())
+
+        generics.forEach {
+            if (!GenericTypeBound.EMPTY.equals(it.typeBound) || "?".equals(it.name))
+                // TODO: add for all exceptions in parser concrete places where it was appeared.
+                throw error("Constructor invoke can't contain WildCards")
+
+        }
+
         val args = ctx.namedArgs().argPair().mapNotNull { pair ->
             val name = pair.name.text.extractIdentifier()
             val value = when {
@@ -517,6 +532,7 @@ class ExpressionVisitor(
 
         return CallAutomatonConstructor(
             automatonRef,
+            generics,
             args,
             stateRef,
             posGetter.getCtxPosition(fileName, ctx)
@@ -546,11 +562,14 @@ class ExpressionVisitor(
             ctx.expressionsList().expression().forEach { expr -> args.add(expressionVisitor.visitExpression(expr)) }
         }
 
+        val generics = processGenerics(ctx.generic())
+
         val argTypes = args.map { argument -> context.typeInferrer.getExpressionType(argument).getReference(context) }
         val actionRef = ActionDeclReferenceBuilder.build(name, argTypes, context)
 
         val actionUsage = ActionUsage(
             actionRef,
+            generics,
             args,
             posGetter.getCtxPosition(fileName, ctx)
         )
@@ -571,9 +590,12 @@ class ExpressionVisitor(
         //val argTypes = args.map { argument -> context.typeInferrer.getExpressionType(argument).getReference(context) }
         //val procRef = FunctionReferenceBuilder.build(name, argTypes, context)
 
+        val generics = processGenerics(ctx.generic())
+
         val procCall = ProcedureCall(
             //procRef,
             name,
+            generics,
             args,
             posGetter.getCtxPosition(fileName, ctx)
         )
@@ -605,5 +627,23 @@ class ExpressionVisitor(
             automatonReference,
             posGetter.getCtxPosition(fileName, ctx)
         )
+    }
+
+    private fun processGenerics(ctx: GenericContext?): MutableList<TypeReference> {
+        val generics = mutableListOf<TypeReference>()
+        if (ctx != null) {
+            ctx.typeArgument().forEach {
+                if (it.typeIdentifier() != null)
+                    generics.add(processTypeIdentifier(it.typeIdentifier()))
+                else
+                    generics.add(
+                        processTypeIdentifier(
+                            it.typeIdentifierBounded().typeIdentifier(),
+                            it.typeIdentifierBounded().genericBound().text
+                        )
+                    )
+            }
+        }
+        return generics
     }
 }

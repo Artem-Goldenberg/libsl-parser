@@ -3,10 +3,9 @@ package org.jetbrains.research.libsl.type
 import org.jetbrains.research.libsl.context.LslContextBase
 import org.jetbrains.research.libsl.nodes.*
 import org.jetbrains.research.libsl.nodes.Function
-import org.jetbrains.research.libsl.nodes.IPrinter
-import org.jetbrains.research.libsl.nodes.Variable
+import org.jetbrains.research.libsl.nodes.helpers.appendGeneric
+import org.jetbrains.research.libsl.nodes.helpers.appendWhereSection
 import org.jetbrains.research.libsl.nodes.references.TypeReference
-import org.jetbrains.research.libsl.type.Type.Companion.UNRESOLVED_TYPE_SYMBOL
 import org.jetbrains.research.libsl.utils.BackticksPolitics
 import org.jetbrains.research.libsl.utils.EntityPosition
 
@@ -14,13 +13,14 @@ sealed interface Type : IPrinter {
     val name: String
     val isPointer: Boolean
     val context: LslContextBase
+
     val generics: MutableList<TypeReference>
 
     val fullName: String
         get() = buildString {
             append(if (isPointer) "*" else "")
             append(name)
-            if(generics.isNotEmpty()) {
+            if (generics.isNotEmpty()) {
                 append("<")
                 append(generics.joinToString(separator = ", ") {
                     it.resolve()?.fullName ?: UNRESOLVED_TYPE_SYMBOL
@@ -98,7 +98,9 @@ data class TypeAlias(
             append("typealias ")
             append(BackticksPolitics.forTypeIdentifier(name))
             append(" = ")
-            append(BackticksPolitics.forTypeIdentifier(originalType.resolve()?.fullName ?: UNRESOLVED_TYPE_SYMBOL))
+            // TODO: add resolve of the type !
+            appendGeneric(this, originalType)
+            // append(BackticksPolitics.forTypeIdentifier(originalType.resolve()?.fullName ?: UNRESOLVED_TYPE_SYMBOL))
             append(";")
         }
     }
@@ -133,26 +135,35 @@ data class StructuredType(
     override val name: String,
     val variables: MutableList<Variable> = mutableListOf(),
     val functions: MutableList<Function> = mutableListOf(),
+    val genericsTypes: MutableList<GenericType> = mutableListOf(),
     val isTypeIdentifier: String?,
     val forTypeList: MutableList<String> = mutableListOf(),
     val annotationUsages: MutableList<AnnotationUsage>,
     override val context: LslContextBase,
-    val entityPosition: EntityPosition
+    val entityPosition: EntityPosition,
+    override val generics: MutableList<TypeReference>
 ) : Type {
     override val isPointer: Boolean = false
     override val isTopLevelType: Boolean = true
-    override val generics: MutableList<TypeReference> = mutableListOf()
 
     override fun dumpToString(): String = buildString {
         append(formatListEmptyLineAtEndIfNeeded(annotationUsages))
         append("type $name ")
-        if(isTypeIdentifier != null) {
+        if (genericsTypes.isNotEmpty()) {
+            append("<")
+            append(genericsTypes.joinToString(separator = ", "))
+            append("> ")
+        }
+        if (isTypeIdentifier != null) {
             append("is $isTypeIdentifier ")
         }
-        if(forTypeList.isNotEmpty()) {
+        if (forTypeList.isNotEmpty()) {
             append("for ")
             append(forTypeList.joinToString(separator = ", "))
             append(" ")
+        }
+        if (genericsTypes.isNotEmpty()) {
+            appendWhereSection(this, genericsTypes)
         }
         appendLine("{")
         variables.forEach { v ->
@@ -265,4 +276,41 @@ data class NullType(
     }
 
     override fun toString() = dumpToString()
+}
+
+enum class GenericTypeBound(val string: String) {
+    IN("in"), OUT("out"), EMPTY("");
+
+    companion object {
+        fun fromString(str: String) = values().first { op -> op.string == str }
+    }
+}
+
+data class GenericType(
+    override val name: String,
+    override val isPointer: Boolean = false,
+    override val generics: MutableList<TypeReference> = mutableListOf(),
+    val constraints: MutableList<TypeReference> = mutableListOf(),
+    override val context: LslContextBase
+) : Type {
+    override fun dumpToString(): String {
+        return BackticksPolitics.forTypeIdentifier(fullName)
+    }
+
+    override fun toString() = dumpToString()
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as GenericType
+
+        if (name != other.name) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        return name.hashCode()
+    }
+
 }
