@@ -11,11 +11,19 @@ open class TypeReference(
     override val context: LslContextBase
 ) : LslReference<Type, TypeReference> {
     override fun resolve(): Type? {
-        return resolveArrayType() ?:
-        resolveListType() ?:
-        resolveMapType() ?:
-        resolveNullType() ?:
-        context.resolveType(this)
+        return resolveArrayType() ?: resolveListType() ?: resolveMapType() ?: resolveNullType() ?: resolveLiteralType()
+        ?: context.resolveType(this)
+    }
+
+    private fun resolveLiteralType(): Type? {
+        // TODO: add more complicated checkers;
+        if (Character.isDigit(name.first())) {
+            // TODO: check another digits !
+            return Int32Type(context)
+        } else
+            if (name.first().equals('\"'))
+                return StringType(context)
+        return null
     }
 
     private fun resolveArrayType(): ArrayType? {

@@ -222,7 +222,7 @@ nameWithType
  * syntax: one.two.three<T>
  */
 typeIdentifier
-   :   (asterisk=ASTERISK)? name=periodSeparatedFullName generic?
+   :   (asterisk=ASTERISK)? name=typeIdentifierName generic?
    ;
 
 generic
@@ -532,4 +532,9 @@ whereConstraints
 
 genericBound
    :   bound=(IN | OUT)
+   ;
+
+typeIdentifierName
+   :   periodSeparatedFullName
+   |   primitiveLiteral
    ;
