@@ -17,12 +17,20 @@ open class TypeReference(
 
     private fun resolveLiteralType(): Type? {
         // TODO: add more complicated checkers;
-        if (Character.isDigit(name.first())) {
-            // TODO: check another digits !
+        if (name.first() == '\"') {
+            return StringType(context)
+        } else if (name[0] == '\'') {
+            return CharType(context)
+        } else if ((Character.isDigit(name.first()) || (name[0] == '-' && Character.isDigit(name[1]))) && name.contains(
+                "."
+            )
+        ) {
+            return Float64Type(context)
+        } else if (Character.isDigit(name.first())) {
             return Int32Type(context)
-        } else
-            if (name.first().equals('\"'))
-                return StringType(context)
+        } else if (name == "false" || name == "true") {
+            return BoolType(context)
+        }
         return null
     }
 
