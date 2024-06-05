@@ -17,21 +17,14 @@ open class TypeReference(
 
     private fun resolveLiteralType(): Type? {
         // TODO: add more complicated checkers;
-        if (name.first() == '\"') {
-            return StringType(context)
-        } else if (name[0] == '\'') {
-            return CharType(context)
-        } else if ((Character.isDigit(name.first()) || (name[0] == '-' && Character.isDigit(name[1]))) && name.contains(
-                "."
-            )
-        ) {
-            return Float64Type(context)
-        } else if (Character.isDigit(name.first())) {
-            return Int32Type(context)
-        } else if (name == "false" || name == "true") {
-            return BoolType(context)
+        return when {
+            name.first() == '\"' -> StringType(context)
+            name[0] == '\'' -> CharType(context)
+            ((Character.isDigit(name.first()) || (name[0] == '-' && Character.isDigit(name[1]))) && name.contains(".")) -> Float64Type(context)
+            Character.isDigit(name.first()) -> Int64Type(context)
+            (name == "false" || name == "true") -> BoolType(context)
+            else -> null
         }
-        return null
     }
 
     private fun resolveArrayType(): ArrayType? {
