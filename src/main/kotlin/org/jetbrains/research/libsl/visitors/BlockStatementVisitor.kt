@@ -89,6 +89,7 @@ class BlockStatementVisitor(
         context.storeVariable(variable)
     }
 
+    // Why do we need this fun ?
     override fun visitElseStatement(ctx: LibSLParser.ElseStatementContext) {
         error("Unreachable")
     }

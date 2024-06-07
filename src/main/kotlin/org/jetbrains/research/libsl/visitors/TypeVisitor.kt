@@ -11,7 +11,7 @@ import org.jetbrains.research.libsl.nodes.Function
 import org.jetbrains.research.libsl.type.*
 import org.jetbrains.research.libsl.utils.PositionGetter
 
-class TypeResolver(
+class TypeVisitor(
     private val basePath: String,
     private val errorManager: ErrorManager,
     context: LslContextBase

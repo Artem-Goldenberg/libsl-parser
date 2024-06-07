@@ -67,23 +67,23 @@ class TopLevelDeclarationsVisitor(
     }
 
     override fun visitTypeDefBlock(ctx: LibSLParser.TypeDefBlockContext) {
-        TypeResolver(basePath, errorManager, globalContext).visitTypeDefBlock(ctx)
+        TypeVisitor(basePath, errorManager, globalContext).visitTypeDefBlock(ctx)
     }
 
     override fun visitSimpleSemanticType(ctx: LibSLParser.SimpleSemanticTypeContext) {
-        TypeResolver(basePath, errorManager, globalContext).visitSimpleSemanticType(ctx)
+        TypeVisitor(basePath, errorManager, globalContext).visitSimpleSemanticType(ctx)
     }
 
     override fun visitEnumSemanticType(ctx: LibSLParser.EnumSemanticTypeContext) {
-        TypeResolver(basePath, errorManager, globalContext).visitEnumSemanticType(ctx)
+        TypeVisitor(basePath, errorManager, globalContext).visitEnumSemanticType(ctx)
     }
 
     override fun visitTypealiasStatement(ctx: LibSLParser.TypealiasStatementContext) {
-        TypeResolver(basePath, errorManager, globalContext).visitTypealiasStatement(ctx)
+        TypeVisitor(basePath, errorManager, globalContext).visitTypealiasStatement(ctx)
     }
 
     override fun visitEnumBlock(ctx: LibSLParser.EnumBlockContext) {
-        TypeResolver(basePath, errorManager, globalContext).visitEnumBlock(ctx)
+        TypeVisitor(basePath, errorManager, globalContext).visitEnumBlock(ctx)
     }
 
     override fun visitVariableDecl(ctx: LibSLParser.VariableDeclContext) {
