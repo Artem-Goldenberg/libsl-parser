@@ -247,7 +247,6 @@ variableAssignment
 
 assignmentRight
    :   expression
-   |   callAutomatonConstructorWithNamedArgs
    ;
 
 callAutomatonConstructorWithNamedArgs

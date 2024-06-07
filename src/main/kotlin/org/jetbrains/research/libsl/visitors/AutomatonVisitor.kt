@@ -12,7 +12,7 @@ import org.jetbrains.research.libsl.nodes.references.TypeReference
 import org.jetbrains.research.libsl.nodes.references.builders.FunctionReferenceBuilder
 import org.jetbrains.research.libsl.utils.PositionGetter
 
-class AutomatonResolver(
+class AutomatonVisitor(
     private val basePath: String,
     private val errorManager: ErrorManager,
     private val globalContext: LslGlobalContext,
