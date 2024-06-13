@@ -60,7 +60,7 @@ class FunctionVisitor(
         val targetAutomatonRef = args.getFunctionTargetByAnnotation ?: automatonReference
         val returnType = ctx.functionHeader().functionType?.let { processTypeIdentifier(it) }
 
-        if (isNotStoredLiteralType(globalContext, returnType))
+        if (isNotStoredLiteralType(globalContext, returnType, ctx.functionHeader().functionType))
             globalContext.storeType(LiteralType(context, returnType!!.name))
 
         val funGenericTypes: MutableList<GenericType> = if (ctx.functionHeader().generic() != null)

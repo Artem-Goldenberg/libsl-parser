@@ -41,6 +41,10 @@ fun ParserRuleContext.position() = start.position()
 
 val keywords = (LibSLParser.VOCABULARY as VocabularyImpl).literalNames.filterNotNull().map { k -> k.removeQuotes() }
 
-fun isNotStoredLiteralType(ctx: LslGlobalContext, typeReference: TypeReference?): Boolean {
-    return typeReference != null && ctx.resolveType(typeReference) == null
+fun isNotStoredLiteralType(
+    ctx: LslGlobalContext,
+    typeReference: TypeReference?,
+    type: LibSLParser.TypeIdentifierContext?
+): Boolean {
+    return type?.typeIdentifierName()?.primitiveLiteral() != null && typeReference != null && ctx.resolveType(typeReference) == null
 }

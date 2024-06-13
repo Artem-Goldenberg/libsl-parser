@@ -72,7 +72,7 @@ class BlockStatementVisitor(
         val name = ctx.nameWithType().name.asPeriodSeparatedString()
         val typeReference = processTypeIdentifier(ctx.nameWithType().type)
 
-        if (isNotStoredLiteralType(globalContext, typeReference))
+        if (isNotStoredLiteralType(globalContext, typeReference, ctx.nameWithType().typeIdentifier()))
             globalContext.storeType(LiteralType(context, typeReference.name))
 
         val expressionVisitor = ExpressionVisitor(context)
