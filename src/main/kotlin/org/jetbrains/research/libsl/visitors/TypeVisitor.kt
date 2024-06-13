@@ -12,7 +12,7 @@ import org.jetbrains.research.libsl.nodes.references.TypeReference
 import org.jetbrains.research.libsl.type.*
 import org.jetbrains.research.libsl.utils.PositionGetter
 
-class TypeResolver(
+class TypeVisitor(
     private val basePath: String,
     private val errorManager: ErrorManager,
     context: LslContextBase
@@ -21,7 +21,7 @@ class TypeResolver(
     private val posGetter = PositionGetter()
 
     override fun visitSimpleSemanticType(ctx: LibSLParser.SimpleSemanticTypeContext) {
-        val typeName = ctx.semanticName.name.asPeriodSeparatedString()
+        val typeName = ctx.semanticName.name.periodSeparatedFullName().asPeriodSeparatedString()
         val annotationReferences = getAnnotationUsages(ctx.annotationUsage())
         val realNameCtx = ctx.realName
         val originType = getRealTypeOrArray(realNameCtx)
@@ -80,7 +80,7 @@ class TypeResolver(
     }
 
     override fun visitTypealiasStatement(ctx: LibSLParser.TypealiasStatementContext) {
-        val name = ctx.left.periodSeparatedFullName().asPeriodSeparatedString()
+        val name = ctx.left.typeIdentifierName().periodSeparatedFullName().asPeriodSeparatedString()
         val originalTypeReference = processTypeIdentifier(ctx.right)
         val annotationReferences = getAnnotationUsages(ctx.annotationUsage())
 
@@ -127,7 +127,7 @@ class TypeResolver(
     }
 
     override fun visitTypeDefBlock(ctx: LibSLParser.TypeDefBlockContext) {
-        val name = ctx.type.name.asPeriodSeparatedString()
+        val name = ctx.type.name.periodSeparatedFullName().asPeriodSeparatedString()
         val isTypeIdentifier = ctx.targetType()?.typeIdentifier()?.name?.text
         val forTypeList = mutableListOf<String>()
         ctx.targetType()?.typeList()?.typeIdentifier()?.forEach { forTypeList.add(it.name.text) }

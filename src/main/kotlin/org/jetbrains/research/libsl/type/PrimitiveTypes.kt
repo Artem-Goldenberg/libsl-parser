@@ -152,3 +152,11 @@ data class NothingType(
         }
     }
 }
+
+data class LiteralType(
+    override val context: LslContextBase,
+    override val name: String,
+    override val isPointer: Boolean = false
+) : PrimitiveType {
+    override val generics: MutableList<TypeReference> = mutableListOf()
+}

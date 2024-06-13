@@ -3,6 +3,7 @@ package org.jetbrains.research.libsl.visitors
 import org.jetbrains.research.libsl.LibSLParser
 import org.jetbrains.research.libsl.context.FunctionContext
 import org.jetbrains.research.libsl.nodes.*
+import org.jetbrains.research.libsl.type.LiteralType
 import org.jetbrains.research.libsl.nodes.references.TypeReference
 import org.jetbrains.research.libsl.utils.PositionGetter
 
@@ -68,6 +69,11 @@ class BlockStatementVisitor(
     override fun visitVariableDecl(ctx: LibSLParser.VariableDeclContext) {
         val keyword = VariableKind.fromString(ctx.keyword.text)
         val name = ctx.nameWithType().name.asPeriodSeparatedString()
+        val typeReference = processTypeIdentifier(ctx.nameWithType().type)
+
+        if (isNotStoredLiteralType(globalContext, typeReference, ctx.nameWithType().typeIdentifier()))
+            globalContext.storeType(LiteralType(context, typeReference.name))
+
         val typeReference: MutableList<TypeReference> = mutableListOf()
         ctx.nameWithType().typesIdentifiersArray().typeIdentifier().forEach { typeReference.add(processTypeIdentifier(it)) }
         val expressionVisitor = ExpressionVisitor(context)

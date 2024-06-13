@@ -4,11 +4,8 @@ import org.jetbrains.research.libsl.LibSLParser
 import org.jetbrains.research.libsl.LibSLParser.FileContext
 import org.jetbrains.research.libsl.context.LslGlobalContext
 import org.jetbrains.research.libsl.errors.ErrorManager
-import org.jetbrains.research.libsl.errors.Position
 import org.jetbrains.research.libsl.errors.UnresolvedImportOrInclude
 import org.jetbrains.research.libsl.nodes.Library
-import org.jetbrains.research.libsl.nodes.LslVersion
-import org.jetbrains.research.libsl.nodes.MetaNode
 import org.jetbrains.research.libsl.nodes.references.builders.ActionDeclReferenceBuilder.getReference
 import org.jetbrains.research.libsl.nodes.references.builders.AnnotationReferenceBuilder.getReference
 import org.jetbrains.research.libsl.nodes.references.builders.AutomatonReferenceBuilder.getReference
@@ -30,8 +27,7 @@ class LibrarySpecificationVisitor(
 
     fun processFile(file: FileContext, library: Library): Library {
 
-        TypeResolver(basePath, errorManager, globalContext).visitFile(file)
-        TopLevelDeclarationsResolver(basePath, errorManager, globalContext).visitFile(file)
+        TopLevelDeclarationsVisitor(basePath, errorManager, globalContext).visitFile(file)
 
         file.globalStatement().forEach { visitGlobalStatement(it) }
 

@@ -11,11 +11,8 @@ open class TypeReference(
     override val context: LslContextBase
 ) : LslReference<Type, TypeReference> {
     override fun resolve(): Type? {
-        return resolveArrayType() ?:
-        resolveListType() ?:
-        resolveMapType() ?:
-        resolveNullType() ?:
-        context.resolveType(this)
+        return resolveArrayType() ?: resolveListType() ?: resolveMapType() ?: resolveNullType()
+        ?: context.resolveType(this)
     }
 
     private fun resolveArrayType(): ArrayType? {

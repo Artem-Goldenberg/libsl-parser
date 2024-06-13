@@ -501,7 +501,7 @@ class ExpressionVisitor(
 
         generics.forEach {
             if (!GenericTypeBound.EMPTY.equals(it.typeBound) || "?".equals(it.name))
-            // TODO: add for all exceptions in parser concrete places where it was appeared.
+                // TODO: add for all exceptions in parser concrete places where it was appeared.
                 throw error("Constructor invoke can't contain WildCards")
 
         }
@@ -551,9 +551,6 @@ class ExpressionVisitor(
     override fun visitAssignmentRight(ctx: AssignmentRightContext): Expression {
         return when {
             ctx.expression() != null -> visitExpression(ctx.expression())
-            ctx.callAutomatonConstructorWithNamedArgs() != null -> {
-                visitCallAutomatonConstructorWithNamedArgs(ctx.callAutomatonConstructorWithNamedArgs())
-            }
             else -> error("unknown assignment right kind")
         }
     }

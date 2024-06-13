@@ -16,7 +16,7 @@ object TypeReferenceBuilder {
         return TypeReference(name, isPointer, typeBound, genericReferences, context)
     }
 
-    fun Type.getReference(context: LslContextBase): TypeReference {
-        return build(this.name, this.typeBound, this.generics, this.isPointer, context)
+    fun Type.getReference(context: LslContextBase, typeBound: GenericTypeBound = GenericTypeBound.EMPTY): TypeReference {
+        return build(this.name, typeBound, this.generics, this.isPointer, context)
     }
 }

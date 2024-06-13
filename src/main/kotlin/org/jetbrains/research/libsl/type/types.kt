@@ -13,11 +13,7 @@ sealed interface Type : IPrinter {
     val name: String
     val isPointer: Boolean
     val context: LslContextBase
-    var typeBound: GenericTypeBound
-        get() = GenericTypeBound.EMPTY
-        set(value) {
-            typeBound = value
-        }
+
     val generics: MutableList<TypeReference>
 
     val fullName: String
@@ -51,7 +47,6 @@ sealed interface LibslType : Type
 data class RealType(
     val nameParts: List<String>,
     override val isPointer: Boolean = false,
-    override var typeBound: GenericTypeBound,
     override val generics: MutableList<TypeReference>,
     override val context: LslContextBase,
     val entityPosition: EntityPosition
@@ -298,7 +293,6 @@ data class GenericType(
     val constraints: MutableList<TypeReference> = mutableListOf(),
     override val context: LslContextBase
 ) : Type {
-
     override fun dumpToString(): String {
         return BackticksPolitics.forTypeIdentifier(fullName)
     }
