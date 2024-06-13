@@ -21,7 +21,8 @@ abstract class LibSLParserVisitor<T>(open val context: LslContextBase) : LibSLPa
         ctx: TypeIdentifierContext,
         typeBound: String = GenericTypeBound.EMPTY.string
     ): TypeReference {
-        val typeName = if (ctx.name.primitiveLiteral() == null) ctx.name.periodSeparatedFullName().asPeriodSeparatedString() else ctx.name.primitiveLiteral().text
+        val typeName = if (ctx.name.primitiveLiteral() == null) ctx.name.periodSeparatedFullName()
+            .asPeriodSeparatedString() else ctx.name.primitiveLiteral().text
         val isPointer = ctx.asterisk != null
         var genericReferences = mutableListOf<TypeReference>()
 
@@ -50,7 +51,8 @@ abstract class LibSLParserVisitor<T>(open val context: LslContextBase) : LibSLPa
     }
 
     private fun getRealType(ctx: TypeIdentifierContext): RealType {
-        val typeNameParts = if (ctx.name.primitiveLiteral() == null) ctx.name.periodSeparatedFullName().asPeriodSeparatedParts() else listOf(ctx.name.primitiveLiteral().text)
+        val typeNameParts = if (ctx.name.primitiveLiteral() == null) ctx.name.periodSeparatedFullName()
+            .asPeriodSeparatedParts() else listOf(ctx.name.primitiveLiteral().text)
         val isPointer = ctx.asterisk != null
 
         var genericReferences = mutableListOf<TypeReference>()

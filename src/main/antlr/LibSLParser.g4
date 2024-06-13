@@ -526,7 +526,7 @@ typeConstraint
     ;
 
 whereConstraints
-    : WHERE typeConstraint (',' typeConstraint)*
+    : WHERE typeConstraint (COMMA typeConstraint)*
     ;
 
 genericBound

@@ -7,6 +7,7 @@ typealias Five = 5;
 automaton A : Int {
     fun *.localVariablesWithLiteralTypes(): 6 {
         var a: 5;
+        var b: 5;
         var stringType_1: "hello";
         val stringType_2: "d" = "d";
         val doubleLiteralType_1: 2.1 = 2.1;
