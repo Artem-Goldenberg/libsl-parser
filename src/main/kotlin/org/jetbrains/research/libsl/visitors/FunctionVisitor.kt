@@ -60,10 +60,14 @@ class FunctionVisitor(
 
         val targetAutomatonRef = args.getFunctionTargetByAnnotation ?: automatonReference
         val returnType: MutableList<TypeReference> = mutableListOf()
-        ctx.functionHeader().functionType?.let { it.typeIdentifier().forEach { cur -> returnType.add(processTypeIdentifier(cur)) } }
+        ctx.functionHeader().functionType?.let {
+            it.typeIdentifier().forEach { cur ->
+                returnType.add(processTypeIdentifier(cur))
 
-        if (isNotStoredLiteralType(globalContext, returnType, ctx.functionHeader().functionType))
-            globalContext.storeType(LiteralType(context, returnType!!.name))
+                if (isNotStoredLiteralType(globalContext, returnType.last(), cur))
+                    globalContext.storeType(LiteralType(context, returnType.last()!!.name))
+            }
+        }
 
         val funGenericTypes: MutableList<GenericType> = if (ctx.functionHeader().generic() != null)
             ctx.functionGenerics
@@ -156,7 +160,9 @@ class FunctionVisitor(
         args.forEach { arg -> functionContext.storeFunctionArgument(arg) }
 //        val returnType = ctx.procHeader().functionType?.let { processTypeIdentifier(it) }
         val returnType: MutableList<TypeReference> = mutableListOf()
-        ctx.procHeader().functionType?.let { it.typeIdentifier().forEach { cur -> returnType.add(processTypeIdentifier(cur)) } }
+        ctx.procHeader().functionType?.let {
+            it.typeIdentifier().forEach { cur -> returnType.add(processTypeIdentifier(cur)) }
+        }
         if (returnType != null) {
             val resultVariable = ResultVariable(
                 returnType,

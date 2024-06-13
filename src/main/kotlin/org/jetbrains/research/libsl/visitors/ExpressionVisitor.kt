@@ -505,14 +505,14 @@ class ExpressionVisitor(
                 throw error("Constructor invoke can't contain WildCards")
 
         }
-
-        typeOfVariable?.forEach { references ->
-            references.genericReferences.forEach {
-                if (!GenericTypeBound.EMPTY.equals(it.typeBound) || "?".equals(it.name))
-                // TODO: add for all exceptions in parser concrete places where it was appeared.
-                    throw error("Type of variable which assigns to invokation of the constructor can't contain generics with wildcard int type")
-            }
-        }
+//
+//        typeOfVariable?.forEach { references ->
+//            references.genericReferences.forEach {
+//                if (!GenericTypeBound.EMPTY.equals(it.typeBound) || "?".equals(it.name))
+//                // TODO: add for all exceptions in parser concrete places where it was appeared.
+//                    throw error("Type of variable which assigns to invokation of the constructor can't contain generics with wildcard int type")
+//            }
+//        }
 
         val args = ctx.namedArgs().argPair().mapNotNull { pair ->
             val name = pair.name.text.extractIdentifier()

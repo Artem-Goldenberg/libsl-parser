@@ -29,7 +29,7 @@ class TypeInferrer(private val context: LslContextBase) {
                 mergeTypes(typeA, typeB)
             }
             is UnaryOpExpression -> getExpressionType(expression.value)
-            is Variable -> expression.typeReference.resolveOrError()
+            is Variable -> expression.typeReference.first().resolveOrError()
             is OldValue -> getExpressionType(expression.value)
             is HasAutomatonConcept -> BoolType(context)
             is NamedArgumentWithValue -> getExpressionType(expression.value)
@@ -39,7 +39,7 @@ class TypeInferrer(private val context: LslContextBase) {
             // is ProcExpression -> expression.procedureCall.procReference.resolveOrError().returnType?.resolveOrError()
             // ?: VoidType(context)
             is ProcExpression -> VoidType(context)
-            is FunctionUsageExpression -> expression.functionUsage.functionReference.resolveOrError().returnType?.resolveOrError()
+            is FunctionUsageExpression -> expression.functionUsage.functionReference.resolveOrError().returnType?.first()?.resolveOrError()
                 ?: VoidType(context)
         }
     }

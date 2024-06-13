@@ -2,13 +2,15 @@ package org.jetbrains.research.libsl.visitors
 
 import org.jetbrains.research.libsl.LibSLParser
 import org.jetbrains.research.libsl.context.FunctionContext
+import org.jetbrains.research.libsl.context.LslGlobalContext
 import org.jetbrains.research.libsl.nodes.*
 import org.jetbrains.research.libsl.type.LiteralType
 import org.jetbrains.research.libsl.nodes.references.TypeReference
 import org.jetbrains.research.libsl.utils.PositionGetter
 
 class BlockStatementVisitor(
-    private val functionContext: FunctionContext
+    private val functionContext: FunctionContext,
+    private val globalContext: LslGlobalContext
 ) : LibSLParserVisitor<Unit>(functionContext) {
     val statements: MutableList<Statement> = mutableListOf()
     private val fileName = context.fileName
@@ -41,13 +43,13 @@ class BlockStatementVisitor(
         val expressionVisitor = ExpressionVisitor(functionContext)
         val value = expressionVisitor.visitExpression(ifCtx.expression())
 
-        val ifStatementVisitor = BlockStatementVisitor(functionContext)
+        val ifStatementVisitor = BlockStatementVisitor(functionContext, globalContext)
         ifCtx.functionBodyStatement().forEach { ifStatementVisitor.visit(it) }
         val ifStatements = ifStatementVisitor.statements
 
         val elseStatement = ifCtx.elseStatement()?.let { elseStmt ->
 
-            val elseStatementsVisitor = BlockStatementVisitor(functionContext)
+            val elseStatementsVisitor = BlockStatementVisitor(functionContext, globalContext)
             elseStmt.functionBodyStatement().forEach { elseStatementsVisitor.visit(it) }
             val elseStatements = elseStatementsVisitor.statements
             ElseStatement(
@@ -69,20 +71,27 @@ class BlockStatementVisitor(
     override fun visitVariableDecl(ctx: LibSLParser.VariableDeclContext) {
         val keyword = VariableKind.fromString(ctx.keyword.text)
         val name = ctx.nameWithType().name.asPeriodSeparatedString()
-        val typeReference = processTypeIdentifier(ctx.nameWithType().type)
-
-        if (isNotStoredLiteralType(globalContext, typeReference, ctx.nameWithType().typeIdentifier()))
-            globalContext.storeType(LiteralType(context, typeReference.name))
-
         val typeReference: MutableList<TypeReference> = mutableListOf()
-        ctx.nameWithType().typesIdentifiersArray().typeIdentifier().forEach { typeReference.add(processTypeIdentifier(it)) }
-        val expressionVisitor = ExpressionVisitor(context)
-        val initValue = ctx.assignmentRight()?.let { 
-            expressionVisitor.typeOfVariable = typeReference
-            expressionVisitor.visitAssignmentRight(it) 
+
+        ctx.nameWithType().typesIdentifiersArray().typeIdentifier().forEach {
+            typeReference.add(processTypeIdentifier(it))
+
+            if (isNotStoredLiteralType(
+                    globalContext,
+                    typeReference.last(),
+                    it
+                )
+            )
+                globalContext.storeType(LiteralType(context, it.name.text))
         }
 
-            val variable = VariableWithInitialValue(
+        val expressionVisitor = ExpressionVisitor(context)
+        val initValue = ctx.assignmentRight()?.let {
+            expressionVisitor.typeOfVariable = typeReference
+            expressionVisitor.visitAssignmentRight(it)
+        }
+
+        val variable = VariableWithInitialValue(
             keyword,
             name,
             typeReference,
