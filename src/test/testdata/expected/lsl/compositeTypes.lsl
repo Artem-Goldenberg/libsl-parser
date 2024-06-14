@@ -15,7 +15,7 @@ annotation Throws(
     exceptionTypes: Int | Long = 0
 );
 
-automaton ListAutomaton (var size: Int | Long | 666, var anyListFlag: Int | Long & Byte) : Int {
+automaton ListAutomaton (var size: Int | Long | 666, var anyListFlag: Int | Long & Byte) : Int | Long {
 
     val defaultSize: Int | Long | 16 | 32 | "sixteen" = 16;
     val defaultAnyFlag: 4 = 4;

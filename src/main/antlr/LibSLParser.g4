@@ -153,7 +153,7 @@ actionParameter
  */
 automatonDecl
    :   annotationUsage* AUTOMATON CONCEPT? name=periodSeparatedFullName (L_BRACKET constructorVariables* R_BRACKET)?
-   COLON type=typeIdentifier implementedConcepts*
+   COLON type=typesIdentifiersArray implementedConcepts*
    L_BRACE automatonStatement* R_BRACE
    ;
 

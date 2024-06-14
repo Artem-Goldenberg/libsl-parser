@@ -27,7 +27,23 @@ class AutomatonVisitor(
 
     override fun visitAutomatonDecl(ctx: LibSLParser.AutomatonDeclContext) {
         val name = ctx.name.asPeriodSeparatedString()
-        val typeReference = processTypeIdentifier(ctx.type)
+
+        val isCompositeType = ctx.typesIdentifiersArray().typeIdentifier().size > 1
+        lateinit var compositeType: СompositeType
+        if (isCompositeType) {
+            compositeType = buildCompositeType(ctx.typesIdentifiersArray())
+            context.storeType(compositeType)
+        }
+
+        val typeReference = if (!isCompositeType) processTypeIdentifier(
+            ctx.typesIdentifiersArray().typeIdentifier(0)
+        ) else processCompositeType(compositeType)
+
+
+        // TODO: ??
+        if (isNotStoredLiteralType(globalContext, typeReference, ctx.typesIdentifiersArray().typeIdentifier(0)))
+            globalContext.storeType(LiteralType(context, typeReference.name))
+        
         val annotationReferences = getAnnotationUsages(ctx.annotationUsage())
 
         if (ctx.CONCEPT() == null) {
