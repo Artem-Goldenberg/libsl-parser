@@ -21,7 +21,8 @@ abstract class LibSLParserVisitor<T>(open val context: LslContextBase) : LibSLPa
         ctx: TypeIdentifierContext,
         typeBound: String = GenericTypeBound.EMPTY.string
     ): TypeReference {
-        val typeName = ctx.name.asPeriodSeparatedString()
+        val typeName = if (ctx.name.primitiveLiteral() == null) ctx.name.periodSeparatedFullName()
+            .asPeriodSeparatedString() else ctx.name.primitiveLiteral().text
         val isPointer = ctx.asterisk != null
         var genericReferences = mutableListOf<TypeReference>()
 
@@ -50,7 +51,8 @@ abstract class LibSLParserVisitor<T>(open val context: LslContextBase) : LibSLPa
     }
 
     private fun getRealType(ctx: TypeIdentifierContext): RealType {
-        val typeNameParts = ctx.name.asPeriodSeparatedParts()
+        val typeNameParts = if (ctx.name.primitiveLiteral() == null) ctx.name.periodSeparatedFullName()
+            .asPeriodSeparatedParts() else listOf(ctx.name.primitiveLiteral().text)
         val isPointer = ctx.asterisk != null
 
         var genericReferences = mutableListOf<TypeReference>()
@@ -79,7 +81,7 @@ abstract class LibSLParserVisitor<T>(open val context: LslContextBase) : LibSLPa
     }
 
     private fun getArrayType(ctx: TypeIdentifierContext): ArrayType {
-        val typeNameParts = ctx.name.asPeriodSeparatedParts()
+        val typeNameParts = ctx.name.periodSeparatedFullName().asPeriodSeparatedParts()
         check(typeNameParts[0] == "array" && typeNameParts.size == 1) { "not an array" }
 
         val isPointer = ctx.asterisk != null
@@ -95,7 +97,7 @@ abstract class LibSLParserVisitor<T>(open val context: LslContextBase) : LibSLPa
     }
 
     fun getRealTypeOrArray(ctx: TypeIdentifierContext): Type {
-        val typeNameParts = ctx.name.asPeriodSeparatedParts()
+        val typeNameParts = ctx.name.periodSeparatedFullName().asPeriodSeparatedParts()
 
         return if (typeNameParts[0] == "array") {
             getArrayType(ctx)

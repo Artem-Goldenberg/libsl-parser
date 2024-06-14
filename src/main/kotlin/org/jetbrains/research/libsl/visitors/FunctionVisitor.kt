@@ -10,6 +10,7 @@ import org.jetbrains.research.libsl.nodes.references.AutomatonReference
 import org.jetbrains.research.libsl.nodes.references.builders.AutomatonReferenceBuilder
 import org.jetbrains.research.libsl.nodes.references.builders.AutomatonReferenceBuilder.getReference
 import org.jetbrains.research.libsl.type.GenericType
+import org.jetbrains.research.libsl.type.LiteralType
 import org.jetbrains.research.libsl.utils.PositionGetter
 
 class FunctionVisitor(
@@ -58,6 +59,9 @@ class FunctionVisitor(
 
         val targetAutomatonRef = args.getFunctionTargetByAnnotation ?: automatonReference
         val returnType = ctx.functionHeader().functionType?.let { processTypeIdentifier(it) }
+
+        if (isNotStoredLiteralType(globalContext, returnType, ctx.functionHeader().functionType))
+            globalContext.storeType(LiteralType(context, returnType!!.name))
 
         val funGenericTypes: MutableList<GenericType> = if (ctx.functionHeader().generic() != null)
             ctx.functionGenerics
@@ -178,7 +182,7 @@ class FunctionVisitor(
         if (parentAutomaton is AutomatonConcept) {
             error("Function realisation inside automaton concept")
         } else {
-            val visitor = BlockStatementVisitor(functionContext)
+            val visitor = BlockStatementVisitor(functionContext, globalContext)
             visitor.visit(ctx)
             val statements = visitor.statements
             buildingFunction.statements.addAll(statements)

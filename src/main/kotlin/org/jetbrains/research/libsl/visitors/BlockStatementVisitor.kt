@@ -2,11 +2,14 @@ package org.jetbrains.research.libsl.visitors
 
 import org.jetbrains.research.libsl.LibSLParser
 import org.jetbrains.research.libsl.context.FunctionContext
+import org.jetbrains.research.libsl.context.LslGlobalContext
 import org.jetbrains.research.libsl.nodes.*
+import org.jetbrains.research.libsl.type.LiteralType
 import org.jetbrains.research.libsl.utils.PositionGetter
 
 class BlockStatementVisitor(
-    private val functionContext: FunctionContext
+    private val functionContext: FunctionContext,
+    val globalContext: LslGlobalContext
 ) : LibSLParserVisitor<Unit>(functionContext) {
     val statements: MutableList<Statement> = mutableListOf()
     private val fileName = context.fileName
@@ -39,13 +42,13 @@ class BlockStatementVisitor(
         val expressionVisitor = ExpressionVisitor(functionContext)
         val value = expressionVisitor.visitExpression(ifCtx.expression())
 
-        val ifStatementVisitor = BlockStatementVisitor(functionContext)
+        val ifStatementVisitor = BlockStatementVisitor(functionContext, globalContext)
         ifCtx.functionBodyStatement().forEach { ifStatementVisitor.visit(it) }
         val ifStatements = ifStatementVisitor.statements
 
         val elseStatement = ifCtx.elseStatement()?.let { elseStmt ->
 
-            val elseStatementsVisitor = BlockStatementVisitor(functionContext)
+            val elseStatementsVisitor = BlockStatementVisitor(functionContext, globalContext)
             elseStmt.functionBodyStatement().forEach { elseStatementsVisitor.visit(it) }
             val elseStatements = elseStatementsVisitor.statements
             ElseStatement(
@@ -68,12 +71,16 @@ class BlockStatementVisitor(
         val keyword = VariableKind.fromString(ctx.keyword.text)
         val name = ctx.nameWithType().name.asPeriodSeparatedString()
         val typeReference = processTypeIdentifier(ctx.nameWithType().type)
+
+        if (isNotStoredLiteralType(globalContext, typeReference, ctx.nameWithType().typeIdentifier()))
+            globalContext.storeType(LiteralType(context, typeReference.name))
+
         val expressionVisitor = ExpressionVisitor(context)
-        val initValue = ctx.assignmentRight()?.let { 
-            expressionVisitor.visitAssignmentRight(it) 
+        val initValue = ctx.assignmentRight()?.let {
+            expressionVisitor.visitAssignmentRight(it)
         }
 
-            val variable = VariableWithInitialValue(
+        val variable = VariableWithInitialValue(
             keyword,
             name,
             typeReference,
@@ -89,6 +96,7 @@ class BlockStatementVisitor(
         context.storeVariable(variable)
     }
 
+    // Why do we need this fun ?
     override fun visitElseStatement(ctx: LibSLParser.ElseStatementContext) {
         error("Unreachable")
     }

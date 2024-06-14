@@ -1,5 +1,6 @@
 package org.jetbrains.research.libsl.nodes
 
+@SuppressWarnings("unused")
 abstract class ExpressionVisitor<T> {
     open fun visit(node: Expression): T {
         return when (node) {

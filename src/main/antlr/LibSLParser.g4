@@ -222,7 +222,7 @@ nameWithType
  * syntax: one.two.three<T>
  */
 typeIdentifier
-   :   (asterisk=ASTERISK)? name=periodSeparatedFullName generic?
+   :   (asterisk=ASTERISK)? name=typeIdentifierName generic?
    ;
 
 generic
@@ -247,7 +247,6 @@ variableAssignment
 
 assignmentRight
    :   expression
-   |   callAutomatonConstructorWithNamedArgs
    ;
 
 callAutomatonConstructorWithNamedArgs
@@ -527,9 +526,14 @@ typeConstraint
     ;
 
 whereConstraints
-    : WHERE typeConstraint (',' typeConstraint)*
+    : WHERE typeConstraint (COMMA typeConstraint)*
     ;
 
 genericBound
    :   bound=(IN | OUT)
+   ;
+
+typeIdentifierName
+   :   periodSeparatedFullName
+   |   primitiveLiteral
    ;

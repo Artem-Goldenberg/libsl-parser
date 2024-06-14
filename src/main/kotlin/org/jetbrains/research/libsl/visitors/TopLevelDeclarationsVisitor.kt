@@ -13,7 +13,7 @@ import org.jetbrains.research.libsl.nodes.VariableWithInitialValue
 import org.jetbrains.research.libsl.nodes.references.builders.AutomatonReferenceBuilder
 import org.jetbrains.research.libsl.utils.PositionGetter
 
-class TopLevelDeclarationsResolver(
+class TopLevelDeclarationsVisitor(
     private val basePath: String,
     private val errorManager: ErrorManager,
     private val globalContext: LslGlobalContext
@@ -50,7 +50,7 @@ class TopLevelDeclarationsResolver(
 
     override fun visitAutomatonDecl(ctx: LibSLParser.AutomatonDeclContext) {
         val automatonContext = AutomatonContext(context)
-        AutomatonResolver(basePath, errorManager, globalContext, automatonContext).visitAutomatonDecl(ctx)
+        AutomatonVisitor(basePath, errorManager, globalContext, automatonContext).visitAutomatonDecl(ctx)
     }
 
     override fun visitFunctionDecl(ctx: LibSLParser.FunctionDeclContext) {
@@ -67,7 +67,23 @@ class TopLevelDeclarationsResolver(
     }
 
     override fun visitTypeDefBlock(ctx: LibSLParser.TypeDefBlockContext) {
-        //TODO ()
+        TypeVisitor(basePath, errorManager, globalContext).visitTypeDefBlock(ctx)
+    }
+
+    override fun visitSimpleSemanticType(ctx: LibSLParser.SimpleSemanticTypeContext) {
+        TypeVisitor(basePath, errorManager, globalContext).visitSimpleSemanticType(ctx)
+    }
+
+    override fun visitEnumSemanticType(ctx: LibSLParser.EnumSemanticTypeContext) {
+        TypeVisitor(basePath, errorManager, globalContext).visitEnumSemanticType(ctx)
+    }
+
+    override fun visitTypealiasStatement(ctx: LibSLParser.TypealiasStatementContext) {
+        TypeVisitor(basePath, errorManager, globalContext).visitTypealiasStatement(ctx)
+    }
+
+    override fun visitEnumBlock(ctx: LibSLParser.EnumBlockContext) {
+        TypeVisitor(basePath, errorManager, globalContext).visitEnumBlock(ctx)
     }
 
     override fun visitVariableDecl(ctx: LibSLParser.VariableDeclContext) {
@@ -78,9 +94,6 @@ class TopLevelDeclarationsResolver(
         val expressionVisitor = ExpressionVisitor(context)
         val initValue = ctx.assignmentRight()?.let { right ->
             when {
-                right.callAutomatonConstructorWithNamedArgs() != null -> {
-                    expressionVisitor.visitCallAutomatonConstructorWithNamedArgs(right.callAutomatonConstructorWithNamedArgs())
-                }
                 right.expression() != null -> {
                     expressionVisitor.visitExpression(right.expression())
                 }

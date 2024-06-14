@@ -542,9 +542,6 @@ class ExpressionVisitor(
     override fun visitAssignmentRight(ctx: AssignmentRightContext): Expression {
         return when {
             ctx.expression() != null -> visitExpression(ctx.expression())
-            ctx.callAutomatonConstructorWithNamedArgs() != null -> {
-                visitCallAutomatonConstructorWithNamedArgs(ctx.callAutomatonConstructorWithNamedArgs())
-            }
             else -> error("unknown assignment right kind")
         }
     }
