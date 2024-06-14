@@ -29,7 +29,8 @@ class TopLevelDeclarationsVisitor(
         ctx.annotationDeclParams()?.annotationDeclParamsPart()?.forEach { parameterCtx ->
             val param = AnnotationArgumentDescriptor(
                 parameterCtx.nameWithType().name.text.extractIdentifier(),
-                processTypeIdentifier(parameterCtx.nameWithType().type),
+//                processTypeIdentifier(parameterCtx.nameWithType().type),
+                processTypeIdentifier(parameterCtx.nameWithType().typesIdentifiersArray().typeIdentifier(0)),
                 parameterCtx.expression()?.let {
                     expressionVisitor.visitExpression(it)
                 },
@@ -89,7 +90,8 @@ class TopLevelDeclarationsVisitor(
     override fun visitVariableDecl(ctx: LibSLParser.VariableDeclContext) {
         val keyword = VariableKind.fromString(ctx.keyword.text)
         val variableName = ctx.nameWithType().name.text.extractIdentifier()
-        val typeRef = processTypeIdentifier(ctx.nameWithType().type)
+//        val typeRef = processTypeIdentifier(ctx.nameWithType().type)
+        val typeRef = processTypeIdentifier(ctx.nameWithType().typesIdentifiersArray().typeIdentifier(0))
 
         val expressionVisitor = ExpressionVisitor(context)
         val initValue = ctx.assignmentRight()?.let { right ->

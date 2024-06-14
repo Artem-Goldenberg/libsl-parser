@@ -173,7 +173,8 @@ class TypeVisitor(
     private fun processVariableDecl(ctx: LibSLParser.VariableDeclContext): Variable {
         val keyword = VariableKind.fromString(ctx.keyword.text)
         val name = ctx.nameWithType().name.asPeriodSeparatedString()
-        val typeReference = processTypeIdentifier(ctx.nameWithType().type)
+//        val typeReference = processTypeIdentifier(ctx.nameWithType().type)
+        val typeReference = processTypeIdentifier(ctx.nameWithType().typesIdentifiersArray().typeIdentifier(0))
         val expressionVisitor = ExpressionVisitor(context)
         val initValue = ctx.assignmentRight()?.let { right -> expressionVisitor.visitAssignmentRight(right) }
 

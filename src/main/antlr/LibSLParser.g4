@@ -215,7 +215,7 @@ variableDecl
    ;
 
 nameWithType
-   :  name=Identifier COLON type=typeIdentifier
+   :  name=Identifier COLON type=typesIdentifiersArray
    ;
 
 /*
@@ -223,6 +223,10 @@ nameWithType
  */
 typeIdentifier
    :   (asterisk=ASTERISK)? name=typeIdentifierName generic?
+   ;
+   
+typesIdentifiersArray
+   :   typeIdentifier (typeConcatination typeIdentifier)*
    ;
 
 generic
@@ -536,4 +540,8 @@ genericBound
 typeIdentifierName
    :   periodSeparatedFullName
    |   primitiveLiteral
+   ;
+   
+typeConcatination
+   :   concatType=(BIT_OR | AMPERSAND)
    ;

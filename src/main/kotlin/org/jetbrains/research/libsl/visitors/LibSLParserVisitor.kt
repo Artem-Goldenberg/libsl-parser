@@ -12,6 +12,7 @@ import org.jetbrains.research.libsl.nodes.references.builders.TypeReferenceBuild
 import org.jetbrains.research.libsl.nodes.references.builders.TypeReferenceBuilder.getReference
 import org.jetbrains.research.libsl.type.*
 import org.jetbrains.research.libsl.utils.PositionGetter
+import org.jetbrains.research.libsl.type.СompositeType
 
 abstract class LibSLParserVisitor<T>(open val context: LslContextBase) : LibSLParserBaseVisitor<T>() {
 
@@ -33,6 +34,13 @@ abstract class LibSLParserVisitor<T>(open val context: LslContextBase) : LibSLPa
         val bound = GenericTypeBound.fromString(typeBound)
 
         return TypeReferenceBuilder.build(typeName, bound, genericReferences, isPointer, context)
+    }
+
+    // TODO: refactor this method
+    internal fun processCompositeType(
+        type: СompositeType
+    ): TypeReference {
+        return TypeReferenceBuilder.build(name = type.name, genericReferences = mutableListOf(), context = context)
     }
 
     fun processGenerics(ctx: MutableList<LibSLParser.TypeArgumentContext>): MutableList<TypeReference> {

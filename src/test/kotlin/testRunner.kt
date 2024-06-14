@@ -165,6 +165,7 @@ private fun checkTypeIsResolved(type: Type) {
         }
         // TODO
         is GenericType -> {}
+        is СompositeType -> {}
     }
 }
 

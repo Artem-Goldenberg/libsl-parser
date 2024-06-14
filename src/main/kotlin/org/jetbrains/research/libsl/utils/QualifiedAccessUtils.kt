@@ -20,6 +20,7 @@ object QualifiedAccessUtils {
             is RealType -> null
             // TODO
             is GenericType -> null
+            is СompositeType -> TODO()
         }
     }
 }

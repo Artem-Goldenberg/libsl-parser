@@ -68,7 +68,8 @@ class AutomatonVisitor(
     override fun visitConstructorVariables(ctx: LibSLParser.ConstructorVariablesContext) {
         val keyword = VariableKind.fromString(ctx.keyword.text)
         val name = ctx.nameWithType().name.asPeriodSeparatedString()
-        val typeReference = processTypeIdentifier(ctx.nameWithType().type)
+        // val typeReference = processTypeIdentifier(ctx.nameWithType().type)
+        val typeReference = processTypeIdentifier(ctx.nameWithType().typesIdentifiersArray().typeIdentifier(0))
         val expressionVisitor = ExpressionVisitor(context)
         val initValue = ctx.assignmentRight()?.let { expressionVisitor.visitAssignmentRight(it) }
 
@@ -189,7 +190,8 @@ class AutomatonVisitor(
     override fun visitVariableDecl(ctx: LibSLParser.VariableDeclContext) {
         val keyword = VariableKind.fromString(ctx.keyword.text)
         val name = ctx.nameWithType().name.asPeriodSeparatedString()
-        val typeReference = processTypeIdentifier(ctx.nameWithType().type)
+//        val typeReference = processTypeIdentifier(ctx.nameWithType().type)
+        val typeReference = processTypeIdentifier(ctx.nameWithType().typesIdentifiersArray().typeIdentifier(0))
         val expressionVisitor = ExpressionVisitor(context)
         val initValue = ctx.assignmentRight()?.let { expressionVisitor.visitAssignmentRight(it) }
 

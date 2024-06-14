@@ -4,6 +4,7 @@ import org.jetbrains.research.libsl.context.LslContextBase
 import org.jetbrains.research.libsl.nodes.*
 import org.jetbrains.research.libsl.nodes.Function
 import org.jetbrains.research.libsl.nodes.helpers.appendGeneric
+import org.jetbrains.research.libsl.nodes.helpers.appendGenericArray
 import org.jetbrains.research.libsl.nodes.helpers.appendWhereSection
 import org.jetbrains.research.libsl.nodes.references.TypeReference
 import org.jetbrains.research.libsl.utils.BackticksPolitics
@@ -313,4 +314,40 @@ data class GenericType(
         return name.hashCode()
     }
 
+}
+
+
+enum class NextCompositionTypesSymbol(val string: String) {
+    UNION("|"), INTERSECTION("&"), NONE("");
+
+    companion object {
+        fun fromString(str: String) = values().first { op -> op.string == str }
+    }
+}
+
+data class СompositeType(
+    override val context: LslContextBase,
+    val types: MutableList<Pair<TypeReference, NextCompositionTypesSymbol>>
+) : Type {
+    // TODO: think about this
+    override val name: String =
+        types.joinToString(separator = " ") { typeReferenceToString(it.first) + (if ("" != it.second.string) (" " + it.second.string) else "") }
+
+    //    types.joinToString()
+//    { it.first.name + " " + it.second.string }
+    override val isPointer: Boolean = false
+    override val generics: MutableList<TypeReference> = mutableListOf()
+
+    override fun dumpToString(): String {
+        return BackticksPolitics.forTypeIdentifier(fullName)
+    }
+
+    override fun toString() = dumpToString()
+
+    private fun typeReferenceToString(typeRef: TypeReference): String {
+        val stringBuilder = java.lang.StringBuilder().append(if (isPointer) "*" else "").append(typeRef.name)
+        if (typeRef.genericReferences.size > 0)
+            appendGenericArray(stringBuilder, typeRef.genericReferences)
+        return stringBuilder.toString()
+    }
 }
