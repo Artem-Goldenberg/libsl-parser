@@ -23,7 +23,7 @@ automaton ListAutomaton (var size: Int | Long | 666, var anyListFlag: Int | Long
     proc compositeTypesProc_1(): 666 {
     }
 
-    proc compositeTypesProc_2(): Int | Long | 666 {
+    proc compositeTypesProc_2(obj: Int | Long, obj2: 5, obj3: Int | Long & Byte): Int | Long | 666 {
     }
     
     fun *.compositeTypes_1(): Int | Long {
@@ -35,7 +35,7 @@ automaton ListAutomaton (var size: Int | Long | 666, var anyListFlag: Int | Long
         result = 4;
     }
     
-    fun *.compositeTypesReturnType_2(): Int | Long | 666 {
+    fun *.compositeTypesReturnType_2(obj: Int | Long, obj2: 5, obj3: Int | Long & Byte): Int | Long | 666 {
     }
     
 }

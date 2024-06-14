@@ -315,7 +315,7 @@ functionDeclArgList
    ;
 
 parameter
-   :   annotationUsage* name=Identifier COLON type=typeIdentifier
+   :   annotationUsage* name=Identifier COLON type=typesIdentifiersArray
    ;
 
 /* annotation

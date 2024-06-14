@@ -177,7 +177,7 @@ class FunctionVisitor(
                 compositeType = buildCompositeType(ctx.procHeader().functionType)
                 context.storeType(compositeType)
             }
-            
+
             returnType = if (!isCompositeType) processTypeIdentifier(
                 ctx.procHeader().functionType.typeIdentifier(0)
             ) else processCompositeType(compositeType)
@@ -224,7 +224,23 @@ class FunctionVisitor(
 
     private fun getDeclArgs(functionDeclArgList: FunctionDeclArgListContext?): List<FunctionArgument> {
         return functionDeclArgList?.parameter()?.mapIndexed { i, parameter ->
-            val typeRef = processTypeIdentifier(parameter.type)
+
+            val isCompositeType = parameter.typesIdentifiersArray().typeIdentifier().size > 1
+            lateinit var compositeType: СompositeType
+            if (isCompositeType) {
+                compositeType = buildCompositeType(parameter.typesIdentifiersArray())
+                context.storeType(compositeType)
+            }
+
+            val typeRef = if (!isCompositeType) processTypeIdentifier(
+                parameter.typesIdentifiersArray().typeIdentifier(0)
+            ) else processCompositeType(compositeType)
+
+
+            // TODO: ??
+            if (isNotStoredLiteralType(globalContext, typeRef, parameter.typesIdentifiersArray().typeIdentifier(0)))
+                globalContext.storeType(LiteralType(context, typeRef.name))
+
             val annotationsReferences = getAnnotationUsages(parameter.annotationUsage())
             val arg = FunctionArgument(
                 parameter.name.text.extractIdentifier(),
