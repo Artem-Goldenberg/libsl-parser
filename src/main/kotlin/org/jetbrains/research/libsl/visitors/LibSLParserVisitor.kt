@@ -4,6 +4,7 @@ import org.jetbrains.research.libsl.LibSLParser
 import org.jetbrains.research.libsl.LibSLParser.TypeIdentifierContext
 import org.jetbrains.research.libsl.LibSLParserBaseVisitor
 import org.jetbrains.research.libsl.context.LslContextBase
+import org.jetbrains.research.libsl.context.LslGlobalContext
 import org.jetbrains.research.libsl.nodes.AnnotationUsage
 import org.jetbrains.research.libsl.nodes.NamedArgumentWithValue
 import org.jetbrains.research.libsl.nodes.references.TypeReference
@@ -205,5 +206,13 @@ abstract class LibSLParserVisitor<T>(open val context: LslContextBase) : LibSLPa
             types.add(Pair(processTypeIdentifier(item), compositionType))
         }
         return СompositeType(context, types)
+    }
+
+    internal fun isNotStoredLiteralType(
+        ctx: LslGlobalContext,
+        typeReference: TypeReference?,
+        type: LibSLParser.TypeIdentifierContext?
+    ): Boolean {
+        return type?.typeIdentifierName()?.primitiveLiteral() != null && typeReference != null && ctx.resolveType(typeReference) == null
     }
 }

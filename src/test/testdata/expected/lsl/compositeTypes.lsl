@@ -20,7 +20,7 @@ automaton ListAutomaton (var size: Int | Long | 666, var anyListFlag: Int | Long
     val defaultSize: Int | Long | 16 | 32 | "sixteen" = 16;
     val defaultAnyFlag: 4 = 4;
 
-    fun *.compositeTypes(): Int {
+    fun *.compositeTypes(): Int | Long {
         var a: Int | Long | Byte = 5;
         var b: Int | Long | Byte = 5;
         var c: Int | Long & Byte = 5;

@@ -7,10 +7,12 @@ import org.jetbrains.research.libsl.errors.ErrorManager
 import org.jetbrains.research.libsl.nodes.*
 import org.jetbrains.research.libsl.nodes.Function
 import org.jetbrains.research.libsl.nodes.references.AutomatonReference
+import org.jetbrains.research.libsl.nodes.references.TypeReference
 import org.jetbrains.research.libsl.nodes.references.builders.AutomatonReferenceBuilder
 import org.jetbrains.research.libsl.nodes.references.builders.AutomatonReferenceBuilder.getReference
 import org.jetbrains.research.libsl.type.GenericType
 import org.jetbrains.research.libsl.type.LiteralType
+import org.jetbrains.research.libsl.type.СompositeType
 import org.jetbrains.research.libsl.utils.PositionGetter
 
 class FunctionVisitor(
@@ -58,9 +60,23 @@ class FunctionVisitor(
         args.forEach { arg -> functionContext.storeFunctionArgument(arg) }
 
         val targetAutomatonRef = args.getFunctionTargetByAnnotation ?: automatonReference
-        val returnType = ctx.functionHeader().functionType?.let { processTypeIdentifier(it) }
 
-        if (isNotStoredLiteralType(globalContext, returnType, ctx.functionHeader().functionType))
+        var returnType: TypeReference? = null
+        if (ctx.functionHeader().functionType != null) {
+            val isCompositeType = ctx.functionHeader().functionType.typeIdentifier().size > 1
+            lateinit var compositeType: СompositeType
+            if (isCompositeType) {
+                compositeType = buildCompositeType(ctx.functionHeader().functionType)
+                context.storeType(compositeType)
+            }
+
+            returnType = if (!isCompositeType) processTypeIdentifier(
+                ctx.functionHeader().functionType.typeIdentifier(0)
+            ) else processCompositeType(compositeType)
+        }
+
+        // TODO: ??
+        if (isNotStoredLiteralType(globalContext, returnType, ctx.functionHeader().functionType?.typeIdentifier(0)))
             globalContext.storeType(LiteralType(context, returnType!!.name))
 
         val funGenericTypes: MutableList<GenericType> = if (ctx.functionHeader().generic() != null)
@@ -152,7 +168,24 @@ class FunctionVisitor(
 
         procGenericTypes.forEach { functionContext.storeFunctionType(it) }
         args.forEach { arg -> functionContext.storeFunctionArgument(arg) }
-        val returnType = ctx.procHeader().functionType?.let { processTypeIdentifier(it) }
+
+        var returnType: TypeReference? = null
+        if (ctx.procHeader().functionType != null) {
+            val isCompositeType = ctx.procHeader().functionType.typeIdentifier().size > 1
+            lateinit var compositeType: СompositeType
+            if (isCompositeType) {
+                compositeType = buildCompositeType(ctx.procHeader().functionType)
+                context.storeType(compositeType)
+            }
+            
+            returnType = if (!isCompositeType) processTypeIdentifier(
+                ctx.procHeader().functionType.typeIdentifier(0)
+            ) else processCompositeType(compositeType)
+        }
+
+        // TODO: ??
+        if (isNotStoredLiteralType(globalContext, returnType, ctx.procHeader().functionType?.typeIdentifier(0)))
+            globalContext.storeType(LiteralType(context, returnType!!.name))
 
         if (returnType != null) {
             val resultVariable = ResultVariable(
