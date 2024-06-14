@@ -21,13 +21,23 @@ automaton ListAutomaton (var size: Int | Long | 666, var anyListFlag: Int | Long
     val defaultSize: Int | Long | 16 | 32 | "sixteen" = 16;
     val defaultAnyFlag: 4 = 4;
 
-    fun *.compositeTypes(): Int | Long {
+    proc compositeTypesProc_1(): 666 {
+    }
+
+    proc compositeTypesProc_2(): Int | Long | 666 {
+    }
+    
+    fun *.compositeTypes_1(): Int | Long {
         var a: Int | Long | Byte = 5;
         var b: Int | Long | Byte = 5;
         var c: Int | Long & Byte = 5;
         var d: array<array<Int>> | Byte = 6;
         var e: array<array<Int>> | Byte | 5 | "anyString" = 5;
         result = 4;
+    }
+    
+    fun *.compositeTypesReturnType_2(): Int | Long | 666 {
+    
     }
     
 }
