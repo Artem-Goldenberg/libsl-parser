@@ -195,4 +195,15 @@ abstract class LibSLParserVisitor<T>(open val context: LslContextBase) : LibSLPa
 
         return genericTypesOrdered.values.filterNotNull().toMutableList()
     }
+
+    internal fun buildCompositeType(ctx: LibSLParser.TypesIdentifiersArrayContext): СompositeType {
+        val types: MutableList<Pair<TypeReference, NextCompositionTypesSymbol>> = mutableListOf()
+        ctx.typeIdentifier().forEachIndexed { index, item ->
+            val compositionType = if (ctx.typeConcatination(index) != null) NextCompositionTypesSymbol.fromString(
+                ctx.typeConcatination(index).text
+            ) else NextCompositionTypesSymbol.NONE
+            types.add(Pair(processTypeIdentifier(item), compositionType))
+        }
+        return СompositeType(context, types)
+    }
 }

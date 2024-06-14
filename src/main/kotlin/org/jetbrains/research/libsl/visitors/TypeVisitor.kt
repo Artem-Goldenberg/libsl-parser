@@ -5,9 +5,11 @@ import org.jetbrains.research.libsl.LibSLParser.EnumSemanticTypeEntryContext
 import org.jetbrains.research.libsl.LibSLParser.FunctionDeclContext
 import org.jetbrains.research.libsl.context.FunctionContext
 import org.jetbrains.research.libsl.context.LslContextBase
+import org.jetbrains.research.libsl.context.LslGlobalContext
 import org.jetbrains.research.libsl.errors.ErrorManager
 import org.jetbrains.research.libsl.nodes.*
 import org.jetbrains.research.libsl.nodes.Function
+import org.jetbrains.research.libsl.nodes.references.TypeReference
 import org.jetbrains.research.libsl.type.*
 import org.jetbrains.research.libsl.utils.PositionGetter
 
@@ -173,8 +175,27 @@ class TypeVisitor(
     private fun processVariableDecl(ctx: LibSLParser.VariableDeclContext): Variable {
         val keyword = VariableKind.fromString(ctx.keyword.text)
         val name = ctx.nameWithType().name.asPeriodSeparatedString()
-//        val typeReference = processTypeIdentifier(ctx.nameWithType().type)
-        val typeReference = processTypeIdentifier(ctx.nameWithType().typesIdentifiersArray().typeIdentifier(0))
+        
+        val isCompositeType = ctx.nameWithType().typesIdentifiersArray().typeIdentifier().size > 1
+        lateinit var compositeType: СompositeType
+        if (isCompositeType) {
+            compositeType = buildCompositeType(ctx.nameWithType().typesIdentifiersArray())
+            context.storeType(compositeType)
+        }
+
+        val typeReference = if (!isCompositeType) processTypeIdentifier(
+            ctx.nameWithType().typesIdentifiersArray().typeIdentifier(0)
+        ) else processCompositeType(compositeType)
+
+        //TODO
+//        if (isNotStoredLiteralType(
+//                context,
+//                typeReference,
+//                ctx.nameWithType().typesIdentifiersArray().typeIdentifier(0)
+//            )
+//        )
+//            context.storeType(LiteralType(context, typeReference.name))
+        
         val expressionVisitor = ExpressionVisitor(context)
         val initValue = ctx.assignmentRight()?.let { right -> expressionVisitor.visitAssignmentRight(right) }
 

@@ -73,7 +73,6 @@ class BlockStatementVisitor(
     override fun visitVariableDecl(ctx: LibSLParser.VariableDeclContext) {
         val keyword = VariableKind.fromString(ctx.keyword.text)
         val name = ctx.nameWithType().name.asPeriodSeparatedString()
-//        val typeReference = processTypeIdentifier(ctx.nameWithType().type)
         
         val isCompositeType = ctx.nameWithType().typesIdentifiersArray().typeIdentifier().size > 1
         lateinit var compositeType: СompositeType
@@ -82,9 +81,10 @@ class BlockStatementVisitor(
             globalContext.storeType(compositeType)
         }
 
-        val typeReference = if (!isCompositeType) processTypeIdentifier(ctx.nameWithType().typesIdentifiersArray().typeIdentifier(0)) else processCompositeType(compositeType)
+        val typeReference = if (!isCompositeType) processTypeIdentifier(
+            ctx.nameWithType().typesIdentifiersArray().typeIdentifier(0)
+        ) else processCompositeType(compositeType)
 
-//        if (isNotStoredLiteralType(globalContext, typeReference, ctx.nameWithType().typeIdentifier()))
         if (isNotStoredLiteralType(
                 globalContext,
                 typeReference,
@@ -117,14 +117,5 @@ class BlockStatementVisitor(
     // Why do we need this fun ?
     override fun visitElseStatement(ctx: LibSLParser.ElseStatementContext) {
         error("Unreachable")
-    }
-
-    fun buildCompositeType(ctx: LibSLParser.TypesIdentifiersArrayContext): СompositeType {
-        val types: MutableList<Pair<TypeReference, NextCompositionTypesSymbol>> = mutableListOf()
-        ctx.typeIdentifier().forEachIndexed { index, item ->
-            val compositionType = if (ctx.typeConcatination(index) != null) NextCompositionTypesSymbol.fromString(ctx.typeConcatination(index).text) else NextCompositionTypesSymbol.NONE
-            types.add(Pair(processTypeIdentifier(item), compositionType))
-        }
-        return СompositeType(context, types)
     }
 }

@@ -10,6 +10,9 @@ import org.jetbrains.research.libsl.nodes.*
 import org.jetbrains.research.libsl.nodes.references.FunctionReference
 import org.jetbrains.research.libsl.nodes.references.TypeReference
 import org.jetbrains.research.libsl.nodes.references.builders.FunctionReferenceBuilder
+import org.jetbrains.research.libsl.type.LiteralType
+import org.jetbrains.research.libsl.type.NextCompositionTypesSymbol
+import org.jetbrains.research.libsl.type.СompositeType
 import org.jetbrains.research.libsl.utils.PositionGetter
 
 class AutomatonVisitor(
@@ -68,8 +71,18 @@ class AutomatonVisitor(
     override fun visitConstructorVariables(ctx: LibSLParser.ConstructorVariablesContext) {
         val keyword = VariableKind.fromString(ctx.keyword.text)
         val name = ctx.nameWithType().name.asPeriodSeparatedString()
-        // val typeReference = processTypeIdentifier(ctx.nameWithType().type)
-        val typeReference = processTypeIdentifier(ctx.nameWithType().typesIdentifiersArray().typeIdentifier(0))
+
+        val isCompositeType = ctx.nameWithType().typesIdentifiersArray().typeIdentifier().size > 1
+        lateinit var compositeType: СompositeType
+        if (isCompositeType) {
+            compositeType = buildCompositeType(ctx.nameWithType().typesIdentifiersArray())
+            globalContext.storeType(compositeType)
+        }
+
+        val typeReference = if (!isCompositeType) processTypeIdentifier(
+            ctx.nameWithType().typesIdentifiersArray().typeIdentifier(0)
+        ) else processCompositeType(compositeType)
+
         val expressionVisitor = ExpressionVisitor(context)
         val initValue = ctx.assignmentRight()?.let { expressionVisitor.visitAssignmentRight(it) }
 
@@ -190,8 +203,26 @@ class AutomatonVisitor(
     override fun visitVariableDecl(ctx: LibSLParser.VariableDeclContext) {
         val keyword = VariableKind.fromString(ctx.keyword.text)
         val name = ctx.nameWithType().name.asPeriodSeparatedString()
-//        val typeReference = processTypeIdentifier(ctx.nameWithType().type)
-        val typeReference = processTypeIdentifier(ctx.nameWithType().typesIdentifiersArray().typeIdentifier(0))
+        
+        val isCompositeType = ctx.nameWithType().typesIdentifiersArray().typeIdentifier().size > 1
+        lateinit var compositeType: СompositeType
+        if (isCompositeType) {
+            compositeType = buildCompositeType(ctx.nameWithType().typesIdentifiersArray())
+            globalContext.storeType(compositeType)
+        }
+
+        val typeReference = if (!isCompositeType) processTypeIdentifier(
+            ctx.nameWithType().typesIdentifiersArray().typeIdentifier(0)
+        ) else processCompositeType(compositeType)
+
+        if (isNotStoredLiteralType(
+                globalContext,
+                typeReference,
+                ctx.nameWithType().typesIdentifiersArray().typeIdentifier(0)
+            )
+        )
+            globalContext.storeType(LiteralType(context, typeReference.name))
+        
         val expressionVisitor = ExpressionVisitor(context)
         val initValue = ctx.assignmentRight()?.let { expressionVisitor.visitAssignmentRight(it) }
 

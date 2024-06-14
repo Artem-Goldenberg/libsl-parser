@@ -10,7 +10,11 @@ import org.jetbrains.research.libsl.nodes.Annotation
 import org.jetbrains.research.libsl.nodes.AnnotationArgumentDescriptor
 import org.jetbrains.research.libsl.nodes.VariableKind
 import org.jetbrains.research.libsl.nodes.VariableWithInitialValue
+import org.jetbrains.research.libsl.nodes.references.TypeReference
 import org.jetbrains.research.libsl.nodes.references.builders.AutomatonReferenceBuilder
+import org.jetbrains.research.libsl.type.LiteralType
+import org.jetbrains.research.libsl.type.NextCompositionTypesSymbol
+import org.jetbrains.research.libsl.type.СompositeType
 import org.jetbrains.research.libsl.utils.PositionGetter
 
 class TopLevelDeclarationsVisitor(
@@ -27,10 +31,29 @@ class TopLevelDeclarationsVisitor(
         val params = mutableListOf<AnnotationArgumentDescriptor>()
 
         ctx.annotationDeclParams()?.annotationDeclParamsPart()?.forEach { parameterCtx ->
+
+            val isCompositeType = parameterCtx.nameWithType().typesIdentifiersArray().typeIdentifier().size > 1
+            lateinit var compositeType: СompositeType
+            if (isCompositeType) {
+                compositeType = buildCompositeType(parameterCtx.nameWithType().typesIdentifiersArray())
+                globalContext.storeType(compositeType)
+            }
+
+            val typeReference = if (!isCompositeType) processTypeIdentifier(
+                parameterCtx.nameWithType().typesIdentifiersArray().typeIdentifier(0)
+            ) else processCompositeType(compositeType)
+
+            if (isNotStoredLiteralType(
+                    globalContext,
+                    typeReference,
+                    parameterCtx.nameWithType().typesIdentifiersArray().typeIdentifier(0)
+                )
+            )
+                globalContext.storeType(LiteralType(context, typeReference.name))
+            
             val param = AnnotationArgumentDescriptor(
                 parameterCtx.nameWithType().name.text.extractIdentifier(),
-//                processTypeIdentifier(parameterCtx.nameWithType().type),
-                processTypeIdentifier(parameterCtx.nameWithType().typesIdentifiersArray().typeIdentifier(0)),
+                typeReference,
                 parameterCtx.expression()?.let {
                     expressionVisitor.visitExpression(it)
                 },
@@ -90,8 +113,25 @@ class TopLevelDeclarationsVisitor(
     override fun visitVariableDecl(ctx: LibSLParser.VariableDeclContext) {
         val keyword = VariableKind.fromString(ctx.keyword.text)
         val variableName = ctx.nameWithType().name.text.extractIdentifier()
-//        val typeRef = processTypeIdentifier(ctx.nameWithType().type)
-        val typeRef = processTypeIdentifier(ctx.nameWithType().typesIdentifiersArray().typeIdentifier(0))
+        
+        val isCompositeType = ctx.nameWithType().typesIdentifiersArray().typeIdentifier().size > 1
+        lateinit var compositeType: СompositeType
+        if (isCompositeType) {
+            compositeType = buildCompositeType(ctx.nameWithType().typesIdentifiersArray())
+            globalContext.storeType(compositeType)
+        }
+
+        val typeReference = if (!isCompositeType) processTypeIdentifier(
+            ctx.nameWithType().typesIdentifiersArray().typeIdentifier(0)
+        ) else processCompositeType(compositeType)
+
+        if (isNotStoredLiteralType(
+                globalContext,
+                typeReference,
+                ctx.nameWithType().typesIdentifiersArray().typeIdentifier(0)
+            )
+        )
+            globalContext.storeType(LiteralType(context, typeReference.name))
 
         val expressionVisitor = ExpressionVisitor(context)
         val initValue = ctx.assignmentRight()?.let { right ->
@@ -107,7 +147,7 @@ class TopLevelDeclarationsVisitor(
         val variable = VariableWithInitialValue(
             keyword,
             variableName,
-            typeRef,
+            typeReference,
             annotationUsages,
             initValue,
             posGetter.getCtxPosition(fileName, ctx)
