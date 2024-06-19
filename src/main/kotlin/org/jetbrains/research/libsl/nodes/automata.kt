@@ -2,7 +2,7 @@ package org.jetbrains.research.libsl.nodes
 
 import org.jetbrains.research.libsl.context.AutomatonContext
 import org.jetbrains.research.libsl.nodes.references.FunctionReference
-import org.jetbrains.research.libsl.nodes.references.TypeReference
+import org.jetbrains.research.libsl.type.Type
 import org.jetbrains.research.libsl.type.Type.Companion.UNRESOLVED_TYPE_SYMBOL
 import org.jetbrains.research.libsl.utils.BackticksPolitics
 import org.jetbrains.research.libsl.utils.EntityPosition
@@ -10,7 +10,7 @@ import org.jetbrains.research.libsl.utils.EntityPosition
 open class Automaton(
     open val isConcept: Boolean,
     open val name: String,
-    open val typeReference: TypeReference,
+    open val typeReference: Type,
     open val annotationUsages: MutableList<AnnotationUsage> = mutableListOf(),
     open val implementedConcepts: MutableList<ImplementedConcept> = mutableListOf(),
     open val states: MutableList<State> = mutableListOf(),
@@ -80,7 +80,7 @@ open class Automaton(
 data class AutomatonConcept(
     override val isConcept: Boolean,
     override val name: String,
-    override val typeReference: TypeReference,
+    override val typeReference: Type,
     override val annotationUsages: MutableList<AnnotationUsage> = mutableListOf(),
     override val implementedConcepts: MutableList<ImplementedConcept> = mutableListOf(),
     override val states: MutableList<State> = mutableListOf(),
@@ -110,7 +110,7 @@ data class AutomatonConcept(
         if (constructorVariables.isNotEmpty()) {
             append(" (${constructorVariables.joinToString(", ") { v -> v.dumpToString() } })")
         }
-        append(" : ${BackticksPolitics.forPeriodSeparated(typeReference.resolve()?.fullName ?: UNRESOLVED_TYPE_SYMBOL)}")
+//        append(" : ${BackticksPolitics.forPeriodSeparated(typeReference.resolve()?.fullName ?: UNRESOLVED_TYPE_SYMBOL)}")
 
         if(implementedConcepts.isNotEmpty()) {
             append(" implements ")

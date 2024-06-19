@@ -42,6 +42,68 @@ sealed interface Type : IPrinter {
     companion object {
         const val UNRESOLVED_TYPE_SYMBOL = "`<UNRESOLVED_TYPE>`"
     }
+
+    fun resolve(): Type? {
+        return resolveArrayType() ?: resolveListType() ?: resolveMapType() ?: resolveNullType()
+        ?: return context.resolveType(this)
+    }
+
+    private fun resolveArrayType(): ArrayType? {
+        if (name != "array")
+            return null
+        generics.forEach { it.resolve() }
+        return ArrayType(isPointer, generics, context)
+    }
+
+    private fun resolveListType(): ListType? {
+        if (name != "list")
+            return null
+        generics.forEach { it.resolve() }
+        return ListType(isPointer, generics, context)
+    }
+
+    private fun resolveMapType(): MapType? {
+        if (name != "map")
+            return null
+        generics.forEach { it.resolve() }
+        return MapType(isPointer, generics, context)
+    }
+
+    // TODO: delete from this and add to global types;
+    private fun resolveNullType(): NullType? {
+        if (name != "null") {
+            return null
+        }
+        return NullType(false, mutableListOf(), context)
+    }
+
+    fun isReferenceMatchWithNode(node: Type): Boolean {
+        if (this.name != node.name) {
+            return false
+        }
+
+        if (this.isPointer != node.isPointer) {
+            return false
+        }
+
+        if (!areGenericsMatch(node.generics)) {
+            return false
+        }
+
+        return true
+    }
+
+    private fun areGenericsMatch(generics: MutableList<TypeReference>): Boolean {
+        if (this.generics.isEmpty() && generics.isEmpty()) {
+            return true
+        }
+
+        if (this.generics.isEmpty() || generics.isEmpty()) {
+            return false
+        }
+
+        return true
+    }
 }
 
 sealed interface LibslType : Type
@@ -349,5 +411,47 @@ data class СompositeType(
         if (typeRef.genericReferences.size > 0)
             appendGenericArray(stringBuilder, typeRef.genericReferences)
         return stringBuilder.toString()
+    }
+}
+
+data class UnionTypeExpression(
+    val left: Type,
+    val right: Type,
+    override val context: LslContextBase
+) : Type {
+    override val name = "|"
+    override val isPointer = false
+    override val generics = mutableListOf<TypeReference>()
+
+    override val fullName: String
+        get() = buildString {
+            append(left.fullName)
+            append(" | ")
+            append(right.fullName)
+        }
+
+    override fun dumpToString(): String {
+        return fullName
+    }
+}
+
+data class IntersectionTypeExpression(
+    val left: Type,
+    val right: Type,
+    override val context: LslContextBase
+) : Type {
+    override val name = "&"
+    override val isPointer = false
+    override val generics = mutableListOf<TypeReference>()
+
+    override val fullName: String
+        get() = buildString {
+            append(left.fullName)
+            append(" & ")
+            append(right.fullName)
+        }
+
+    override fun dumpToString(): String {
+        return fullName
     }
 }

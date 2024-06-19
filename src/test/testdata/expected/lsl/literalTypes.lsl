@@ -3,6 +3,12 @@ library literalTypes;
 typealias Int = int32;
 typealias Five = 5;
 automaton A : Int {
+
+    val defaultAnyFlag: 4 = 4;
+    
+    proc compositeTypesProc_1(): 666 {
+    }
+    
     fun *.localVariablesWithLiteralTypes(): 6 {
         var a: 5;
         var b: 5;

@@ -153,7 +153,7 @@ actionParameter
  */
 automatonDecl
    :   annotationUsage* AUTOMATON CONCEPT? name=periodSeparatedFullName (L_BRACKET constructorVariables* R_BRACKET)?
-   COLON type=typesIdentifiersArray implementedConcepts*
+   COLON type=typeExpression implementedConcepts*
    L_BRACE automatonStatement* R_BRACE
    ;
 
@@ -221,6 +221,13 @@ nameWithType
 /*
  * syntax: one.two.three<T>
  */
+ 
+typeExpression
+   :   typeIdentifier
+   |   typeExpression AMPERSAND  typeExpression
+   |   typeExpression BIT_OR typeExpression
+   ;
+ 
 typeIdentifier
    :   (asterisk=ASTERISK)? name=typeIdentifierName generic?
    ;

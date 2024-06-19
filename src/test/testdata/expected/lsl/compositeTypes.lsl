@@ -15,13 +15,9 @@ annotation Throws(
     exceptionTypes: Int | Long = 0
 );
 
-automaton ListAutomaton (var size: Int | Long | 666, var anyListFlag: Int | Long & Byte) : Int | Long {
+automaton ListAutomaton (var size: Int | Long | 666, var anyListFlag: Int | Long & Byte) : Int | Long & Byte {
 
     val defaultSize: Int | Long | 16 | 32 | "sixteen" = 16;
-    val defaultAnyFlag: 4 = 4;
-
-    proc compositeTypesProc_1(): 666 {
-    }
 
     proc compositeTypesProc_2(obj: Int | Long, obj2: 5, obj3: Int | Long & Byte): Int | Long | 666 {
     }

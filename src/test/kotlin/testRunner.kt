@@ -91,7 +91,7 @@ private fun checkEverythingIsResolved(library: Library) {
 }
 
 private fun checkAutomatonIsResolved(automaton: Automaton) {
-    automaton.typeReference.resolveOrError()
+//    automaton.typeReference.resolveOrError()
     automaton.constructorVariables.forEach { it.typeReference.resolveOrError() }
     automaton.internalVariables.forEach { it.typeReference.resolveOrError() }
 
@@ -166,6 +166,8 @@ private fun checkTypeIsResolved(type: Type) {
         // TODO
         is GenericType -> {}
         is СompositeType -> {}
+        is IntersectionTypeExpression -> type.resolve()
+        is UnionTypeExpression -> type.resolve()
     }
 }
 

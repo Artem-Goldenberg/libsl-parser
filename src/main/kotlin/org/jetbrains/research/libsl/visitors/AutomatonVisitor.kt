@@ -11,7 +11,6 @@ import org.jetbrains.research.libsl.nodes.references.FunctionReference
 import org.jetbrains.research.libsl.nodes.references.TypeReference
 import org.jetbrains.research.libsl.nodes.references.builders.FunctionReferenceBuilder
 import org.jetbrains.research.libsl.type.LiteralType
-import org.jetbrains.research.libsl.type.NextCompositionTypesSymbol
 import org.jetbrains.research.libsl.type.СompositeType
 import org.jetbrains.research.libsl.utils.PositionGetter
 
@@ -27,30 +26,20 @@ class AutomatonVisitor(
 
     override fun visitAutomatonDecl(ctx: LibSLParser.AutomatonDeclContext) {
         val name = ctx.name.asPeriodSeparatedString()
+        val type = TypeVisitor(basePath, errorManager, globalContext).visitTypeExpression(ctx.typeExpression())
+        globalContext.storeType(type)
 
-        val isCompositeType = ctx.typesIdentifiersArray().typeIdentifier().size > 1
-        lateinit var compositeType: СompositeType
-        if (isCompositeType) {
-            compositeType = buildCompositeType(ctx.typesIdentifiersArray())
-            context.storeType(compositeType)
-        }
-
-        val typeReference = if (!isCompositeType) processTypeIdentifier(
-            ctx.typesIdentifiersArray().typeIdentifier(0)
-        ) else processCompositeType(compositeType)
-
-
-        // TODO: ??
-        if (isNotStoredLiteralType(globalContext, typeReference, ctx.typesIdentifiersArray().typeIdentifier(0)))
-            globalContext.storeType(LiteralType(context, typeReference.name))
-        
+//        // TODO: ??
+//        if (isNotStoredLiteralType(globalContext, typeReference, ctx.typesIdentifiersArray().typeIdentifier(0)))
+//            globalContext.storeType(LiteralType(context, typeReference.name))
+//        
         val annotationReferences = getAnnotationUsages(ctx.annotationUsage())
 
         if (ctx.CONCEPT() == null) {
             buildingAutomaton = Automaton(
                 isConcept = false,
                 name,
-                typeReference,
+                type,
                 annotationReferences,
                 context = automatonContext,
                 entityPosition = posGetter.getCtxPosition(fileName, ctx)
@@ -59,7 +48,7 @@ class AutomatonVisitor(
             buildingAutomaton = AutomatonConcept(
                 isConcept = true,
                 name,
-                typeReference,
+                type,
                 annotationReferences,
                 context = automatonContext,
                 entityPosition = posGetter.getCtxPosition(fileName, ctx)
@@ -219,7 +208,7 @@ class AutomatonVisitor(
     override fun visitVariableDecl(ctx: LibSLParser.VariableDeclContext) {
         val keyword = VariableKind.fromString(ctx.keyword.text)
         val name = ctx.nameWithType().name.asPeriodSeparatedString()
-        
+
         val isCompositeType = ctx.nameWithType().typesIdentifiersArray().typeIdentifier().size > 1
         lateinit var compositeType: СompositeType
         if (isCompositeType) {
@@ -238,7 +227,7 @@ class AutomatonVisitor(
             )
         )
             globalContext.storeType(LiteralType(context, typeReference.name))
-        
+
         val expressionVisitor = ExpressionVisitor(context)
         val initValue = ctx.assignmentRight()?.let { expressionVisitor.visitAssignmentRight(it) }
 

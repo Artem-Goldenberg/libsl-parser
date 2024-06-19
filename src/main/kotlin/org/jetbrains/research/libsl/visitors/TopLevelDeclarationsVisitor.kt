@@ -10,10 +10,8 @@ import org.jetbrains.research.libsl.nodes.Annotation
 import org.jetbrains.research.libsl.nodes.AnnotationArgumentDescriptor
 import org.jetbrains.research.libsl.nodes.VariableKind
 import org.jetbrains.research.libsl.nodes.VariableWithInitialValue
-import org.jetbrains.research.libsl.nodes.references.TypeReference
 import org.jetbrains.research.libsl.nodes.references.builders.AutomatonReferenceBuilder
 import org.jetbrains.research.libsl.type.LiteralType
-import org.jetbrains.research.libsl.type.NextCompositionTypesSymbol
 import org.jetbrains.research.libsl.type.СompositeType
 import org.jetbrains.research.libsl.utils.PositionGetter
 

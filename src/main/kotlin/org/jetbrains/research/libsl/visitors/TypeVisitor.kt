@@ -15,11 +15,11 @@ class TypeVisitor(
     private val basePath: String,
     private val errorManager: ErrorManager,
     context: LslContextBase
-) : LibSLParserVisitor<Unit>(context) {
+) : LibSLParserVisitor<Type>(context) {
     private val fileName = context.fileName
     private val posGetter = PositionGetter()
 
-    override fun visitSimpleSemanticType(ctx: LibSLParser.SimpleSemanticTypeContext) {
+    override fun visitSimpleSemanticType(ctx: LibSLParser.SimpleSemanticTypeContext): Type {
         val typeName = ctx.semanticName.name.periodSeparatedFullName().asPeriodSeparatedString()
         val annotationReferences = getAnnotationUsages(ctx.annotationUsage())
         val realNameCtx = ctx.realName
@@ -38,9 +38,10 @@ class TypeVisitor(
         if (type !in context.getAllTypes()) {
             context.storeType(type)
         }
+        return type
     }
 
-    override fun visitEnumSemanticType(ctx: LibSLParser.EnumSemanticTypeContext) {
+    override fun visitEnumSemanticType(ctx: LibSLParser.EnumSemanticTypeContext): Type {
         val typeName = ctx.semanticName.asPeriodSeparatedString()
         val realTypeCtx = ctx.realName
         val originType = getRealTypeOrArray(realTypeCtx)
@@ -63,6 +64,7 @@ class TypeVisitor(
         if (type !in context.getAllTypes()) {
             context.storeType(type)
         }
+        return type
     }
 
     private fun processBlockTypeStatements(statementsContexts: List<EnumSemanticTypeEntryContext>): Map<String, Atomic> {
@@ -78,7 +80,7 @@ class TypeVisitor(
         return entryName to atomicValue
     }
 
-    override fun visitTypealiasStatement(ctx: LibSLParser.TypealiasStatementContext) {
+    override fun visitTypealiasStatement(ctx: LibSLParser.TypealiasStatementContext): Type {
         val name = ctx.left.typeIdentifierName().periodSeparatedFullName().asPeriodSeparatedString()
         val originalTypeReference = processTypeIdentifier(ctx.right)
         val annotationReferences = getAnnotationUsages(ctx.annotationUsage())
@@ -92,9 +94,10 @@ class TypeVisitor(
         )
 
         context.storeType(type)
+        return type
     }
 
-    override fun visitEnumBlock(ctx: LibSLParser.EnumBlockContext) {
+    override fun visitEnumBlock(ctx: LibSLParser.EnumBlockContext): Type {
         val name = ctx.typeIdentifier().text.extractIdentifier()
         val statementsContexts = ctx.enumBlockStatement()
         val statements = processEnumStatements(statementsContexts)
@@ -109,6 +112,7 @@ class TypeVisitor(
         )
 
         context.storeType(type)
+        return type
     }
 
     private fun processEnumStatements(statements: List<LibSLParser.EnumBlockStatementContext>): Map<String, Atomic> {
@@ -125,7 +129,7 @@ class TypeVisitor(
         return name to atomic
     }
 
-    override fun visitTypeDefBlock(ctx: LibSLParser.TypeDefBlockContext) {
+    override fun visitTypeDefBlock(ctx: LibSLParser.TypeDefBlockContext): Type {
         val name = ctx.type.name.periodSeparatedFullName().asPeriodSeparatedString()
         val isTypeIdentifier = ctx.targetType()?.typeIdentifier()?.name?.text
         val forTypeList = mutableListOf<String>()
@@ -165,6 +169,7 @@ class TypeVisitor(
         if (type !in context.getAllTypes()) {
             context.storeType(type)
         }
+        return type
     }
 
     private val LibSLParser.TypeDefBlockContext.typeDefBlockGenerics: MutableList<GenericType>
@@ -242,6 +247,41 @@ class TypeVisitor(
             isStatic = isStatic,
             isMethod = isMethod,
             entityPosition = posGetter.getCtxPosition(fileName, ctx)
+        )
+    }
+
+    override fun visitTypeExpression(ctx: LibSLParser.TypeExpressionContext): Type {
+        return when {
+            ctx.typeIdentifier() != null -> {
+                context.resolveType(processTypeIdentifier(ctx.typeIdentifier())) ?: error("Type wasn't resolving")
+            }
+            ctx.AMPERSAND() != null -> {
+                processIntersection(ctx)
+            }
+            ctx.BIT_OR() != null -> {
+                processUnion(ctx)
+            }
+            else -> error("unknown expression type")
+        }
+    }
+
+    private fun processIntersection(ctx: LibSLParser.TypeExpressionContext): Type {
+        val left = visitTypeExpression(ctx.typeExpression(0))
+        val right = visitTypeExpression(ctx.typeExpression(1))
+        return IntersectionTypeExpression(
+            left,
+            right,
+            context
+        )
+    }
+
+    private fun processUnion(ctx: LibSLParser.TypeExpressionContext): Type {
+        val left = visitTypeExpression(ctx.typeExpression(0))
+        val right = visitTypeExpression(ctx.typeExpression(1))
+        return UnionTypeExpression(
+            left,
+            right,
+            context
         )
     }
 
