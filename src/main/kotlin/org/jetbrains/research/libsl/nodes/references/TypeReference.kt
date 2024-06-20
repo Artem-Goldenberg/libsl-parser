@@ -15,28 +15,28 @@ open class TypeReference(
         ?: context.resolveType(this)
     }
 
-    private fun resolveArrayType(): ArrayType? {
+    protected fun resolveArrayType(): ArrayType? {
         if (name != "array")
             return null
         genericReferences.forEach { it.resolve() }
         return ArrayType(isPointer, genericReferences, context)
     }
 
-    private fun resolveListType(): ListType? {
+    protected fun resolveListType(): ListType? {
         if (name != "list")
             return null
         genericReferences.forEach { it.resolve() }
         return ListType(isPointer, genericReferences, context)
     }
 
-    private fun resolveMapType(): MapType? {
+    protected fun resolveMapType(): MapType? {
         if (name != "map")
             return null
         genericReferences.forEach { it.resolve() }
         return MapType(isPointer, genericReferences, context)
     }
 
-    private fun resolveNullType(): NullType? {
+    protected fun resolveNullType(): NullType? {
         if (name != "null") {
             return null
         }
@@ -114,4 +114,31 @@ open class TypeReference(
         result = 31 * result + context.hashCode()
         return result
     }
+}
+
+data class UnionTypeExpression(
+    val left: TypeReference,
+    val right: TypeReference,
+    override val context: LslContextBase
+) : TypeReference(name = "|", isPointer = false, genericReferences = mutableListOf(), context = context) {
+
+    
+}
+
+data class IntersectionTypeExpression(
+    val left: TypeReference,
+    val right: TypeReference,
+    override val context: LslContextBase
+) : TypeReference(name = "&", isPointer = false, genericReferences = mutableListOf(), context = context) {
+
+//    val fullName: String
+//        get() = buildString {
+//            append(left.fullName)
+//            append(" & ")
+//            append(right.fullName)
+//        }
+//
+//    override fun dumpToString(): String {
+//        return fullName
+//    }
 }

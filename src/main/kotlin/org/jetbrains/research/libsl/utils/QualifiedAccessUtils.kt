@@ -21,6 +21,8 @@ object QualifiedAccessUtils {
             // TODO
             is GenericType -> null
             is СompositeType -> TODO()
+            is IntersectionTypeExpression -> TODO()
+            is UnionTypeExpression -> TODO()
         }
     }
 }

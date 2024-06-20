@@ -26,8 +26,8 @@ class AutomatonVisitor(
 
     override fun visitAutomatonDecl(ctx: LibSLParser.AutomatonDeclContext) {
         val name = ctx.name.asPeriodSeparatedString()
-        val type = TypeVisitor(basePath, errorManager, globalContext).visitTypeExpression(ctx.typeExpression())
-        globalContext.storeType(type)
+        val typeReference = TypeVisitor(basePath, errorManager, globalContext).visitTypeExpression(ctx.typeExpression())
+//        globalContext.storeType(type)
 
 //        // TODO: ??
 //        if (isNotStoredLiteralType(globalContext, typeReference, ctx.typesIdentifiersArray().typeIdentifier(0)))
@@ -39,7 +39,7 @@ class AutomatonVisitor(
             buildingAutomaton = Automaton(
                 isConcept = false,
                 name,
-                type,
+                typeReference,
                 annotationReferences,
                 context = automatonContext,
                 entityPosition = posGetter.getCtxPosition(fileName, ctx)
@@ -48,7 +48,7 @@ class AutomatonVisitor(
             buildingAutomaton = AutomatonConcept(
                 isConcept = true,
                 name,
-                type,
+                typeReference,
                 annotationReferences,
                 context = automatonContext,
                 entityPosition = posGetter.getCtxPosition(fileName, ctx)
