@@ -14,6 +14,8 @@ object TypeReferenceBuilder {
         isPointer: Boolean = false,
         context: LslContextBase
     ): TypeReference {
+        if (isLiteral(name))
+            return buildLiteral(name, context)
         return TypeReference(name, isPointer, typeBound, genericReferences, context)
     }
 
@@ -28,8 +30,19 @@ object TypeReferenceBuilder {
         context: LslContextBase,
         typeBound: GenericTypeBound = GenericTypeBound.EMPTY
     ): TypeReference {
-        if (this.name.first().isDigit())
+        if (isLiteral(this.name))
             return buildLiteral(this.name, context)
         return build(this.name, typeBound, this.generics, this.isPointer, context)
+    }
+
+    fun isLiteral(name: String): Boolean {
+        val refNameFirstChar = name.first()
+        if (refNameFirstChar.isDigit())
+            return true
+        else if (refNameFirstChar == '\"')
+            return true
+        else if (refNameFirstChar == '\'')
+            return true
+        return false
     }
 }

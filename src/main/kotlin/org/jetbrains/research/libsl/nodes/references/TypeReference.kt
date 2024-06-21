@@ -5,9 +5,9 @@ import org.jetbrains.research.libsl.type.*
 
 open class TypeReference(
     open val name: String,
-    val isPointer: Boolean,
-    var typeBound: GenericTypeBound = GenericTypeBound.EMPTY,
-    val genericReferences: MutableList<TypeReference>,
+    open val isPointer: Boolean,
+    open var typeBound: GenericTypeBound = GenericTypeBound.EMPTY,
+    open val genericReferences: MutableList<TypeReference>,
     override val context: LslContextBase
 ) : LslReference<Type, TypeReference> {
     override fun resolve(): Type? {
@@ -120,30 +120,23 @@ data class UnionTypeExpression(
     val left: TypeReference,
     val right: TypeReference,
     override val context: LslContextBase
-) : TypeReference(name = "|", isPointer = false, genericReferences = mutableListOf(), context = context) {
-
-
-}
+) : TypeReference(name = "|", isPointer = false, genericReferences = mutableListOf(), context = context)
 
 data class IntersectionTypeExpression(
     val left: TypeReference,
     val right: TypeReference,
     override val context: LslContextBase
-) : TypeReference(name = "&", isPointer = false, genericReferences = mutableListOf(), context = context) {
-
-//    val fullName: String
-//        get() = buildString {
-//            append(left.fullName)
-//            append(" & ")
-//            append(right.fullName)
-//        }
-//
-//    override fun dumpToString(): String {
-//        return fullName
-//    }
-}
+) : TypeReference(name = "&", isPointer = false, genericReferences = mutableListOf(), context = context)
 
 data class LiteralTypeReference(
     override val name: String,
     override val context: LslContextBase
 ) : TypeReference(name = name, isPointer = false, genericReferences = mutableListOf(), context = context)
+
+
+data class GenericTypeReference(
+    override val name: String,
+    override val context: LslContextBase,
+    override var typeBound: GenericTypeBound = GenericTypeBound.EMPTY,
+    override val genericReferences: MutableList<TypeReference>,
+) : TypeReference(name = name, isPointer = false, genericReferences = genericReferences, context = context)

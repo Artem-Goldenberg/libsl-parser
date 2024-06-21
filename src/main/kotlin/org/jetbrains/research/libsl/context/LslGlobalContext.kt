@@ -56,7 +56,7 @@ class LslGlobalContext(fileName: String) : LslContextBase(fileName) {
 
     override fun resolveType(reference: TypeReference): Type? {
         // #question: I suppose we don't need to save in GlobalContext literal types (or not) ? 
-        if (isLiteral(reference))
+        if (reference is LiteralTypeReference)
             return LiteralType(context = reference.context, name = reference.name)
         return resolveType(reference, setOf(this))
     }
@@ -128,14 +128,4 @@ class LslGlobalContext(fileName: String) : LslContextBase(fileName) {
         return this === other
     }
 
-    fun isLiteral(reference: TypeReference): Boolean {
-        val refNameFirstChar = reference.name.first()
-        if (refNameFirstChar.isDigit())
-            return true
-        else if (refNameFirstChar == '\"')
-            return true
-        else if (refNameFirstChar == '\'')
-            return true
-        return false
-    }
 }
