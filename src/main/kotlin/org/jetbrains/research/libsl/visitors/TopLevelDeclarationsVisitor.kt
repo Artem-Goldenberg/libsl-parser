@@ -14,11 +14,11 @@ import org.jetbrains.research.libsl.nodes.references.builders.AutomatonReference
 import org.jetbrains.research.libsl.utils.PositionGetter
 
 class TopLevelDeclarationsVisitor(
+    private val fileName: String,
     private val basePath: String,
     private val errorManager: ErrorManager,
     private val globalContext: LslGlobalContext
 ) : LibSLParserVisitor<Unit>(globalContext) {
-    private val fileName = context.fileName
     private val posGetter = PositionGetter()
 
     override fun visitAnnotationDecl(ctx: LibSLParser.AnnotationDeclContext) {
@@ -28,7 +28,8 @@ class TopLevelDeclarationsVisitor(
 
         ctx.annotationDeclParams()?.annotationDeclParamsPart()?.forEach { parameterCtx ->
 
-            val typeReference = TypeVisitor(globalContext).visitTypeExpression(parameterCtx.nameWithType().typeExpression())
+            val typeReference =
+                TypeVisitor(globalContext).visitTypeExpression(parameterCtx.nameWithType().typeExpression())
             val param = AnnotationArgumentDescriptor(
                 parameterCtx.nameWithType().name.text.extractIdentifier(),
                 typeReference,
@@ -52,7 +53,7 @@ class TopLevelDeclarationsVisitor(
 
     override fun visitAutomatonDecl(ctx: LibSLParser.AutomatonDeclContext) {
         val automatonContext = AutomatonContext(context)
-        AutomatonVisitor(basePath, errorManager, globalContext, automatonContext).visitAutomatonDecl(ctx)
+        AutomatonVisitor(fileName, basePath, errorManager, globalContext, automatonContext).visitAutomatonDecl(ctx)
     }
 
     override fun visitFunctionDecl(ctx: LibSLParser.FunctionDeclContext) {
@@ -65,7 +66,13 @@ class TopLevelDeclarationsVisitor(
         }
 
         val functionContext = FunctionContext(parentContext)
-        FunctionVisitor(functionContext, parentAutomaton = null, globalContext, errorManager).visitFunctionDecl(ctx)
+        FunctionVisitor(
+            fileName,
+            functionContext,
+            parentAutomaton = null,
+            globalContext,
+            errorManager
+        ).visitFunctionDecl(ctx)
     }
 
     override fun visitTypeDefBlock(ctx: LibSLParser.TypeDefBlockContext) {

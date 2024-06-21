@@ -4,6 +4,7 @@ import org.jetbrains.research.libsl.LibSLParser.*
 import org.jetbrains.research.libsl.context.FunctionContext
 import org.jetbrains.research.libsl.context.LslGlobalContext
 import org.jetbrains.research.libsl.errors.ErrorManager
+import org.jetbrains.research.libsl.errors.WhereSectionGenericWasMissed
 import org.jetbrains.research.libsl.nodes.*
 import org.jetbrains.research.libsl.nodes.Function
 import org.jetbrains.research.libsl.nodes.references.AutomatonReference
@@ -14,13 +15,13 @@ import org.jetbrains.research.libsl.type.GenericType
 import org.jetbrains.research.libsl.utils.PositionGetter
 
 class FunctionVisitor(
+    private val fileName: String,
     private val functionContext: FunctionContext,
     private var parentAutomaton: Automaton?,
     private val globalContext: LslGlobalContext,
     val errorManager: ErrorManager
 ) : LibSLParserVisitor<Unit>(functionContext) {
     private lateinit var buildingFunction: Function
-    private val fileName = context.fileName
     private val posGetter = PositionGetter()
 
     override fun visitFunctionDecl(ctx: FunctionDeclContext) {
@@ -269,7 +270,8 @@ class FunctionVisitor(
 
 
     private val FunctionDeclContext.functionGenerics: MutableList<GenericType>
-        get() = getGenericTypes(this.functionHeader().generic(), this.functionHeader().whereConstraints(), context)
+        get() = if (this.functionHeader().whereConstraints() == null) error(WhereSectionGenericWasMissed(posGetter.getCtxPosition(fileName, this)).toString()) else
+            getGenericTypes(this.functionHeader().generic(), this.functionHeader().whereConstraints(), context)
 
     private val ProcDeclContext.procGenerics: MutableList<GenericType>
         get() = getGenericTypes(this.procHeader().generic(), this.procHeader().whereConstraints(), context)

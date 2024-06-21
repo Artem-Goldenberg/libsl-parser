@@ -27,7 +27,7 @@ class LibrarySpecificationVisitor(
 
     fun processFile(file: FileContext, library: Library): Library {
 
-        TopLevelDeclarationsVisitor(basePath, errorManager, globalContext).visitFile(file)
+        TopLevelDeclarationsVisitor(fileName, basePath, errorManager, globalContext).visitFile(file)
 
         file.globalStatement().forEach { visitGlobalStatement(it) }
 
