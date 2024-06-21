@@ -6,12 +6,7 @@ import org.antlr.v4.runtime.VocabularyImpl
 import org.antlr.v4.runtime.tree.TerminalNode
 import org.jetbrains.research.libsl.LibSLParser
 import org.jetbrains.research.libsl.LibSLParser.PeriodSeparatedFullNameContext
-import org.jetbrains.research.libsl.context.LslContextBase
-import org.jetbrains.research.libsl.context.LslGlobalContext
 import org.jetbrains.research.libsl.errors.Position
-import org.jetbrains.research.libsl.nodes.references.TypeReference
-import org.jetbrains.research.libsl.type.NextCompositionTypesSymbol
-import org.jetbrains.research.libsl.type.СompositeType
 
 
 fun String.removeDoubleQuotes(): String = removeSurrounding("\"", "\"")

@@ -7,9 +7,9 @@ import org.jetbrains.research.libsl.context.FunctionContext
 import org.jetbrains.research.libsl.context.LslContextBase
 import org.jetbrains.research.libsl.nodes.*
 import org.jetbrains.research.libsl.nodes.Function
-import org.jetbrains.research.libsl.nodes.references.IntersectionTypeExpression
+import org.jetbrains.research.libsl.nodes.references.IntersectionExpressionTypeReference
 import org.jetbrains.research.libsl.nodes.references.TypeReference
-import org.jetbrains.research.libsl.nodes.references.UnionTypeExpression
+import org.jetbrains.research.libsl.nodes.references.UnionExpressionTypeReference
 import org.jetbrains.research.libsl.type.*
 import org.jetbrains.research.libsl.utils.PositionGetter
 
@@ -251,7 +251,7 @@ class TypeVisitor(
     private fun processIntersection(ctx: LibSLParser.TypeExpressionContext): TypeReference {
         val left = visitTypeExpression(ctx.typeExpression(0))
         val right = visitTypeExpression(ctx.typeExpression(1))
-        return IntersectionTypeExpression(
+        return IntersectionExpressionTypeReference(
             left,
             right,
             context
@@ -261,7 +261,7 @@ class TypeVisitor(
     private fun processUnion(ctx: LibSLParser.TypeExpressionContext): TypeReference {
         val left = visitTypeExpression(ctx.typeExpression(0))
         val right = visitTypeExpression(ctx.typeExpression(1))
-        return UnionTypeExpression(
+        return UnionExpressionTypeReference(
             left,
             right,
             context

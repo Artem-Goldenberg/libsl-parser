@@ -2,9 +2,9 @@ package org.jetbrains.research.libsl.nodes.helpers
 
 import org.jetbrains.research.libsl.context.LslContextBase
 import org.jetbrains.research.libsl.nodes.references.GenericTypeReference
-import org.jetbrains.research.libsl.nodes.references.IntersectionTypeExpression
+import org.jetbrains.research.libsl.nodes.references.IntersectionExpressionTypeReference
 import org.jetbrains.research.libsl.nodes.references.TypeReference
-import org.jetbrains.research.libsl.nodes.references.UnionTypeExpression
+import org.jetbrains.research.libsl.nodes.references.UnionExpressionTypeReference
 
 object TypeReferenceDumper {
     fun dumpType(typeRef: TypeReference, context: LslContextBase): String =
@@ -12,11 +12,11 @@ object TypeReferenceDumper {
 
     private fun dump(typeRef: TypeReference, context: LslContextBase): String {
         return when (typeRef) {
-            is IntersectionTypeExpression -> dumpIntersectionTypeExpression(
+            is IntersectionExpressionTypeReference -> dumpIntersectionTypeExpression(
                 typeRef,
                 context
             )
-            is UnionTypeExpression -> dumpUnionTypeExpression(typeRef, context)
+            is UnionExpressionTypeReference -> dumpUnionTypeExpression(typeRef, context)
             is GenericTypeReference -> dumpGenericTypeExpression(typeRef, context)
             else -> dumpSimpleTypeReference(typeRef, context)
         }
@@ -31,7 +31,7 @@ object TypeReferenceDumper {
     }
 
     private fun dumpUnionTypeExpression(
-        typeRef: UnionTypeExpression,
+        typeRef: UnionExpressionTypeReference,
         context: LslContextBase
     ): String {
         val left = dump(typeRef.left, context)
@@ -51,7 +51,7 @@ object TypeReferenceDumper {
     }
 
     private fun dumpIntersectionTypeExpression(
-        typeRef: IntersectionTypeExpression,
+        typeRef: IntersectionExpressionTypeReference,
         context: LslContextBase
     ): String {
         val left = dump(typeRef.left, context)

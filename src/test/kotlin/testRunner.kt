@@ -168,7 +168,6 @@ private fun checkTypeIsResolved(type: Type) {
         }
         // TODO
         is GenericType -> {}
-        is СompositeType -> {}
 //        is IntersectionTypeExpression -> type.resolve()
 //        is UnionTypeExpression -> type.resolve()
     }

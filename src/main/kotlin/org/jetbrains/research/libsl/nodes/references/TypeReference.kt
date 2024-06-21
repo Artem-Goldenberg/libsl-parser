@@ -116,13 +116,13 @@ open class TypeReference(
     }
 }
 
-data class UnionTypeExpression(
+data class UnionExpressionTypeReference(
     val left: TypeReference,
     val right: TypeReference,
     override val context: LslContextBase
 ) : TypeReference(name = "|", isPointer = false, genericReferences = mutableListOf(), context = context)
 
-data class IntersectionTypeExpression(
+data class IntersectionExpressionTypeReference(
     val left: TypeReference,
     val right: TypeReference,
     override val context: LslContextBase
