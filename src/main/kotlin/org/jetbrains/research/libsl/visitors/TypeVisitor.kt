@@ -213,9 +213,9 @@ class TypeVisitor(
         val args = ctx.args.toMutableList()
         args.forEach { arg -> functionContext.storeFunctionArgument(arg) }
 
-//        val returnType = ctx.functionHeader().functionType?.let { processTypeIdentifier(it) }
-//        val returnType = ctx.functionHeader().functionType.typeIdentifier(0)?.let { processTypeIdentifier(it) }
-        val returnType = visitTypeExpression(ctx.functionHeader().functionType)
+        var returnType: TypeReference? = null
+        if (ctx.functionHeader().functionType != null)
+            returnType = visitTypeExpression(ctx.functionHeader().functionType)
 
         return Function(
             kind = FunctionKind.FUNCTION,
