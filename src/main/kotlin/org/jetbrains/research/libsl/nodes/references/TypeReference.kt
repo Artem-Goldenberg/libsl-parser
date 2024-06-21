@@ -4,7 +4,7 @@ import org.jetbrains.research.libsl.context.LslContextBase
 import org.jetbrains.research.libsl.type.*
 
 open class TypeReference(
-    val name: String,
+    open val name: String,
     val isPointer: Boolean,
     var typeBound: GenericTypeBound = GenericTypeBound.EMPTY,
     val genericReferences: MutableList<TypeReference>,
@@ -122,7 +122,7 @@ data class UnionTypeExpression(
     override val context: LslContextBase
 ) : TypeReference(name = "|", isPointer = false, genericReferences = mutableListOf(), context = context) {
 
-    
+
 }
 
 data class IntersectionTypeExpression(
@@ -142,3 +142,8 @@ data class IntersectionTypeExpression(
 //        return fullName
 //    }
 }
+
+data class LiteralTypeReference(
+    override val name: String,
+    override val context: LslContextBase
+) : TypeReference(name = name, isPointer = false, genericReferences = mutableListOf(), context = context)

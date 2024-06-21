@@ -55,6 +55,9 @@ class LslGlobalContext(fileName: String) : LslContextBase(fileName) {
     }
 
     override fun resolveType(reference: TypeReference): Type? {
+        // #question: I suppose we don't need to save in GlobalContext literal types (or not) ? 
+        if (isLiteral(reference))
+            return LiteralType(context = reference.context, name = reference.name)
         return resolveType(reference, setOf(this))
     }
 
@@ -96,10 +99,13 @@ class LslGlobalContext(fileName: String) : LslContextBase(fileName) {
 
     private fun resolveAnnotation(reference: AnnotationReference, visitedScopes: Set<LslGlobalContext>): Annotation? {
         return super.resolveAnnotation(reference)
-            ?: resolveInImportedContexts(visitedScopes) {v -> resolveAnnotation(reference, v)}
+            ?: resolveInImportedContexts(visitedScopes) { v -> resolveAnnotation(reference, v) }
     }
 
-    private fun resolveDeclaredAction(reference: ActionDeclReference, visitedScopes: Set<LslGlobalContext>): ActionDecl? {
+    private fun resolveDeclaredAction(
+        reference: ActionDeclReference,
+        visitedScopes: Set<LslGlobalContext>
+    ): ActionDecl? {
         return super.resolveDeclaredAction(reference)
             ?: resolveInImportedContexts(visitedScopes) { v -> resolveDeclaredAction(reference, v) }
     }
@@ -120,5 +126,16 @@ class LslGlobalContext(fileName: String) : LslContextBase(fileName) {
 
     override fun equals(other: Any?): Boolean {
         return this === other
+    }
+
+    fun isLiteral(reference: TypeReference): Boolean {
+        val refNameFirstChar = reference.name.first()
+        if (refNameFirstChar.isDigit())
+            return true
+        else if (refNameFirstChar == '\"')
+            return true
+        else if (refNameFirstChar == '\'')
+            return true
+        return false
     }
 }
