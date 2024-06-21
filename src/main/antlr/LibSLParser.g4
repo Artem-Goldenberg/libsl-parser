@@ -215,7 +215,7 @@ variableDecl
    ;
 
 nameWithType
-   :  name=Identifier COLON type=typesIdentifiersArray
+   :  name=Identifier COLON type=typeExpression
    ;
 
 /*
@@ -301,7 +301,7 @@ procDecl
 
 procHeader
    :   annotationUsage* PROC headerWithAsterisk? functionName=Identifier generic? L_BRACKET functionDeclArgList? R_BRACKET
-   (COLON functionType=typesIdentifiersArray)? whereConstraints?
+   (COLON functionType=typeExpression)? whereConstraints?
    ;
 /*
  * syntax: @Annotation
@@ -314,7 +314,7 @@ functionDecl
 
 functionHeader
    :   annotationUsage* modifier=Identifier? FUN (automatonName=periodSeparatedFullName DOT)? headerWithAsterisk? functionName=Identifier generic?
-   L_BRACKET functionDeclArgList? R_BRACKET (COLON functionType=typesIdentifiersArray)? whereConstraints?
+   L_BRACKET functionDeclArgList? R_BRACKET (COLON functionType=typeExpression)? whereConstraints?
    ;
 
 functionDeclArgList
@@ -322,7 +322,7 @@ functionDeclArgList
    ;
 
 parameter
-   :   annotationUsage* name=Identifier COLON type=typesIdentifiersArray
+   :   annotationUsage* name=Identifier COLON type=typeExpression
    ;
 
 /* annotation

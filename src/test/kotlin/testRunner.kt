@@ -91,11 +91,13 @@ private fun checkEverythingIsResolved(library: Library) {
 }
 
 private fun checkAutomatonIsResolved(automaton: Automaton) {
+    // TODO: add checking of resolved types for composite type
+    // I want to use queue for this purpose and dfs to resolve leaves of it
 //    automaton.typeReference.resolveOrError()
-    automaton.constructorVariables.forEach { it.typeReference.resolveOrError() }
-    automaton.internalVariables.forEach { it.typeReference.resolveOrError() }
+//    automaton.constructorVariables.forEach { it.typeReference.resolveOrError() }
+//    automaton.internalVariables.forEach { it.typeReference.resolveOrError() }
 
-    automaton.functions.forEach { func -> checkFunctionIsResolved(func) }
+//    automaton.functions.forEach { func -> checkFunctionIsResolved(func) }
 }
 
 private fun checkFunctionIsResolved(function: Function) {
@@ -161,7 +163,8 @@ private fun checkTypeIsResolved(type: Type) {
         is PrimitiveType -> {}
         is RealType -> {}
         is StructuredType -> {
-            type.variables.forEach { v -> v.typeReference.resolveOrError() }
+            //TODO
+//            type.variables.forEach { v -> v.typeReference.resolveOrError() }
         }
         // TODO
         is GenericType -> {}

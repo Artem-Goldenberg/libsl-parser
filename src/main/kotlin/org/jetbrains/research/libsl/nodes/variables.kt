@@ -1,14 +1,12 @@
 package org.jetbrains.research.libsl.nodes
 
-import org.jetbrains.research.libsl.nodes.helpers.appendGeneric
+import org.jetbrains.research.libsl.nodes.helpers.TypeReferenceDumper
 import org.jetbrains.research.libsl.nodes.references.AnnotationReference
 import org.jetbrains.research.libsl.nodes.references.AutomatonReference
 import org.jetbrains.research.libsl.nodes.references.TypeReference
-import org.jetbrains.research.libsl.type.Type.Companion.UNRESOLVED_TYPE_SYMBOL
 import org.jetbrains.research.libsl.utils.BackticksPolitics
 import org.jetbrains.research.libsl.utils.EntityPosition
 import java.util.*
-import kotlin.NoSuchElementException
 
 enum class ArithmeticUnaryOp(val string: String) {
     PLUS("+"), MINUS("-"), INVERSION("!"), TILDE("~");
@@ -96,7 +94,7 @@ class FunctionArgument(
         if (targetAutomaton != null)
             append(targetAutomaton!!.name)
         else
-            appendGeneric(this, typeReference)
+            append(TypeReferenceDumper.dumpType(typeReference, typeReference.context))
     }
 }
 
@@ -128,7 +126,8 @@ class ConstructorArgument(
             append(IPrinter.SPACE)
         }
         append("${keyword.string} ${BackticksPolitics.forIdentifier(name)}: ")
-        append(BackticksPolitics.forTypeIdentifier(typeReference.resolve()?.fullName ?: UNRESOLVED_TYPE_SYMBOL))
+//        append(BackticksPolitics.forTypeIdentifier(typeReference.resolve()?.fullName ?: UNRESOLVED_TYPE_SYMBOL))
+        append(TypeReferenceDumper.dumpType(typeReference, typeReference.context))
         if (initialValue != null) {
             append(" = ${initialValue.dumpToString()};")
         }
@@ -147,11 +146,12 @@ class VariableWithInitialValue(
     override fun dumpToString(): String = buildString {
         append(formatListEmptyLineAtEndIfNeeded(annotationUsage))
         append("${keyword.string} ${BackticksPolitics.forIdentifier(name)}: ")
-
-        if (typeReference.resolve()?.fullName != null)
-            appendGeneric(this, typeReference)
-        else
-            append(UNRESOLVED_TYPE_SYMBOL)
+        append(TypeReferenceDumper.dumpType(typeReference, typeReference.context))
+        // TODO: add UNRESOLVED_TYPE_SYMBOL testing for debug purposes
+//        if (typeReference.resolve()?.fullName != null)
+//            appendGeneric(this, typeReference)
+//        else
+//            append(UNRESOLVED_TYPE_SYMBOL)
 
         if (initialValue != null) {
             append(" = ${initialValue.dumpToString()};")

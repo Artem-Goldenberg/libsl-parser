@@ -5,7 +5,6 @@ import org.jetbrains.research.libsl.LibSLParser.EnumSemanticTypeEntryContext
 import org.jetbrains.research.libsl.LibSLParser.FunctionDeclContext
 import org.jetbrains.research.libsl.context.FunctionContext
 import org.jetbrains.research.libsl.context.LslContextBase
-import org.jetbrains.research.libsl.errors.ErrorManager
 import org.jetbrains.research.libsl.nodes.*
 import org.jetbrains.research.libsl.nodes.Function
 import org.jetbrains.research.libsl.nodes.references.IntersectionTypeExpression
@@ -15,8 +14,6 @@ import org.jetbrains.research.libsl.type.*
 import org.jetbrains.research.libsl.utils.PositionGetter
 
 class TypeVisitor(
-    private val basePath: String,
-    private val errorManager: ErrorManager,
     context: LslContextBase
 ) : LibSLParserVisitor<TypeReference>(context) {
     private val fileName = context.fileName
@@ -182,25 +179,7 @@ class TypeVisitor(
         val keyword = VariableKind.fromString(ctx.keyword.text)
         val name = ctx.nameWithType().name.asPeriodSeparatedString()
 
-        val isCompositeType = ctx.nameWithType().typesIdentifiersArray().typeIdentifier().size > 1
-        lateinit var compositeType: СompositeType
-        if (isCompositeType) {
-            compositeType = buildCompositeType(ctx.nameWithType().typesIdentifiersArray())
-            context.storeType(compositeType)
-        }
-
-        val typeReference = if (!isCompositeType) processTypeIdentifier(
-            ctx.nameWithType().typesIdentifiersArray().typeIdentifier(0)
-        ) else processCompositeType(compositeType)
-
-        //TODO
-//        if (isNotStoredLiteralType(
-//                context,
-//                typeReference,
-//                ctx.nameWithType().typesIdentifiersArray().typeIdentifier(0)
-//            )
-//        )
-//            context.storeType(LiteralType(context, typeReference.name))
+        val typeReference = TypeVisitor(context).visitTypeExpression(ctx.nameWithType().typeExpression())
 
         val expressionVisitor = ExpressionVisitor(context)
         val initValue = ctx.assignmentRight()?.let { right -> expressionVisitor.visitAssignmentRight(right) }
@@ -235,7 +214,8 @@ class TypeVisitor(
         args.forEach { arg -> functionContext.storeFunctionArgument(arg) }
 
 //        val returnType = ctx.functionHeader().functionType?.let { processTypeIdentifier(it) }
-        val returnType = ctx.functionHeader().functionType.typeIdentifier(0)?.let { processTypeIdentifier(it) }
+//        val returnType = ctx.functionHeader().functionType.typeIdentifier(0)?.let { processTypeIdentifier(it) }
+        val returnType = visitTypeExpression(ctx.functionHeader().functionType)
 
         return Function(
             kind = FunctionKind.FUNCTION,
@@ -294,21 +274,7 @@ class TypeVisitor(
             ?.parameter()
             ?.mapIndexed { i, parameter ->
 
-                val isCompositeType = parameter.typesIdentifiersArray().typeIdentifier().size > 1
-                lateinit var compositeType: СompositeType
-                if (isCompositeType) {
-                    compositeType = buildCompositeType(parameter.typesIdentifiersArray())
-                    context.storeType(compositeType)
-                }
-
-                val typeRef = if (!isCompositeType) processTypeIdentifier(
-                    parameter.typesIdentifiersArray().typeIdentifier(0)
-                ) else processCompositeType(compositeType)
-
-
-                // TODO: ??
-//                if (isNotStoredLiteralType(context, typeRef, parameter.typesIdentifiersArray().typeIdentifier(0)))
-//                    context.storeType(LiteralType(context, typeRef.name))
+                val typeRef = TypeVisitor(context).visitTypeExpression(parameter.typeExpression())
 
                 val annotationsReferences = getAnnotationUsages(parameter.annotationUsage())
                 val arg = FunctionArgument(

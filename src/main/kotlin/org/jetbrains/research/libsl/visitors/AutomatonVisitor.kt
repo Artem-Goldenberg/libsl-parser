@@ -10,8 +10,6 @@ import org.jetbrains.research.libsl.nodes.*
 import org.jetbrains.research.libsl.nodes.references.FunctionReference
 import org.jetbrains.research.libsl.nodes.references.TypeReference
 import org.jetbrains.research.libsl.nodes.references.builders.FunctionReferenceBuilder
-import org.jetbrains.research.libsl.type.LiteralType
-import org.jetbrains.research.libsl.type.СompositeType
 import org.jetbrains.research.libsl.utils.PositionGetter
 
 class AutomatonVisitor(
@@ -26,13 +24,8 @@ class AutomatonVisitor(
 
     override fun visitAutomatonDecl(ctx: LibSLParser.AutomatonDeclContext) {
         val name = ctx.name.asPeriodSeparatedString()
-        val typeReference = TypeVisitor(basePath, errorManager, globalContext).visitTypeExpression(ctx.typeExpression())
-//        globalContext.storeType(type)
+        val typeReference = TypeVisitor(globalContext).visitTypeExpression(ctx.typeExpression())
 
-//        // TODO: ??
-//        if (isNotStoredLiteralType(globalContext, typeReference, ctx.typesIdentifiersArray().typeIdentifier(0)))
-//            globalContext.storeType(LiteralType(context, typeReference.name))
-//        
         val annotationReferences = getAnnotationUsages(ctx.annotationUsage())
 
         if (ctx.CONCEPT() == null) {
@@ -77,16 +70,7 @@ class AutomatonVisitor(
         val keyword = VariableKind.fromString(ctx.keyword.text)
         val name = ctx.nameWithType().name.asPeriodSeparatedString()
 
-        val isCompositeType = ctx.nameWithType().typesIdentifiersArray().typeIdentifier().size > 1
-        lateinit var compositeType: СompositeType
-        if (isCompositeType) {
-            compositeType = buildCompositeType(ctx.nameWithType().typesIdentifiersArray())
-            globalContext.storeType(compositeType)
-        }
-
-        val typeReference = if (!isCompositeType) processTypeIdentifier(
-            ctx.nameWithType().typesIdentifiersArray().typeIdentifier(0)
-        ) else processCompositeType(compositeType)
+        val typeReference = TypeVisitor(globalContext).visitTypeExpression(ctx.nameWithType().typeExpression())
 
         val expressionVisitor = ExpressionVisitor(context)
         val initValue = ctx.assignmentRight()?.let { expressionVisitor.visitAssignmentRight(it) }
@@ -209,24 +193,7 @@ class AutomatonVisitor(
         val keyword = VariableKind.fromString(ctx.keyword.text)
         val name = ctx.nameWithType().name.asPeriodSeparatedString()
 
-        val isCompositeType = ctx.nameWithType().typesIdentifiersArray().typeIdentifier().size > 1
-        lateinit var compositeType: СompositeType
-        if (isCompositeType) {
-            compositeType = buildCompositeType(ctx.nameWithType().typesIdentifiersArray())
-            globalContext.storeType(compositeType)
-        }
-
-        val typeReference = if (!isCompositeType) processTypeIdentifier(
-            ctx.nameWithType().typesIdentifiersArray().typeIdentifier(0)
-        ) else processCompositeType(compositeType)
-
-        if (isNotStoredLiteralType(
-                globalContext,
-                typeReference,
-                ctx.nameWithType().typesIdentifiersArray().typeIdentifier(0)
-            )
-        )
-            globalContext.storeType(LiteralType(context, typeReference.name))
+        val typeReference = TypeVisitor(globalContext).visitTypeExpression(ctx.nameWithType().typeExpression())
 
         val expressionVisitor = ExpressionVisitor(context)
         val initValue = ctx.assignmentRight()?.let { expressionVisitor.visitAssignmentRight(it) }

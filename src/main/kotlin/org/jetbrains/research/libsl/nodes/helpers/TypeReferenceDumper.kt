@@ -1,6 +1,7 @@
 package org.jetbrains.research.libsl.nodes.helpers
 
 import org.jetbrains.research.libsl.context.LslContextBase
+import org.jetbrains.research.libsl.nodes.references.GenericTypeReference
 import org.jetbrains.research.libsl.nodes.references.IntersectionTypeExpression
 import org.jetbrains.research.libsl.nodes.references.TypeReference
 import org.jetbrains.research.libsl.nodes.references.UnionTypeExpression
@@ -16,7 +17,16 @@ object TypeReferenceDumper {
                 context
             )
             is UnionTypeExpression -> dumpUnionTypeExpression(typeRef, context)
+            is GenericTypeReference -> dumpGenericTypeExpression(typeRef, context)
             else -> dumpSimpleTypeReference(typeRef, context)
+        }
+    }
+
+    private fun dumpGenericTypeExpression(typeRef: GenericTypeReference, context: LslContextBase): String {
+        // TODO: think about optimizations;
+        // TODO: add UNRESOLVED_TYPE_SYMBOL testing for debug purposes
+        return buildString {
+            appendGeneric(this, typeRef)
         }
     }
 
@@ -34,6 +44,7 @@ object TypeReferenceDumper {
     }
 
     private fun dumpSimpleTypeReference(typeRef: TypeReference, context: LslContextBase): String {
+        // TODO: add UNRESOLVED_TYPE_SYMBOL testing for debug purposes
         return buildString {
             append(context.resolveType(typeRef)?.fullName.toString())
         }

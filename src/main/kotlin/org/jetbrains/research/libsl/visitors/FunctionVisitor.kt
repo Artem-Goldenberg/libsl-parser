@@ -11,8 +11,6 @@ import org.jetbrains.research.libsl.nodes.references.TypeReference
 import org.jetbrains.research.libsl.nodes.references.builders.AutomatonReferenceBuilder
 import org.jetbrains.research.libsl.nodes.references.builders.AutomatonReferenceBuilder.getReference
 import org.jetbrains.research.libsl.type.GenericType
-import org.jetbrains.research.libsl.type.LiteralType
-import org.jetbrains.research.libsl.type.СompositeType
 import org.jetbrains.research.libsl.utils.PositionGetter
 
 class FunctionVisitor(
@@ -62,22 +60,8 @@ class FunctionVisitor(
         val targetAutomatonRef = args.getFunctionTargetByAnnotation ?: automatonReference
 
         var returnType: TypeReference? = null
-        if (ctx.functionHeader().functionType != null) {
-            val isCompositeType = ctx.functionHeader().functionType.typeIdentifier().size > 1
-            lateinit var compositeType: СompositeType
-            if (isCompositeType) {
-                compositeType = buildCompositeType(ctx.functionHeader().functionType)
-                context.storeType(compositeType)
-            }
-
-            returnType = if (!isCompositeType) processTypeIdentifier(
-                ctx.functionHeader().functionType.typeIdentifier(0)
-            ) else processCompositeType(compositeType)
-        }
-
-        // TODO: ??
-        if (isNotStoredLiteralType(globalContext, returnType, ctx.functionHeader().functionType?.typeIdentifier(0)))
-            globalContext.storeType(LiteralType(context, returnType!!.name))
+        if (ctx.functionHeader().functionType != null)
+            returnType = TypeVisitor(context).visitTypeExpression(ctx.functionHeader().functionType)
 
         val funGenericTypes: MutableList<GenericType> = if (ctx.functionHeader().generic() != null)
             ctx.functionGenerics
@@ -170,22 +154,8 @@ class FunctionVisitor(
         args.forEach { arg -> functionContext.storeFunctionArgument(arg) }
 
         var returnType: TypeReference? = null
-        if (ctx.procHeader().functionType != null) {
-            val isCompositeType = ctx.procHeader().functionType.typeIdentifier().size > 1
-            lateinit var compositeType: СompositeType
-            if (isCompositeType) {
-                compositeType = buildCompositeType(ctx.procHeader().functionType)
-                context.storeType(compositeType)
-            }
-
-            returnType = if (!isCompositeType) processTypeIdentifier(
-                ctx.procHeader().functionType.typeIdentifier(0)
-            ) else processCompositeType(compositeType)
-        }
-
-        // TODO: ??
-        if (isNotStoredLiteralType(globalContext, returnType, ctx.procHeader().functionType?.typeIdentifier(0)))
-            globalContext.storeType(LiteralType(context, returnType!!.name))
+        if (ctx.procHeader().functionType != null)
+            returnType = TypeVisitor(context).visitTypeExpression(ctx.procHeader().functionType)
 
         if (returnType != null) {
             val resultVariable = ResultVariable(
@@ -225,21 +195,7 @@ class FunctionVisitor(
     private fun getDeclArgs(functionDeclArgList: FunctionDeclArgListContext?): List<FunctionArgument> {
         return functionDeclArgList?.parameter()?.mapIndexed { i, parameter ->
 
-            val isCompositeType = parameter.typesIdentifiersArray().typeIdentifier().size > 1
-            lateinit var compositeType: СompositeType
-            if (isCompositeType) {
-                compositeType = buildCompositeType(parameter.typesIdentifiersArray())
-                context.storeType(compositeType)
-            }
-
-            val typeRef = if (!isCompositeType) processTypeIdentifier(
-                parameter.typesIdentifiersArray().typeIdentifier(0)
-            ) else processCompositeType(compositeType)
-
-
-            // TODO: ??
-            if (isNotStoredLiteralType(globalContext, typeRef, parameter.typesIdentifiersArray().typeIdentifier(0)))
-                globalContext.storeType(LiteralType(context, typeRef.name))
+            val typeRef = TypeVisitor(context).visitTypeExpression(parameter.typeExpression())
 
             val annotationsReferences = getAnnotationUsages(parameter.annotationUsage())
             val arg = FunctionArgument(

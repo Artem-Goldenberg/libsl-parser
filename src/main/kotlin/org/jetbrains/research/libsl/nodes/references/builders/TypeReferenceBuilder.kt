@@ -57,6 +57,8 @@ object TypeReferenceBuilder {
             return true
         else if (refNameFirstChar == '\'')
             return true
+        else if (name == "true" || name == "false")
+            return true
         return false
     }
 }

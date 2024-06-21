@@ -11,8 +11,6 @@ import org.jetbrains.research.libsl.nodes.AnnotationArgumentDescriptor
 import org.jetbrains.research.libsl.nodes.VariableKind
 import org.jetbrains.research.libsl.nodes.VariableWithInitialValue
 import org.jetbrains.research.libsl.nodes.references.builders.AutomatonReferenceBuilder
-import org.jetbrains.research.libsl.type.LiteralType
-import org.jetbrains.research.libsl.type.СompositeType
 import org.jetbrains.research.libsl.utils.PositionGetter
 
 class TopLevelDeclarationsVisitor(
@@ -30,25 +28,7 @@ class TopLevelDeclarationsVisitor(
 
         ctx.annotationDeclParams()?.annotationDeclParamsPart()?.forEach { parameterCtx ->
 
-            val isCompositeType = parameterCtx.nameWithType().typesIdentifiersArray().typeIdentifier().size > 1
-            lateinit var compositeType: СompositeType
-            if (isCompositeType) {
-                compositeType = buildCompositeType(parameterCtx.nameWithType().typesIdentifiersArray())
-                globalContext.storeType(compositeType)
-            }
-
-            val typeReference = if (!isCompositeType) processTypeIdentifier(
-                parameterCtx.nameWithType().typesIdentifiersArray().typeIdentifier(0)
-            ) else processCompositeType(compositeType)
-
-            if (isNotStoredLiteralType(
-                    globalContext,
-                    typeReference,
-                    parameterCtx.nameWithType().typesIdentifiersArray().typeIdentifier(0)
-                )
-            )
-                globalContext.storeType(LiteralType(context, typeReference.name))
-            
+            val typeReference = TypeVisitor(globalContext).visitTypeExpression(parameterCtx.nameWithType().typeExpression())
             val param = AnnotationArgumentDescriptor(
                 parameterCtx.nameWithType().name.text.extractIdentifier(),
                 typeReference,
@@ -89,47 +69,29 @@ class TopLevelDeclarationsVisitor(
     }
 
     override fun visitTypeDefBlock(ctx: LibSLParser.TypeDefBlockContext) {
-        TypeVisitor(basePath, errorManager, globalContext).visitTypeDefBlock(ctx)
+        TypeVisitor(globalContext).visitTypeDefBlock(ctx)
     }
 
     override fun visitSimpleSemanticType(ctx: LibSLParser.SimpleSemanticTypeContext) {
-        TypeVisitor(basePath, errorManager, globalContext).visitSimpleSemanticType(ctx)
+        TypeVisitor(globalContext).visitSimpleSemanticType(ctx)
     }
 
     override fun visitEnumSemanticType(ctx: LibSLParser.EnumSemanticTypeContext) {
-        TypeVisitor(basePath, errorManager, globalContext).visitEnumSemanticType(ctx)
+        TypeVisitor(globalContext).visitEnumSemanticType(ctx)
     }
 
     override fun visitTypealiasStatement(ctx: LibSLParser.TypealiasStatementContext) {
-        TypeVisitor(basePath, errorManager, globalContext).visitTypealiasStatement(ctx)
+        TypeVisitor(globalContext).visitTypealiasStatement(ctx)
     }
 
     override fun visitEnumBlock(ctx: LibSLParser.EnumBlockContext) {
-        TypeVisitor(basePath, errorManager, globalContext).visitEnumBlock(ctx)
+        TypeVisitor(globalContext).visitEnumBlock(ctx)
     }
 
     override fun visitVariableDecl(ctx: LibSLParser.VariableDeclContext) {
         val keyword = VariableKind.fromString(ctx.keyword.text)
         val variableName = ctx.nameWithType().name.text.extractIdentifier()
-        
-        val isCompositeType = ctx.nameWithType().typesIdentifiersArray().typeIdentifier().size > 1
-        lateinit var compositeType: СompositeType
-        if (isCompositeType) {
-            compositeType = buildCompositeType(ctx.nameWithType().typesIdentifiersArray())
-            globalContext.storeType(compositeType)
-        }
-
-        val typeReference = if (!isCompositeType) processTypeIdentifier(
-            ctx.nameWithType().typesIdentifiersArray().typeIdentifier(0)
-        ) else processCompositeType(compositeType)
-
-        if (isNotStoredLiteralType(
-                globalContext,
-                typeReference,
-                ctx.nameWithType().typesIdentifiersArray().typeIdentifier(0)
-            )
-        )
-            globalContext.storeType(LiteralType(context, typeReference.name))
+        val typeReference = TypeVisitor(globalContext).visitTypeExpression(ctx.nameWithType().typeExpression())
 
         val expressionVisitor = ExpressionVisitor(context)
         val initValue = ctx.assignmentRight()?.let { right ->

@@ -4,10 +4,6 @@ import org.jetbrains.research.libsl.LibSLParser
 import org.jetbrains.research.libsl.context.FunctionContext
 import org.jetbrains.research.libsl.context.LslGlobalContext
 import org.jetbrains.research.libsl.nodes.*
-import org.jetbrains.research.libsl.nodes.references.TypeReference
-import org.jetbrains.research.libsl.type.LiteralType
-import org.jetbrains.research.libsl.type.NextCompositionTypesSymbol
-import org.jetbrains.research.libsl.type.СompositeType
 import org.jetbrains.research.libsl.utils.PositionGetter
 
 class BlockStatementVisitor(
@@ -73,25 +69,8 @@ class BlockStatementVisitor(
     override fun visitVariableDecl(ctx: LibSLParser.VariableDeclContext) {
         val keyword = VariableKind.fromString(ctx.keyword.text)
         val name = ctx.nameWithType().name.asPeriodSeparatedString()
-        
-        val isCompositeType = ctx.nameWithType().typesIdentifiersArray().typeIdentifier().size > 1
-        lateinit var compositeType: СompositeType
-        if (isCompositeType) {
-            compositeType = buildCompositeType(ctx.nameWithType().typesIdentifiersArray())
-            globalContext.storeType(compositeType)
-        }
 
-        val typeReference = if (!isCompositeType) processTypeIdentifier(
-            ctx.nameWithType().typesIdentifiersArray().typeIdentifier(0)
-        ) else processCompositeType(compositeType)
-
-        if (isNotStoredLiteralType(
-                globalContext,
-                typeReference,
-                ctx.nameWithType().typesIdentifiersArray().typeIdentifier(0)
-            )
-        )
-            globalContext.storeType(LiteralType(context, typeReference.name))
+        val typeReference = TypeVisitor(globalContext).visitTypeExpression(ctx.nameWithType().typeExpression())
 
         val expressionVisitor = ExpressionVisitor(context)
         val initValue = ctx.assignmentRight()?.let {
