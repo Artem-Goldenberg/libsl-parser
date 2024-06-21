@@ -136,7 +136,7 @@ data class LiteralTypeReference(
 
 data class GenericTypeReference(
     override val name: String,
-    override val context: LslContextBase,
     override var typeBound: GenericTypeBound = GenericTypeBound.EMPTY,
     override val genericReferences: MutableList<TypeReference>,
+    override val context: LslContextBase,
 ) : TypeReference(name = name, isPointer = false, genericReferences = genericReferences, context = context)
