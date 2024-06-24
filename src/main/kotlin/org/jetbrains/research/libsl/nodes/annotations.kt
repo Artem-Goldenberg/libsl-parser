@@ -38,8 +38,7 @@ data class AnnotationArgumentDescriptor(
     val entityPosition: EntityPosition
 ) : IPrinter {
     override fun dumpToString(): String = buildString {
-        val type = TypeReferenceDumper.dumpType(typeReference, typeReference.context)
-//        val type = BackticksPolitics.forTypeIdentifier(typeReference.resolve()?.fullName ?: Type.UNRESOLVED_TYPE_SYMBOL)
+        val type = TypeReferenceDumper.dumpType(typeReference)
         append("${BackticksPolitics.forIdentifier(name)}: $type")
         if (initialValue != null) {
             append(" = ${initialValue.dumpToString()}")

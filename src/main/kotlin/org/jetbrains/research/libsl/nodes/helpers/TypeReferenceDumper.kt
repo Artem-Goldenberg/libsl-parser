@@ -1,41 +1,42 @@
 package org.jetbrains.research.libsl.nodes.helpers
 
-import org.jetbrains.research.libsl.context.LslContextBase
-import org.jetbrains.research.libsl.nodes.references.GenericTypeReference
-import org.jetbrains.research.libsl.nodes.references.IntersectionExpressionTypeReference
-import org.jetbrains.research.libsl.nodes.references.TypeReference
-import org.jetbrains.research.libsl.nodes.references.UnionExpressionTypeReference
+import org.jetbrains.research.libsl.nodes.references.*
+import org.jetbrains.research.libsl.type.Type
 
 object TypeReferenceDumper {
-    fun dumpType(typeRef: TypeReference, context: LslContextBase): String =
-        dump(typeRef, context)
+    fun dumpType(typeRef: TypeReference): String =
+        dump(typeRef)
 
-    private fun dump(typeRef: TypeReference, context: LslContextBase): String {
+    private fun dump(typeRef: TypeReference): String {
         return when (typeRef) {
             is IntersectionExpressionTypeReference -> dumpIntersectionTypeExpression(
-                typeRef,
-                context
+                typeRef
             )
-            is UnionExpressionTypeReference -> dumpUnionTypeExpression(typeRef, context)
-            is GenericTypeReference -> dumpGenericTypeExpression(typeRef, context)
-            else -> dumpSimpleTypeReference(typeRef, context)
+            is UnionExpressionTypeReference -> dumpUnionTypeExpression(typeRef)
+            is GenericTypeReference -> dumpGenericTypeExpression(typeRef)
+            is PlainTypeReference -> dumpSimpleTypeReference(typeRef)
+            is LiteralTypeReference -> dumpLiteralTypeReference(typeRef)
+            else -> error("Undefined TypeReference")
         }
     }
 
-    private fun dumpGenericTypeExpression(typeRef: GenericTypeReference, context: LslContextBase): String {
-        // TODO: think about optimizations;
-        // TODO: add UNRESOLVED_TYPE_SYMBOL testing for debug purposes
+    private fun dumpLiteralTypeReference(typeRef: LiteralTypeReference): String {
+        return buildString {
+            append(typeRef.context.resolveType(typeRef)?.fullName)
+        }
+    }
+
+    private fun dumpGenericTypeExpression(typeRef: GenericTypeReference): String {
         return buildString {
             appendGeneric(this, typeRef)
         }
     }
 
     private fun dumpUnionTypeExpression(
-        typeRef: UnionExpressionTypeReference,
-        context: LslContextBase
+        typeRef: UnionExpressionTypeReference
     ): String {
-        val left = dump(typeRef.left, context)
-        val right = dump(typeRef.right, context)
+        val left = dump(typeRef.left)
+        val right = dump(typeRef.right)
         return buildString {
             append(left)
             append(" | ")
@@ -43,19 +44,19 @@ object TypeReferenceDumper {
         }
     }
 
-    private fun dumpSimpleTypeReference(typeRef: TypeReference, context: LslContextBase): String {
-        // TODO: add UNRESOLVED_TYPE_SYMBOL testing for debug purposes
+    private fun dumpSimpleTypeReference(typeRef: TypeReference): String {
         return buildString {
-            append(context.resolveType(typeRef)?.fullName.toString())
+            if (typeRef.resolve() != null)
+                append(typeRef.context.resolveType(typeRef)?.fullName)
+            else append(Type.UNRESOLVED_TYPE_SYMBOL)
         }
     }
 
     private fun dumpIntersectionTypeExpression(
-        typeRef: IntersectionExpressionTypeReference,
-        context: LslContextBase
+        typeRef: IntersectionExpressionTypeReference
     ): String {
-        val left = dump(typeRef.left, context)
-        val right = dump(typeRef.right, context)
+        val left = dump(typeRef.left)
+        val right = dump(typeRef.right)
         return buildString {
             append(left)
             append(" & ")

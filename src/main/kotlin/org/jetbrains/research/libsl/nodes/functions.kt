@@ -53,7 +53,7 @@ open class Function(
 
         if (returnType != null) {
             append(": ")
-            append(TypeReferenceDumper.dumpType(returnType!!, context))
+            append(TypeReferenceDumper.dumpType(returnType!!))
         }
 
         if (funGenerics.isNotEmpty()) {

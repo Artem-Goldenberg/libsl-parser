@@ -15,28 +15,28 @@ abstract class TypeReference(
         ?: context.resolveType(this)
     }
 
-    protected fun resolveArrayType(): ArrayType? {
+    private fun resolveArrayType(): ArrayType? {
         if (name != "array")
             return null
         genericReferences.forEach { it.resolve() }
         return ArrayType(isPointer, genericReferences, context)
     }
 
-    protected fun resolveListType(): ListType? {
+    private fun resolveListType(): ListType? {
         if (name != "list")
             return null
         genericReferences.forEach { it.resolve() }
         return ListType(isPointer, genericReferences, context)
     }
 
-    protected fun resolveMapType(): MapType? {
+    private fun resolveMapType(): MapType? {
         if (name != "map")
             return null
         genericReferences.forEach { it.resolve() }
         return MapType(isPointer, genericReferences, context)
     }
 
-    protected fun resolveNullType(): NullType? {
+    private fun resolveNullType(): NullType? {
         if (name != "null") {
             return null
         }

@@ -35,8 +35,7 @@ open class Automaton(
         if (constructorVariables.isNotEmpty()) {
             append(" (${constructorVariables.joinToString(", ") { v -> v.dumpToString() }})")
         }
-        // append(" : ${BackticksPolitics.forPeriodSeparated(typeReference.resolve()?.fullName ?: UNRESOLVED_TYPE_SYMBOL)}")
-        append(" : ${TypeReferenceDumper.dumpType(typeReference, context)}")
+        append(" : ${TypeReferenceDumper.dumpType(typeReference)}")
 
         if (implementedConcepts.isNotEmpty()) {
             append(" implements ")
@@ -111,8 +110,7 @@ data class AutomatonConcept(
         if (constructorVariables.isNotEmpty()) {
             append(" (${constructorVariables.joinToString(", ") { v -> v.dumpToString() }})")
         }
-//        append(" : ${BackticksPolitics.forPeriodSeparated(typeReference.resolve()?.fullName ?: UNRESOLVED_TYPE_SYMBOL)}")
-        append(" : ${TypeReferenceDumper.dumpType(typeReference, context)}")
+        append(" : ${TypeReferenceDumper.dumpType(typeReference)}")
         
         if (implementedConcepts.isNotEmpty()) {
             append(" implements ")

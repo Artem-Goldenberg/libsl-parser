@@ -161,9 +161,7 @@ data class TypeAlias(
             append("typealias ")
             append(BackticksPolitics.forTypeIdentifier(name))
             append(" = ")
-            // TODO: add resolve of the type !
             appendGeneric(this, originalType)
-            // append(BackticksPolitics.forTypeIdentifier(originalType.resolve()?.fullName ?: UNRESOLVED_TYPE_SYMBOL))
             append(";")
         }
     }

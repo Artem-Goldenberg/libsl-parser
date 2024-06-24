@@ -34,8 +34,8 @@ automaton concept IterableAutomaton : Int {
 automaton Foo(): Int implements IterableAutomaton, CollectionAutomaton
 {
    fun bar (img: BufferedImage): Object {
-      var b: bool = arg0 is List<any>;
-      var x: Collection = arg0 as List<any>;
+      var b: bool = arg0 is list<any>;
+      var x: Collection = arg0 as list<any>;
       result = img.iterator(this.offset + 2);
    }
 

@@ -231,10 +231,6 @@ typeExpression
 typeIdentifier
    :   (asterisk=ASTERISK)? name=typeIdentifierName generic?
    ;
-   
-typesIdentifiersArray
-   :   typeIdentifier (typeConcatination typeIdentifier)*
-   ;
 
 generic
    :   (L_ARROW typeArgument (COMMA typeArgument)* R_ARROW)
@@ -547,8 +543,4 @@ genericBound
 typeIdentifierName
    :   periodSeparatedFullName
    |   primitiveLiteral
-   ;
-   
-typeConcatination
-   :   concatType=(BIT_OR | AMPERSAND)
    ;

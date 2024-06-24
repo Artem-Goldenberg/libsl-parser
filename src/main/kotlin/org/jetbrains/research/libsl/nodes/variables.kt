@@ -94,7 +94,7 @@ class FunctionArgument(
         if (targetAutomaton != null)
             append(targetAutomaton!!.name)
         else
-            append(TypeReferenceDumper.dumpType(typeReference, typeReference.context))
+            append(TypeReferenceDumper.dumpType(typeReference))
     }
 }
 
@@ -126,8 +126,7 @@ class ConstructorArgument(
             append(IPrinter.SPACE)
         }
         append("${keyword.string} ${BackticksPolitics.forIdentifier(name)}: ")
-//        append(BackticksPolitics.forTypeIdentifier(typeReference.resolve()?.fullName ?: UNRESOLVED_TYPE_SYMBOL))
-        append(TypeReferenceDumper.dumpType(typeReference, typeReference.context))
+        append(TypeReferenceDumper.dumpType(typeReference))
         if (initialValue != null) {
             append(" = ${initialValue.dumpToString()};")
         }
@@ -146,12 +145,7 @@ class VariableWithInitialValue(
     override fun dumpToString(): String = buildString {
         append(formatListEmptyLineAtEndIfNeeded(annotationUsage))
         append("${keyword.string} ${BackticksPolitics.forIdentifier(name)}: ")
-        append(TypeReferenceDumper.dumpType(typeReference, typeReference.context))
-        // TODO: add UNRESOLVED_TYPE_SYMBOL testing for debug purposes
-//        if (typeReference.resolve()?.fullName != null)
-//            appendGeneric(this, typeReference)
-//        else
-//            append(UNRESOLVED_TYPE_SYMBOL)
+        append(TypeReferenceDumper.dumpType(typeReference))
 
         if (initialValue != null) {
             append(" = ${initialValue.dumpToString()};")
