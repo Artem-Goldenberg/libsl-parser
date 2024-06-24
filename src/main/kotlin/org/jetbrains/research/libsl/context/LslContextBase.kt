@@ -78,11 +78,6 @@ abstract class LslContextBase(var fileName: String) {
             ?: parentContext?.resolveType(reference)
     }
 
-    open fun resolveType(reference: Type): Type? {
-        return types.firstOrNull { types -> reference.isReferenceMatchWithNode(types) }
-            ?: parentContext?.resolveType(reference)
-    }
-
     open fun resolveFunction(reference: FunctionReference): Function? {
         return functions.firstOrNull { function -> reference.isReferenceMatchWithNode(function) }
             ?: parentContext?.resolveFunction(reference)

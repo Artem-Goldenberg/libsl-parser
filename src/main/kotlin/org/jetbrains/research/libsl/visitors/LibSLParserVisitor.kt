@@ -188,12 +188,4 @@ abstract class LibSLParserVisitor<T>(open val context: LslContextBase) : LibSLPa
 
         return genericTypesOrdered.values.filterNotNull().toMutableList()
     }
-
-    internal fun isNotStoredLiteralType(
-        ctx: LslGlobalContext,
-        typeReference: TypeReference?,
-        type: LibSLParser.TypeIdentifierContext?
-    ): Boolean {
-        return type?.typeIdentifierName()?.primitiveLiteral() != null && typeReference != null && ctx.resolveType(typeReference) == null
-    }
 }

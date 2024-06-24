@@ -5,6 +5,8 @@ import org.jetbrains.research.libsl.LibSL
 import org.jetbrains.research.libsl.errors.ErrorManager
 import org.jetbrains.research.libsl.nodes.*
 import org.jetbrains.research.libsl.nodes.Function
+import org.jetbrains.research.libsl.nodes.helpers.TypeReferenceDumper
+import org.jetbrains.research.libsl.nodes.references.*
 import org.jetbrains.research.libsl.type.*
 import org.junit.jupiter.api.Assertions
 import java.io.File
@@ -91,13 +93,29 @@ private fun checkEverythingIsResolved(library: Library) {
 }
 
 private fun checkAutomatonIsResolved(automaton: Automaton) {
-    // TODO: add checking of resolved types for composite type
-    // I want to use queue for this purpose and dfs to resolve leaves of it
-//    automaton.typeReference.resolveOrError()
-//    automaton.constructorVariables.forEach { it.typeReference.resolveOrError() }
-//    automaton.internalVariables.forEach { it.typeReference.resolveOrError() }
+    resolveAllTypes(automaton.typeReference)
+    automaton.constructorVariables.forEach { resolveAllTypes(it.typeReference) }
+    automaton.internalVariables.forEach { resolveAllTypes(it.typeReference) }
+    automaton.functions.forEach { func -> checkFunctionIsResolved(func) }
+}
 
-//    automaton.functions.forEach { func -> checkFunctionIsResolved(func) }
+private fun resolveAllTypes(typeRef: TypeReference?) {
+    when (typeRef) {
+        is IntersectionExpressionTypeReference -> {
+            resolveAllTypes(typeRef.left)
+            resolveAllTypes(typeRef.right)
+        }
+        is UnionExpressionTypeReference -> {
+            resolveAllTypes(typeRef.left)
+            resolveAllTypes(typeRef.right)
+        }
+        // TODO: think later more detailed about this case;
+        is GenericTypeReference -> typeRef.resolveOrError()
+        is PlainTypeReference -> typeRef.resolveOrError()
+        is LiteralTypeReference -> {
+            // Ignore
+        }
+    }
 }
 
 private fun checkFunctionIsResolved(function: Function) {
@@ -108,7 +126,7 @@ private fun checkFunctionIsResolved(function: Function) {
                 it,
                 context = function.context
             )
-        })) function.returnType?.resolveOrError()
+        })) resolveAllTypes(function.returnType)
     function.args.forEach { arg ->
         if (!function.context.getFunctionGenericTypes().contains(
                 GenericType(
@@ -116,7 +134,7 @@ private fun checkFunctionIsResolved(function: Function) {
                     context = function.context
                 )
             )
-        ) arg.typeReference.resolveOrError()
+        ) resolveAllTypes(arg.typeReference)
     }
 }
 
@@ -129,7 +147,7 @@ private fun checkStatementIsResolved(function: Function, statements: List<Statem
             // is ProcedureCall -> {s.procReference.resolveOrError()}
             is ProcedureCall -> {}
             is VariableDeclaration -> {
-                s.variable.typeReference.resolveOrError()
+                resolveAllTypes(s.variable.typeReference)
             }
             is Assignment -> {
                 function.context.typeInferrer.getExpressionType(s.left)
@@ -163,13 +181,12 @@ private fun checkTypeIsResolved(type: Type) {
         is PrimitiveType -> {}
         is RealType -> {}
         is StructuredType -> {
-            //TODO
-//            type.variables.forEach { v -> v.typeReference.resolveOrError() }
+            type.variables.forEach { v -> resolveAllTypes(v.typeReference) }
         }
-        // TODO
-        is GenericType -> {}
-//        is IntersectionTypeExpression -> type.resolve()
-//        is UnionTypeExpression -> type.resolve()
+        is GenericType -> {
+            type.generics.mapNotNull { it.resolve() }
+            type.constraints.mapNotNull { it.resolve() }
+        }
     }
 }
 
