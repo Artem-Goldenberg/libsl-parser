@@ -92,5 +92,5 @@ class UnresolvedImportOrInclude(
 class WhereSectionGenericWasMissed(
     val entityPosition: EntityPosition
 ) {
-    override fun toString(): String = "Was missed WHERE section in ${entityPosition.string}"
+    override fun toString(): String = "${entityPosition.string} | missing WHERE section in generic declaration"
 }

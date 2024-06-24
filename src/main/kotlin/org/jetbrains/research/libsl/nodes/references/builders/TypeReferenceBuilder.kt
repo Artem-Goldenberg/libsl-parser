@@ -3,6 +3,7 @@ package org.jetbrains.research.libsl.nodes.references.builders
 import org.jetbrains.research.libsl.context.LslContextBase
 import org.jetbrains.research.libsl.nodes.references.GenericTypeReference
 import org.jetbrains.research.libsl.nodes.references.LiteralTypeReference
+import org.jetbrains.research.libsl.nodes.references.PlainTypeReference
 import org.jetbrains.research.libsl.nodes.references.TypeReference
 import org.jetbrains.research.libsl.type.GenericTypeBound
 import org.jetbrains.research.libsl.type.Type
@@ -19,7 +20,7 @@ object TypeReferenceBuilder {
             return buildLiteralRef(name, context)
         if (genericReferences.isNotEmpty())
             return buildGenericRef(name, typeBound, genericReferences, context)
-        return TypeReference(name, isPointer, typeBound, genericReferences, context)
+        return buildPlainRef(name, isPointer, typeBound, context)
     }
 
     private fun buildLiteralRef(
@@ -38,6 +39,15 @@ object TypeReferenceBuilder {
         return GenericTypeReference(name, typeBound, genericReferences, context)
     }
 
+    private fun buildPlainRef(
+        name: String,
+        isPointer: Boolean = false,
+        typeBound: GenericTypeBound = GenericTypeBound.EMPTY,
+        context: LslContextBase
+    ): TypeReference {
+        return PlainTypeReference(name, isPointer, typeBound, context)
+    }
+
     fun Type.getReference(
         context: LslContextBase,
         typeBound: GenericTypeBound = GenericTypeBound.EMPTY
@@ -46,7 +56,7 @@ object TypeReferenceBuilder {
             return buildLiteralRef(this.name, context)
         if (this.generics.isNotEmpty())
             return buildGenericRef(this.name, typeBound, this.generics, context)
-        return build(this.name, typeBound, this.generics, this.isPointer, context)
+        return buildPlainRef(this.name, this.isPointer, typeBound, context)
     }
 
     fun isLiteral(name: String): Boolean {
