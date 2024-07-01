@@ -7,8 +7,7 @@ import org.jetbrains.research.libsl.errors.ErrorManager
 import org.jetbrains.research.libsl.errors.WhereSectionGenericWasMissed
 import org.jetbrains.research.libsl.nodes.*
 import org.jetbrains.research.libsl.nodes.Function
-import org.jetbrains.research.libsl.nodes.references.AutomatonReference
-import org.jetbrains.research.libsl.nodes.references.TypeReference
+import org.jetbrains.research.libsl.nodes.references.*
 import org.jetbrains.research.libsl.nodes.references.builders.AutomatonReferenceBuilder
 import org.jetbrains.research.libsl.nodes.references.builders.AutomatonReferenceBuilder.getReference
 import org.jetbrains.research.libsl.type.GenericType
@@ -239,7 +238,7 @@ class FunctionVisitor(
             val targetArg = firstOrNull { arg ->
                 arg.annotationUsages.any { it.annotationReference.name == "target" }
             } ?: return null
-            val automatonName = targetArg.typeReference.name
+            val automatonName = targetArg.typeReference.getName()
             return AutomatonReferenceBuilder.build(automatonName, functionContext)
         }
 

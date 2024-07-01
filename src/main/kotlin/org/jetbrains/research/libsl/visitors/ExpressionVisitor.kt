@@ -4,6 +4,7 @@ import org.jetbrains.research.libsl.LibSLParser
 import org.jetbrains.research.libsl.LibSLParser.*
 import org.jetbrains.research.libsl.context.LslContextBase
 import org.jetbrains.research.libsl.nodes.*
+import org.jetbrains.research.libsl.nodes.references.GenericTypeReference
 import org.jetbrains.research.libsl.nodes.references.TypeReference
 import org.jetbrains.research.libsl.nodes.references.builders.ActionDeclReferenceBuilder
 import org.jetbrains.research.libsl.nodes.references.builders.AutomatonReferenceBuilder
@@ -499,7 +500,7 @@ class ExpressionVisitor(
         val generics = processGenerics(ctx.generic())
 
         generics.forEach {
-            if (!GenericTypeBound.EMPTY.equals(it.typeBound) || "?".equals(it.name))
+            if (it is GenericTypeReference && (!GenericTypeBound.EMPTY.equals(it.typeBound) || "?".equals(it.name)))
                 // TODO: add for all exceptions in parser concrete places where it was appeared.
                 throw error("Constructor invoke can't contain WildCards")
 

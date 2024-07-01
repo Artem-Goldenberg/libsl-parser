@@ -120,8 +120,8 @@ private fun resolveAllTypes(typeRef: TypeReference?) {
 
 private fun checkFunctionIsResolved(function: Function) {
     checkStatementIsResolved(function, function.statements)
-
-    if (!function.context.getFunctionGenericTypes().contains(function.returnType?.name?.let {
+    
+    if (!function.context.getFunctionGenericTypes().contains(function.returnType?.getName()?.let {
             GenericType(
                 it,
                 context = function.context
@@ -130,7 +130,7 @@ private fun checkFunctionIsResolved(function: Function) {
     function.args.forEach { arg ->
         if (!function.context.getFunctionGenericTypes().contains(
                 GenericType(
-                    arg.typeReference.name,
+                    arg.typeReference.getName(),
                     context = function.context
                 )
             )

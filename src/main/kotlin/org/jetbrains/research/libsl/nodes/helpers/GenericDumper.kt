@@ -1,6 +1,6 @@
 package org.jetbrains.research.libsl.nodes.helpers
 
-import org.jetbrains.research.libsl.nodes.references.TypeReference
+import org.jetbrains.research.libsl.nodes.references.*
 import org.jetbrains.research.libsl.type.GenericType
 import org.jetbrains.research.libsl.type.GenericTypeBound
 import org.jetbrains.research.libsl.type.Type
@@ -54,25 +54,28 @@ fun appendGeneric(stringBuilder: StringBuilder, typeReference: TypeReference) {
 }
 
 private fun appendResolvedGeneric(stringBuilder: StringBuilder, currentTypeRef: TypeReference) {
-    if (currentTypeRef.resolve() != null)
-        stringBuilder.append("${addAsteriskForPointer(currentTypeRef)}${getBound(currentTypeRef)}${currentTypeRef.name}")
-    else
+    if (currentTypeRef.resolve() != null) {
+        stringBuilder.append("${addAsteriskForPointer(currentTypeRef)}${getBound(currentTypeRef)}${currentTypeRef.getName()}")
+    } else
         stringBuilder.append(Type.UNRESOLVED_TYPE_SYMBOL)
 }
 
 private fun appendGenericsToQueue(queue: LinkedList<Pair<TypeReference, Int>>, deep: Int) {
-    val genericReferences = queue.peekLast().first.genericReferences
-    if (genericReferences.isEmpty()) return
-    genericReferences.forEach {
-        queue.addLast(Pair(it, deep))
-        appendGenericsToQueue(queue, deep + 1)
+    if (queue.peekLast().first is GenericTypeReference) {
+        val genericReferences = (queue.peekLast().first as GenericTypeReference).genericReferences
+        if (genericReferences.isEmpty()) return
+        genericReferences.forEach {
+            queue.addLast(Pair(it, deep))
+            appendGenericsToQueue(queue, deep + 1)
+        }
     }
 }
 
 private fun getBound(type: TypeReference): String {
-    if (type.typeBound != GenericTypeBound.EMPTY) {
+    if (type is GenericTypeReference && type.typeBound != GenericTypeBound.EMPTY)
         return type.typeBound.string + " "
-    }
+    if (type is PlainTypeReference && type.typeBound != GenericTypeBound.EMPTY)
+        return type.typeBound.string + " "
     return ""
 }
 
@@ -89,7 +92,9 @@ fun appendGenericArray(stringBuilder: StringBuilder, generics: MutableList<TypeR
 }
 
 private fun addAsteriskForPointer(type: TypeReference): String {
-    return (if (type.isPointer) "*" else "")
+    if (type is PlainTypeReference)
+        return (if (type.isPointer) "*" else "")
+    return ""
 }
 
 fun appendWhereSection(stringBuilder: StringBuilder, generics: MutableList<GenericType>) {

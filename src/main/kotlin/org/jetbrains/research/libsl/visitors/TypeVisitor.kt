@@ -7,6 +7,7 @@ import org.jetbrains.research.libsl.context.FunctionContext
 import org.jetbrains.research.libsl.context.LslContextBase
 import org.jetbrains.research.libsl.nodes.*
 import org.jetbrains.research.libsl.nodes.Function
+import org.jetbrains.research.libsl.nodes.references.GenericTypeReference
 import org.jetbrains.research.libsl.nodes.references.IntersectionExpressionTypeReference
 import org.jetbrains.research.libsl.nodes.references.TypeReference
 import org.jetbrains.research.libsl.nodes.references.UnionExpressionTypeReference
@@ -154,6 +155,7 @@ class TypeVisitor(
 
         val annotationReferences = getAnnotationUsages(ctx.annotationUsage())
         val typeIdentifier = processTypeIdentifier(ctx.typeIdentifier())
+        val generics = if (typeIdentifier is GenericTypeReference) typeIdentifier.genericReferences else mutableListOf()
         val type = StructuredType(
             name,
             variables,
@@ -164,7 +166,7 @@ class TypeVisitor(
             annotationReferences,
             context,
             posGetter.getCtxPosition(fileName, ctx),
-            typeIdentifier.genericReferences
+            generics
         )
         if (type !in context.getAllTypes()) {
             context.storeType(type)

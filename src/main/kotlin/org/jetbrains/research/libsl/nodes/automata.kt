@@ -4,6 +4,7 @@ import org.jetbrains.research.libsl.context.AutomatonContext
 import org.jetbrains.research.libsl.nodes.helpers.TypeReferenceDumper
 import org.jetbrains.research.libsl.nodes.references.FunctionReference
 import org.jetbrains.research.libsl.nodes.references.TypeReference
+import org.jetbrains.research.libsl.nodes.references.getName
 import org.jetbrains.research.libsl.utils.BackticksPolitics
 import org.jetbrains.research.libsl.utils.EntityPosition
 
@@ -189,7 +190,7 @@ data class Shift(
                     if (function.argTypes.isNotEmpty()) {
                         val argTypeNames =
                             function.argTypes.joinToString(separator = ", ", prefix = "(", postfix = ")") {
-                                it.name
+                                it.getName()
                             }
                         "$functionName$argTypeNames"
                     } else {

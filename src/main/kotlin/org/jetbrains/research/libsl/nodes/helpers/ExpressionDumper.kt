@@ -1,6 +1,8 @@
 package org.jetbrains.research.libsl.nodes.helpers
 
 import org.jetbrains.research.libsl.nodes.*
+import org.jetbrains.research.libsl.nodes.references.GenericTypeReference
+import org.jetbrains.research.libsl.nodes.references.getName
 import org.jetbrains.research.libsl.utils.BackticksPolitics
 import org.jetbrains.research.libsl.utils.escapeCharStringRepresentation
 
@@ -171,9 +173,11 @@ object ExpressionDumper {
             expression.childAccess != null && expression.childAccess is VariableAccess -> {
                 "${BackticksPolitics.forIdentifier(expression.fieldName)}.${dump(expression.childAccess!!)}"
             }
+
             expression.childAccess != null -> {
                 "${BackticksPolitics.forIdentifier(expression.fieldName)}${dump(expression.childAccess!!)}"
             }
+
             else -> expression.fieldName
         }
     }
@@ -234,10 +238,11 @@ object ExpressionDumper {
         val left = expression.expression.dumpToString()
         return buildString {
             append("$left ${expression.opName} ")
-            if (expression.typeReference.genericReferences.isNotEmpty())
+            if (expression.typeReference is GenericTypeReference)
                 appendGeneric(this, expression.typeReference)
-            else
-                append(expression.typeReference.name)
+            else {
+                append(expression.typeReference.getName())
+            }
         }
     }
 }
