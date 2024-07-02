@@ -7,9 +7,11 @@ import org.jetbrains.research.libsl.errors.ErrorManager
 import org.jetbrains.research.libsl.errors.WhereSectionGenericWasMissed
 import org.jetbrains.research.libsl.nodes.*
 import org.jetbrains.research.libsl.nodes.Function
-import org.jetbrains.research.libsl.nodes.references.*
+import org.jetbrains.research.libsl.nodes.references.AutomatonReference
+import org.jetbrains.research.libsl.nodes.references.TypeReference
 import org.jetbrains.research.libsl.nodes.references.builders.AutomatonReferenceBuilder
 import org.jetbrains.research.libsl.nodes.references.builders.AutomatonReferenceBuilder.getReference
+import org.jetbrains.research.libsl.nodes.references.getName
 import org.jetbrains.research.libsl.type.GenericType
 import org.jetbrains.research.libsl.utils.PositionGetter
 
@@ -192,6 +194,18 @@ class FunctionVisitor(
         }
     }
 
+    override fun visitEnsuresContract(ctx: EnsuresContractContext) {
+        processContract(ctx.name?.text?.extractIdentifier(), ContractKind.ENSURES, ctx.expression())
+    }
+
+    override fun visitRequiresContract(ctx: RequiresContractContext) {
+        processContract(ctx.name?.text?.extractIdentifier(), ContractKind.REQUIRES, ctx.expression())
+    }
+
+    override fun visitAssignsContract(ctx: AssignsContractContext) {
+        processContract(ctx.name?.text?.extractIdentifier(), ContractKind.ASSIGNS, ctx.expression())
+    }
+    
     private fun getDeclArgs(functionDeclArgList: FunctionDeclArgListContext?): List<FunctionArgument> {
         return functionDeclArgList?.parameter()?.mapIndexed { i, parameter ->
 
@@ -241,18 +255,6 @@ class FunctionVisitor(
             val automatonName = targetArg.typeReference.getName()
             return AutomatonReferenceBuilder.build(automatonName, functionContext)
         }
-
-    override fun visitEnsuresContract(ctx: EnsuresContractContext) {
-        processContract(ctx.name?.text?.extractIdentifier(), ContractKind.ENSURES, ctx.expression())
-    }
-
-    override fun visitRequiresContract(ctx: RequiresContractContext) {
-        processContract(ctx.name?.text?.extractIdentifier(), ContractKind.REQUIRES, ctx.expression())
-    }
-
-    override fun visitAssignsContract(ctx: AssignsContractContext) {
-        processContract(ctx.name?.text?.extractIdentifier(), ContractKind.ASSIGNS, ctx.expression())
-    }
 
     private fun processContract(name: String?, kind: ContractKind, expressionContext: ExpressionContext) {
         val expressionVisitor = ExpressionVisitor(functionContext)

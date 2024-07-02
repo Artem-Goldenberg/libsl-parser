@@ -68,19 +68,6 @@ class TypeVisitor(
         return processTypeIdentifier(ctx.typeIdentifier())
     }
 
-    private fun processBlockTypeStatements(statementsContexts: List<EnumSemanticTypeEntryContext>): Map<String, Atomic> {
-        return statementsContexts.map { ctx -> processBlockTypeStatement(ctx) }.associate { it }
-    }
-
-    private fun processBlockTypeStatement(statementContext: EnumSemanticTypeEntryContext): Pair<String, Atomic> {
-        val entryName = statementContext.Identifier().asPeriodSeparatedString()
-        val expressionVisitor = ExpressionVisitor(context)
-        val atomicValueContext = statementContext.expressionAtomic()
-        val atomicValue = expressionVisitor.visitExpressionAtomic(atomicValueContext)
-
-        return entryName to atomicValue
-    }
-
     override fun visitTypealiasStatement(ctx: LibSLParser.TypealiasStatementContext): TypeReference {
         val name = ctx.left.typeIdentifierName().periodSeparatedFullName().asPeriodSeparatedString()
         val originalTypeReference = processTypeIdentifier(ctx.right)
@@ -114,20 +101,6 @@ class TypeVisitor(
 
         context.storeType(type)
         return processTypeIdentifier(ctx.typeIdentifier())
-    }
-
-    private fun processEnumStatements(statements: List<LibSLParser.EnumBlockStatementContext>): Map<String, Atomic> {
-        return statements.map { processEnumStatement(it) }.associate { it }
-    }
-
-    private fun processEnumStatement(statement: LibSLParser.EnumBlockStatementContext): Pair<String, Atomic> {
-        val name = statement.Identifier().asPeriodSeparatedString()
-
-        val expressionVisitor = ExpressionVisitor(context)
-        val atomicContext = statement.integerNumber()
-        val atomic = expressionVisitor.visit(atomicContext) as Atomic
-
-        return name to atomic
     }
 
     override fun visitTypeDefBlock(ctx: LibSLParser.TypeDefBlockContext): TypeReference {
@@ -172,6 +145,48 @@ class TypeVisitor(
             context.storeType(type)
         }
         return processTypeIdentifier(ctx.typeIdentifier())
+    }
+
+    override fun visitTypeExpression(ctx: LibSLParser.TypeExpressionContext): TypeReference {
+        return when {
+            ctx.typeIdentifier() != null -> {
+                processTypeIdentifier(ctx.typeIdentifier())
+            }
+            ctx.AMPERSAND() != null -> {
+                processIntersection(ctx)
+            }
+            ctx.BIT_OR() != null -> {
+                processUnion(ctx)
+            }
+            else -> error("unknown expression type")
+        }
+    }
+    
+    private fun processBlockTypeStatements(statementsContexts: List<EnumSemanticTypeEntryContext>): Map<String, Atomic> {
+        return statementsContexts.map { ctx -> processBlockTypeStatement(ctx) }.associate { it }
+    }
+
+    private fun processBlockTypeStatement(statementContext: EnumSemanticTypeEntryContext): Pair<String, Atomic> {
+        val entryName = statementContext.Identifier().asPeriodSeparatedString()
+        val expressionVisitor = ExpressionVisitor(context)
+        val atomicValueContext = statementContext.expressionAtomic()
+        val atomicValue = expressionVisitor.visitExpressionAtomic(atomicValueContext)
+
+        return entryName to atomicValue
+    }
+    
+    private fun processEnumStatements(statements: List<LibSLParser.EnumBlockStatementContext>): Map<String, Atomic> {
+        return statements.map { processEnumStatement(it) }.associate { it }
+    }
+
+    private fun processEnumStatement(statement: LibSLParser.EnumBlockStatementContext): Pair<String, Atomic> {
+        val name = statement.Identifier().asPeriodSeparatedString()
+
+        val expressionVisitor = ExpressionVisitor(context)
+        val atomicContext = statement.integerNumber()
+        val atomic = expressionVisitor.visit(atomicContext) as Atomic
+
+        return name to atomic
     }
 
     private val LibSLParser.TypeDefBlockContext.typeDefBlockGenerics: MutableList<GenericType>
@@ -233,21 +248,6 @@ class TypeVisitor(
             isMethod = isMethod,
             entityPosition = posGetter.getCtxPosition(fileName, ctx)
         )
-    }
-
-    override fun visitTypeExpression(ctx: LibSLParser.TypeExpressionContext): TypeReference {
-        return when {
-            ctx.typeIdentifier() != null -> {
-                processTypeIdentifier(ctx.typeIdentifier())
-            }
-            ctx.AMPERSAND() != null -> {
-                processIntersection(ctx)
-            }
-            ctx.BIT_OR() != null -> {
-                processUnion(ctx)
-            }
-            else -> error("unknown expression type")
-        }
     }
 
     private fun processIntersection(ctx: LibSLParser.TypeExpressionContext): TypeReference {

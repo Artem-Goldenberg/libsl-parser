@@ -13,6 +13,33 @@ class LslGlobalContext(fileName: String) : LslContextBase(fileName) {
 
     override val parentContext: LslContextBase? = null
 
+    override fun resolveVariable(reference: VariableReference): Variable? {
+        return resolveVariable(reference, setOf(this))
+    }
+
+    override fun resolveType(reference: TypeReference): Type? {
+        // #question: I suppose we don't need to save in GlobalContext literal types (or not) ? 
+        if (reference is LiteralTypeReference)
+            return LiteralType(context = reference.context, name = reference.value)
+        return resolveType(reference, setOf(this))
+    }
+
+    override fun resolveAutomaton(reference: AutomatonReference): Automaton? {
+        return resolveAutomaton(reference, setOf(this))
+    }
+
+    override fun resolveFunction(reference: FunctionReference): Function? {
+        return resolveFunction(reference, setOf(this))
+    }
+
+    override fun resolveAnnotation(reference: AnnotationReference): Annotation? {
+        return resolveAnnotation(reference, setOf(this))
+    }
+
+    override fun resolveDeclaredAction(reference: ActionDeclReference): ActionDecl? {
+        return resolveDeclaredAction(reference, setOf(this))
+    }
+    
     fun init() {
         if (isInitialized)
             return
@@ -48,33 +75,6 @@ class LslGlobalContext(fileName: String) : LslContextBase(fileName) {
 
     fun import(context: LslGlobalContext) {
         importedContexts.add(context)
-    }
-
-    override fun resolveVariable(reference: VariableReference): Variable? {
-        return resolveVariable(reference, setOf(this))
-    }
-
-    override fun resolveType(reference: TypeReference): Type? {
-        // #question: I suppose we don't need to save in GlobalContext literal types (or not) ? 
-        if (reference is LiteralTypeReference)
-            return LiteralType(context = reference.context, name = reference.value)
-        return resolveType(reference, setOf(this))
-    }
-
-    override fun resolveAutomaton(reference: AutomatonReference): Automaton? {
-        return resolveAutomaton(reference, setOf(this))
-    }
-
-    override fun resolveFunction(reference: FunctionReference): Function? {
-        return resolveFunction(reference, setOf(this))
-    }
-
-    override fun resolveAnnotation(reference: AnnotationReference): Annotation? {
-        return resolveAnnotation(reference, setOf(this))
-    }
-
-    override fun resolveDeclaredAction(reference: ActionDeclReference): ActionDecl? {
-        return resolveDeclaredAction(reference, setOf(this))
     }
 
     private fun resolveVariable(reference: VariableReference, visitedScopes: Set<LslGlobalContext>): Variable? {

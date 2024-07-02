@@ -5,7 +5,6 @@ import org.jetbrains.research.libsl.LibSL
 import org.jetbrains.research.libsl.errors.ErrorManager
 import org.jetbrains.research.libsl.nodes.*
 import org.jetbrains.research.libsl.nodes.Function
-import org.jetbrains.research.libsl.nodes.helpers.TypeReferenceDumper
 import org.jetbrains.research.libsl.nodes.references.*
 import org.jetbrains.research.libsl.type.*
 import org.junit.jupiter.api.Assertions

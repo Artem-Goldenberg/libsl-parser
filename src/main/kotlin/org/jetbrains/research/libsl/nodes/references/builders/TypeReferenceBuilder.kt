@@ -17,7 +17,7 @@ object TypeReferenceBuilder {
             return buildWildcardRef(context)
         else if (isLiteral(name))
             return buildLiteralRef(name, context)
-        else if (genericReferences.isNotEmpty())
+        else if (isGeneric(genericReferences))
             return buildGenericRef(name, typeBound, genericReferences, context)
         return buildPlainRef(name, isPointer, typeBound, context)
     }
@@ -59,9 +59,9 @@ object TypeReferenceBuilder {
     ): TypeReference {
         if (isWildCard(name))
             return buildWildcardRef(context)
-        if (isLiteral(this.name))
+        else if (isLiteral(this.name))
             return buildLiteralRef(this.name, context)
-        else if (this.generics.isNotEmpty())
+        else if (isGeneric(generics))
             return buildGenericRef(this.name, typeBound, this.generics, context)
         return buildPlainRef(this.name, this.isPointer, typeBound, context)
     }
@@ -84,5 +84,9 @@ object TypeReferenceBuilder {
     private fun isWildCard(name: String): Boolean {
         return name == "?"
     }
-    
+
+    private fun isGeneric(genericReferences: MutableList<TypeReference>): Boolean {
+        return genericReferences.isNotEmpty()
+    }
+
 }

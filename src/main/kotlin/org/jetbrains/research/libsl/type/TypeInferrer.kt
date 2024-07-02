@@ -44,6 +44,32 @@ class TypeInferrer(private val context: LslContextBase) {
         }
     }
 
+    fun mergeTypesOrNull(typeA: Type, typeB: Type): Type? {
+        return try {
+            mergeTypes(typeA, typeB)
+        } catch (e: Exception) {
+            null
+        }
+    }
+
+    @Suppress("MemberVisibilityCanBePrivate")
+    fun mergeTypes(typeA: Type, typeB: Type): Type {
+
+        if (typeA::class == typeB::class) {
+            return typeA
+        }
+
+        if (typeA is NothingType) {
+            return typeB
+        }
+
+        if (typeB is NothingType) {
+            return typeA
+        }
+
+        return anyType
+    }
+    
     private fun getAtomicType(atomic: Atomic): Type {
         return when (atomic) {
             is BoolLiteral -> BoolType(context)
@@ -104,31 +130,5 @@ class TypeInferrer(private val context: LslContextBase) {
             generics = mutableListOf(typeOfElements.getReference(context)),
             context = context
         )
-    }
-
-    fun mergeTypesOrNull(typeA: Type, typeB: Type): Type? {
-        return try {
-            mergeTypes(typeA, typeB)
-        } catch (e: Exception) {
-            null
-        }
-    }
-
-    @Suppress("MemberVisibilityCanBePrivate")
-    fun mergeTypes(typeA: Type, typeB: Type): Type {
-
-        if (typeA::class == typeB::class) {
-            return typeA
-        }
-
-        if (typeA is NothingType) {
-            return typeB
-        }
-
-        if (typeB is NothingType) {
-            return typeA
-        }
-
-        return anyType
     }
 }

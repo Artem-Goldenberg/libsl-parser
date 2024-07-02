@@ -123,72 +123,6 @@ class AutomatonVisitor(
         }
     }
 
-    private fun getFromState(name: String, ctx: LibSLParser.AutomatonShiftDeclContext): State? {
-        if (name == "any") {
-            return State(name, StateKind.SIMPLE, isAny = true, entityPosition = posGetter.getCtxPosition(fileName, ctx))
-        }
-
-        return buildingAutomaton.states.firstOrNull { s -> s.name == name }
-    }
-
-    private fun getToState(name: String, ctx: LibSLParser.AutomatonShiftDeclContext): State? {
-        if (name == "self") {
-            return State(
-                name,
-                StateKind.SIMPLE,
-                isSelf = true,
-                entityPosition = posGetter.getCtxPosition(fileName, ctx)
-            )
-        }
-
-        return buildingAutomaton.states.firstOrNull { s -> s.name == name }
-    }
-
-    private val LibSLParser.AutomatonShiftDeclContext.fromStatesNames: List<String>
-        get() {
-            return if (this.identifierList() != null) {
-                identifierList().Identifier().map { id -> id.text }
-            } else {
-                listOf(Identifier().first().text)
-            }
-        }
-
-    private val LibSLParser.AutomatonShiftDeclContext.functionsRefs: List<FunctionReference>
-        get() {
-            this.functionsList() ?: functionsListPart() ?: return listOf()
-
-            val result = mutableListOf<FunctionReference>()
-
-            if (functionsList() == null && functionsListPart() != null) {
-                val functionName = functionsListPart().name.asPeriodSeparatedString()
-                val argTypes = mutableListOf<TypeReference>()
-                functionsListPart().typeIdentifier()?.forEach { t ->
-                    argTypes.add(processTypeIdentifier(t))
-                }
-                val ref = FunctionReferenceBuilder.build(
-                    name = functionName,
-                    argTypes = argTypes,
-                    context
-                )
-                result.add(ref)
-            } else {
-                functionsList()?.functionsListPart()?.forEach { f ->
-                    val functionName = f.name.asPeriodSeparatedString()
-                    val argTypes = mutableListOf<TypeReference>()
-                    f.typeIdentifier()?.forEach { t ->
-                        argTypes.add(processTypeIdentifier(t))
-                    }
-                    val ref = FunctionReferenceBuilder.build(
-                        name = functionName,
-                        argTypes = argTypes,
-                        context
-                    )
-                    result.add(ref)
-                }
-            }
-            return result
-        }
-
     override fun visitVariableDecl(ctx: LibSLParser.VariableDeclContext) {
         val keyword = VariableKind.fromString(ctx.keyword.text)
         val name = ctx.nameWithType().name.asPeriodSeparatedString()
@@ -239,4 +173,70 @@ class AutomatonVisitor(
         val functionContext = FunctionContext(context)
         FunctionVisitor(fileName, functionContext, buildingAutomaton, globalContext, errorManager).visitProcDecl(ctx)
     }
+    
+    private fun getFromState(name: String, ctx: LibSLParser.AutomatonShiftDeclContext): State? {
+        if (name == "any") {
+            return State(name, StateKind.SIMPLE, isAny = true, entityPosition = posGetter.getCtxPosition(fileName, ctx))
+        }
+
+        return buildingAutomaton.states.firstOrNull { s -> s.name == name }
+    }
+
+    private fun getToState(name: String, ctx: LibSLParser.AutomatonShiftDeclContext): State? {
+        if (name == "self") {
+            return State(
+                name,
+                StateKind.SIMPLE,
+                isSelf = true,
+                entityPosition = posGetter.getCtxPosition(fileName, ctx)
+            )
+        }
+
+        return buildingAutomaton.states.firstOrNull { s -> s.name == name }
+    }
+    
+    private val LibSLParser.AutomatonShiftDeclContext.fromStatesNames: List<String>
+        get() {
+            return if (this.identifierList() != null) {
+                identifierList().Identifier().map { id -> id.text }
+            } else {
+                listOf(Identifier().first().text)
+            }
+        }
+
+    private val LibSLParser.AutomatonShiftDeclContext.functionsRefs: List<FunctionReference>
+        get() {
+            this.functionsList() ?: functionsListPart() ?: return listOf()
+
+            val result = mutableListOf<FunctionReference>()
+
+            if (functionsList() == null && functionsListPart() != null) {
+                val functionName = functionsListPart().name.asPeriodSeparatedString()
+                val argTypes = mutableListOf<TypeReference>()
+                functionsListPart().typeIdentifier()?.forEach { t ->
+                    argTypes.add(processTypeIdentifier(t))
+                }
+                val ref = FunctionReferenceBuilder.build(
+                    name = functionName,
+                    argTypes = argTypes,
+                    context
+                )
+                result.add(ref)
+            } else {
+                functionsList()?.functionsListPart()?.forEach { f ->
+                    val functionName = f.name.asPeriodSeparatedString()
+                    val argTypes = mutableListOf<TypeReference>()
+                    f.typeIdentifier()?.forEach { t ->
+                        argTypes.add(processTypeIdentifier(t))
+                    }
+                    val ref = FunctionReferenceBuilder.build(
+                        name = functionName,
+                        argTypes = argTypes,
+                        context
+                    )
+                    result.add(ref)
+                }
+            }
+            return result
+        }
 }

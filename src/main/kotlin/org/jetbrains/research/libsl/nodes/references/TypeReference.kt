@@ -76,6 +76,17 @@ data class LiteralTypeReference(
         return resolveLiteralType()
     }
 
+    override fun isReferenceMatchWithNode(node: Type): Boolean {
+        return node.name == this.value
+    }
+
+    override fun isSameReference(other: TypeReference): Boolean {
+        if (other is LiteralTypeReference) {
+            return this.value == other.value
+        }
+        return false
+    }
+
     private fun resolveLiteralType(): Type? {
         if (value.startsWith("\""))
             return StringType(context)
@@ -86,17 +97,6 @@ data class LiteralTypeReference(
         else if (Character.isDigit(value.first()) || value.startsWith("-"))
             return Int64Type(context)
         return null
-    }
-
-    override fun isReferenceMatchWithNode(node: Type): Boolean {
-        return node.name == this.value
-    }
-
-    override fun isSameReference(other: TypeReference): Boolean {
-        if (other is LiteralTypeReference) {
-            return this.value == other.value
-        }
-        return false
     }
 }
 
@@ -123,6 +123,19 @@ data class GenericTypeReference(
         return false
     }
 
+    override fun isReferenceMatchWithNode(node: Type): Boolean {
+        if (this.name != node.name) {
+            return false
+        }
+
+        if (!areGenericsMatch(node.generics)) {
+            return false
+        }
+
+        return true
+    }
+
+
     private fun resolveArrayType(): ArrayType? {
         if (name != "array")
             return null
@@ -143,19 +156,7 @@ data class GenericTypeReference(
         genericReferences.forEach { it.resolve() }
         return MapType(generics = genericReferences, context = context)
     }
-
-    override fun isReferenceMatchWithNode(node: Type): Boolean {
-        if (this.name != node.name) {
-            return false
-        }
-
-        if (!areGenericsMatch(node.generics)) {
-            return false
-        }
-
-        return true
-    }
-
+    
     private fun areGenericsMatch(generics: MutableList<TypeReference>): Boolean {
         if (this.genericReferences.isEmpty() && generics.isEmpty()) {
             return true

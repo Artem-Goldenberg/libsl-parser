@@ -1,6 +1,9 @@
 package org.jetbrains.research.libsl.nodes.helpers
 
-import org.jetbrains.research.libsl.nodes.references.*
+import org.jetbrains.research.libsl.nodes.references.GenericTypeReference
+import org.jetbrains.research.libsl.nodes.references.PlainTypeReference
+import org.jetbrains.research.libsl.nodes.references.TypeReference
+import org.jetbrains.research.libsl.nodes.references.getName
 import org.jetbrains.research.libsl.type.GenericType
 import org.jetbrains.research.libsl.type.GenericTypeBound
 import org.jetbrains.research.libsl.type.Type
@@ -53,6 +56,29 @@ fun appendGeneric(stringBuilder: StringBuilder, typeReference: TypeReference) {
     }
 }
 
+fun appendGenericArray(stringBuilder: StringBuilder, generics: MutableList<TypeReference>) {
+    stringBuilder.append("<")
+    val size = generics.size - 1
+    for (i in 0 until size) {
+        appendGeneric(stringBuilder, generics[i])
+        stringBuilder.append(", ")
+    }
+    appendGeneric(stringBuilder, generics[size])
+    stringBuilder.append(">")
+}
+
+fun appendWhereSection(stringBuilder: StringBuilder, generics: MutableList<GenericType>) {
+    stringBuilder.append(" where")
+    for (generic in generics) {
+        for (constraint: TypeReference in generic.constraints) {
+            stringBuilder.append(" " + generic.name + ": ")
+            appendGeneric(stringBuilder, constraint)
+            stringBuilder.append(",")
+        }
+    }
+    stringBuilder.deleteCharAt(stringBuilder.length - 1)
+}
+
 private fun appendResolvedGeneric(stringBuilder: StringBuilder, currentTypeRef: TypeReference) {
     if (currentTypeRef.resolve() != null) {
         stringBuilder.append("${addAsteriskForPointer(currentTypeRef)}${getBound(currentTypeRef)}${currentTypeRef.getName()}")
@@ -79,32 +105,8 @@ private fun getBound(type: TypeReference): String {
     return ""
 }
 
-
-fun appendGenericArray(stringBuilder: StringBuilder, generics: MutableList<TypeReference>) {
-    stringBuilder.append("<")
-    val size = generics.size - 1
-    for (i in 0 until size) {
-        appendGeneric(stringBuilder, generics[i])
-        stringBuilder.append(", ")
-    }
-    appendGeneric(stringBuilder, generics[size])
-    stringBuilder.append(">")
-}
-
 private fun addAsteriskForPointer(type: TypeReference): String {
     if (type is PlainTypeReference)
         return (if (type.isPointer) "*" else "")
     return ""
-}
-
-fun appendWhereSection(stringBuilder: StringBuilder, generics: MutableList<GenericType>) {
-    stringBuilder.append(" where")
-    for (generic in generics) {
-        for (constraint: TypeReference in generic.constraints) {
-            stringBuilder.append(" " + generic.name + ": ")
-            appendGeneric(stringBuilder, constraint)
-            stringBuilder.append(",")
-        }
-    }
-    stringBuilder.deleteCharAt(stringBuilder.length - 1)
 }

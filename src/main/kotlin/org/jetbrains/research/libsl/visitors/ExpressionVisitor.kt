@@ -86,81 +86,6 @@ class ExpressionVisitor(
         }
     }
 
-    private fun processTypeOperationExpression(ctx: ExpressionContext): TypeOperationExpression {
-        return TypeOperationExpression(
-            ctx.typeOp.text,
-            visitExpression(ctx.expression(0)),
-            processTypeIdentifier(ctx.typeIdentifier()),
-            posGetter.getCtxPosition(fileName, ctx)
-        )
-    }
-
-    private fun processBinaryExpression(ctx: ExpressionContext): BinaryOpExpression {
-        val opText = when {
-            ctx.op != null -> let {
-                ctx.op.text
-            }
-            ctx.bitShiftOp().lShift() != null -> let {
-                "<<"
-            }
-            ctx.bitShiftOp().rShift() != null -> let {
-                ">>"
-            }
-            ctx.bitShiftOp().uRShift() != null -> let {
-                ">>>"
-            }
-            ctx.bitShiftOp().uLShift() != null -> let {
-                "<<<"
-            }
-
-            else -> error("unknown binary expression")
-        }
-
-        val op = ArithmeticBinaryOps.fromString(opText)
-
-        val left = ctx.expression(0)
-        val right = ctx.expression(1)
-
-        return processBinaryExpression(ctx, left, right, op)
-    }
-
-    private fun processBinaryExpression(
-        ctx: ExpressionContext,
-        left: ExpressionContext,
-        right: ExpressionContext,
-        op: ArithmeticBinaryOps
-    ): BinaryOpExpression {
-        val leftExpression = visitExpression(left)
-        val rightExpression = visitExpression(right)
-
-        return BinaryOpExpression(
-            leftExpression,
-            rightExpression,
-            op,
-            posGetter.getCtxPosition(fileName, ctx)
-        )
-    }
-
-    private fun processUnaryExpression(ctx: ExpressionContext): UnaryOpExpression {
-        val opText = ctx.op.text
-        val op = ArithmeticUnaryOp.fromString(opText)
-        val expression = visitExpression(ctx.expression(0))
-
-        return UnaryOpExpression(
-            op,
-            expression,
-            posGetter.getCtxPosition(fileName, ctx)
-        )
-    }
-
-    private fun processOldValue(ctx: QualifiedAccessContext): OldValue {
-        val value = visitQualifiedAccess(ctx)
-        return OldValue(
-            value,
-            posGetter.getCtxPosition(fileName, ctx)
-        )
-    }
-
     override fun visitExpressionAtomic(ctx: LibSLParser.ExpressionAtomicContext): Atomic {
         return when {
             ctx.primitiveLiteral() != null -> {
@@ -274,66 +199,6 @@ class ExpressionVisitor(
         }
     }
 
-    private fun convertBinHexOctToPrimitives(num: String, type: String): Number {
-        return when {
-            num.startsWith(HEX_PREFIX) -> return getNumInDecimalFormat(
-                num,
-                type,
-                16,
-                2,
-                "unsupported type of hex integer"
-            )
-            num.startsWith(BIN_PREFIX) -> return getNumInDecimalFormat(
-                num,
-                type,
-                2,
-                2,
-                "unsupported type of binary integer"
-            )
-            num.startsWith(OCT_PREFIX) && num.length > 1 -> return getNumInDecimalFormat(
-                num,
-                type,
-                8,
-                1,
-                "unsupported type of octal integer"
-            )
-            else ->
-                return when (type) {
-                    "x" -> num.toByte()
-                    "ux" -> num.toInt()
-                    "s" -> num.toShort()
-                    "us" -> num.toInt()
-                    "i" -> num.toInt()
-                    "u" -> num.toLong()
-                    "l" -> num.toLong()
-                    "ul" -> num.toBigDecimal()
-                    else -> error("unsupported type of octal integer")
-                }
-        }
-    }
-
-    private fun getNumInDecimalFormat(
-        num: String,
-        type: String,
-        numeralSystem: Int,
-        dropsCount: Int,
-        exceptionMessage: String
-    ): Number {
-        return when (type) {
-            "x" -> parseByte(num.drop(dropsCount), numeralSystem)
-            // This is right idea of conversions ? return Uint and the call toUbyte
-            "ux" -> parseUnsignedInt(num.drop(dropsCount), numeralSystem)
-            "s" -> parseShort(num.drop(dropsCount), numeralSystem)
-            // This is right idea of conversions ? return Uint and the call toUshort
-            "us" -> parseUnsignedInt(num.drop(dropsCount), numeralSystem)
-            "i" -> parseInt(num.drop(dropsCount), numeralSystem)
-            "u" -> parseUnsignedInt(num.drop(dropsCount), numeralSystem)
-            "l" -> parseLong(num.drop(dropsCount), numeralSystem)
-            "ul" -> parseUnsignedLong(num.drop(dropsCount), numeralSystem)
-            else -> error(exceptionMessage)
-        }
-    }
-
     override fun visitFloatNumber(ctx: LibSLParser.FloatNumberContext): FloatLiteral {
         val num = ctx.text.lowercase()
         return when {
@@ -406,51 +271,6 @@ class ExpressionVisitor(
         )
     }
 
-    private fun processPeriodSeparatedQualifiedAccess(
-        periodSeparatedFullNameContext: PeriodSeparatedFullNameContext
-    ): QualifiedAccess {
-        val names = periodSeparatedFullNameContext.Identifier().map { it.text.extractIdentifier() }
-
-        val lastAccess = when (val lastFieldName = names.last()) {
-
-            "this" ->
-                ThisAccess(
-                    childAccess = null,
-                    entityPosition = posGetter.getCtxPosition(fileName, periodSeparatedFullNameContext)
-                )
-
-            else -> let {
-                val lastVariableReference = VariableReferenceBuilder.build(lastFieldName, context)
-                VariableAccess(
-                    lastFieldName,
-                    childAccess = null,
-                    lastVariableReference,
-                    entityPosition = posGetter.getCtxPosition(fileName, periodSeparatedFullNameContext)
-                )
-            }
-        }
-
-        return names.dropLast(1).foldRight(lastAccess) { name, access ->
-            val childAccess = when (name) {
-                "this" -> ThisAccess(
-                    childAccess = access,
-                    entityPosition = posGetter.getCtxPosition(fileName, periodSeparatedFullNameContext)
-                )
-
-                else -> let {
-                    val childVariableReference = VariableReferenceBuilder.build(name, context)
-                    VariableAccess(
-                        name,
-                        childAccess = access,
-                        childVariableReference,
-                        entityPosition = posGetter.getCtxPosition(fileName, periodSeparatedFullNameContext)
-                    )
-                }
-            }
-            childAccess
-        }
-    }
-
     override fun visitSimpleCall(ctx: SimpleCallContext): AutomatonVariableInvoke {
         // check(context is FunctionContext) { "simple call is allowed only inside of function" }
 
@@ -470,26 +290,6 @@ class ExpressionVisitor(
         )
     }
 
-    fun visitSimpleCallWithProcedure(ctx: QualifiedAccessContext): AutomatonProcedureCall {
-        // check(context is FunctionContext) { "simple call is allowed only inside of function" }
-
-        val automatonName = ctx.simpleCall().Identifier().asPeriodSeparatedString()
-        val automatonReference = AutomatonReferenceBuilder.build(automatonName, context)
-
-        //val argName = ctx.Identifier(1).asPeriodSeparatedString()
-        val arg = visitQualifiedAccess(ctx.simpleCall().qualifiedAccess())
-
-        // check(arg != null) { "can't resolve argument $argName" }
-
-        return AutomatonProcedureCall(
-            automatonReference,
-            arg,
-            childAccess = null,
-            procExpression = visitProcUsage(ctx.procUsage()) as ProcExpression,
-            entityPosition = posGetter.getCtxPosition(fileName, ctx)
-        )
-    }
-
     override fun visitCallAutomatonConstructorWithNamedArgs(
         ctx: CallAutomatonConstructorWithNamedArgsContext
     ): Expression {
@@ -500,7 +300,7 @@ class ExpressionVisitor(
 
         generics.forEach {
             if (it is WildcardTypeReference)
-                // TODO: add for all exceptions in parser concrete places where it was appeared.
+            // TODO: add for all exceptions in parser concrete places where it was appeared.
                 throw error("Constructor invoke can't contain WildCards")
 
         }
@@ -603,17 +403,6 @@ class ExpressionVisitor(
         )
     }
 
-    private fun processUnaryOp(ctx: ExpressionContext): Expression {
-        val op = ArithmeticUnaryOp.fromString(ctx.unaryOp.text)
-
-        val value = visitExpression(ctx.expression(0))
-        return UnaryOpExpression(
-            op,
-            value,
-            posGetter.getCtxPosition(fileName, ctx)
-        )
-    }
-
     override fun visitHasAutomatonConcept(ctx: LibSLParser.HasAutomatonConceptContext): Expression {
         val variable = visitQualifiedAccess(ctx.qualifiedAccess())
         val automatonConceptName = ctx.name.text
@@ -622,6 +411,217 @@ class ExpressionVisitor(
         return HasAutomatonConcept(
             variable,
             automatonReference,
+            posGetter.getCtxPosition(fileName, ctx)
+        )
+    }
+    
+    private fun processTypeOperationExpression(ctx: ExpressionContext): TypeOperationExpression {
+        return TypeOperationExpression(
+            ctx.typeOp.text,
+            visitExpression(ctx.expression(0)),
+            processTypeIdentifier(ctx.typeIdentifier()),
+            posGetter.getCtxPosition(fileName, ctx)
+        )
+    }
+
+    private fun processBinaryExpression(ctx: ExpressionContext): BinaryOpExpression {
+        val opText = when {
+            ctx.op != null -> let {
+                ctx.op.text
+            }
+            ctx.bitShiftOp().lShift() != null -> let {
+                "<<"
+            }
+            ctx.bitShiftOp().rShift() != null -> let {
+                ">>"
+            }
+            ctx.bitShiftOp().uRShift() != null -> let {
+                ">>>"
+            }
+            ctx.bitShiftOp().uLShift() != null -> let {
+                "<<<"
+            }
+
+            else -> error("unknown binary expression")
+        }
+
+        val op = ArithmeticBinaryOps.fromString(opText)
+
+        val left = ctx.expression(0)
+        val right = ctx.expression(1)
+
+        return processBinaryExpression(ctx, left, right, op)
+    }
+
+    private fun processBinaryExpression(
+        ctx: ExpressionContext,
+        left: ExpressionContext,
+        right: ExpressionContext,
+        op: ArithmeticBinaryOps
+    ): BinaryOpExpression {
+        val leftExpression = visitExpression(left)
+        val rightExpression = visitExpression(right)
+
+        return BinaryOpExpression(
+            leftExpression,
+            rightExpression,
+            op,
+            posGetter.getCtxPosition(fileName, ctx)
+        )
+    }
+
+    private fun processUnaryExpression(ctx: ExpressionContext): UnaryOpExpression {
+        val opText = ctx.op.text
+        val op = ArithmeticUnaryOp.fromString(opText)
+        val expression = visitExpression(ctx.expression(0))
+
+        return UnaryOpExpression(
+            op,
+            expression,
+            posGetter.getCtxPosition(fileName, ctx)
+        )
+    }
+
+    private fun processOldValue(ctx: QualifiedAccessContext): OldValue {
+        val value = visitQualifiedAccess(ctx)
+        return OldValue(
+            value,
+            posGetter.getCtxPosition(fileName, ctx)
+        )
+    }
+
+    private fun convertBinHexOctToPrimitives(num: String, type: String): Number {
+        return when {
+            num.startsWith(HEX_PREFIX) -> return getNumInDecimalFormat(
+                num,
+                type,
+                16,
+                2,
+                "unsupported type of hex integer"
+            )
+            num.startsWith(BIN_PREFIX) -> return getNumInDecimalFormat(
+                num,
+                type,
+                2,
+                2,
+                "unsupported type of binary integer"
+            )
+            num.startsWith(OCT_PREFIX) && num.length > 1 -> return getNumInDecimalFormat(
+                num,
+                type,
+                8,
+                1,
+                "unsupported type of octal integer"
+            )
+            else ->
+                return when (type) {
+                    "x" -> num.toByte()
+                    "ux" -> num.toInt()
+                    "s" -> num.toShort()
+                    "us" -> num.toInt()
+                    "i" -> num.toInt()
+                    "u" -> num.toLong()
+                    "l" -> num.toLong()
+                    "ul" -> num.toBigDecimal()
+                    else -> error("unsupported type of octal integer")
+                }
+        }
+    }
+
+    private fun getNumInDecimalFormat(
+        num: String,
+        type: String,
+        numeralSystem: Int,
+        dropsCount: Int,
+        exceptionMessage: String
+    ): Number {
+        return when (type) {
+            "x" -> parseByte(num.drop(dropsCount), numeralSystem)
+            // This is right idea of conversions ? return Uint and the call toUbyte
+            "ux" -> parseUnsignedInt(num.drop(dropsCount), numeralSystem)
+            "s" -> parseShort(num.drop(dropsCount), numeralSystem)
+            // This is right idea of conversions ? return Uint and the call toUshort
+            "us" -> parseUnsignedInt(num.drop(dropsCount), numeralSystem)
+            "i" -> parseInt(num.drop(dropsCount), numeralSystem)
+            "u" -> parseUnsignedInt(num.drop(dropsCount), numeralSystem)
+            "l" -> parseLong(num.drop(dropsCount), numeralSystem)
+            "ul" -> parseUnsignedLong(num.drop(dropsCount), numeralSystem)
+            else -> error(exceptionMessage)
+        }
+    }
+
+    private fun processPeriodSeparatedQualifiedAccess(
+        periodSeparatedFullNameContext: PeriodSeparatedFullNameContext
+    ): QualifiedAccess {
+        val names = periodSeparatedFullNameContext.Identifier().map { it.text.extractIdentifier() }
+
+        val lastAccess = when (val lastFieldName = names.last()) {
+
+            "this" ->
+                ThisAccess(
+                    childAccess = null,
+                    entityPosition = posGetter.getCtxPosition(fileName, periodSeparatedFullNameContext)
+                )
+
+            else -> let {
+                val lastVariableReference = VariableReferenceBuilder.build(lastFieldName, context)
+                VariableAccess(
+                    lastFieldName,
+                    childAccess = null,
+                    lastVariableReference,
+                    entityPosition = posGetter.getCtxPosition(fileName, periodSeparatedFullNameContext)
+                )
+            }
+        }
+
+        return names.dropLast(1).foldRight(lastAccess) { name, access ->
+            val childAccess = when (name) {
+                "this" -> ThisAccess(
+                    childAccess = access,
+                    entityPosition = posGetter.getCtxPosition(fileName, periodSeparatedFullNameContext)
+                )
+
+                else -> let {
+                    val childVariableReference = VariableReferenceBuilder.build(name, context)
+                    VariableAccess(
+                        name,
+                        childAccess = access,
+                        childVariableReference,
+                        entityPosition = posGetter.getCtxPosition(fileName, periodSeparatedFullNameContext)
+                    )
+                }
+            }
+            childAccess
+        }
+    }
+
+    private fun visitSimpleCallWithProcedure(ctx: QualifiedAccessContext): AutomatonProcedureCall {
+        // check(context is FunctionContext) { "simple call is allowed only inside of function" }
+
+        val automatonName = ctx.simpleCall().Identifier().asPeriodSeparatedString()
+        val automatonReference = AutomatonReferenceBuilder.build(automatonName, context)
+
+        //val argName = ctx.Identifier(1).asPeriodSeparatedString()
+        val arg = visitQualifiedAccess(ctx.simpleCall().qualifiedAccess())
+
+        // check(arg != null) { "can't resolve argument $argName" }
+
+        return AutomatonProcedureCall(
+            automatonReference,
+            arg,
+            childAccess = null,
+            procExpression = visitProcUsage(ctx.procUsage()) as ProcExpression,
+            entityPosition = posGetter.getCtxPosition(fileName, ctx)
+        )
+    }
+
+    private fun processUnaryOp(ctx: ExpressionContext): Expression {
+        val op = ArithmeticUnaryOp.fromString(ctx.unaryOp.text)
+
+        val value = visitExpression(ctx.expression(0))
+        return UnaryOpExpression(
+            op,
+            value,
             posGetter.getCtxPosition(fileName, ctx)
         )
     }
