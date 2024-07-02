@@ -24,7 +24,7 @@ automaton ListAutomaton (var size: Int | Long | 666, var anyListFlag: Int | Long
     
     fun *.compositeTypes_1(): Int | Long {
         var a: Int | Long | Byte = 5;
-        var b: Int | Long | Byte = 5;
+        var b: Int | Long | null = 5;
         var c: Int | Long & Byte = 5;
         var d: array<array<Int>> | Byte = 6;
         var e: array<array<Int>> | Byte | 5 | "anyString" = 5;

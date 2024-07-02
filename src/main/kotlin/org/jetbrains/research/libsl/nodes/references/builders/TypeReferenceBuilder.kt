@@ -61,7 +61,9 @@ object TypeReferenceBuilder {
 
     fun isLiteral(name: String): Boolean {
         val refNameFirstChar = name.first()
-        if (refNameFirstChar.isDigit())
+        if (name == "null")
+            return true
+        else if (refNameFirstChar.isDigit())
             return true
         else if (refNameFirstChar == '\"')
             return true

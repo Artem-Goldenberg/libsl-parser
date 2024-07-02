@@ -5,14 +5,6 @@ import org.jetbrains.research.libsl.type.*
 
 interface TypeReference : LslReference<Type, TypeReference> {
     override val context: LslContextBase
-
-    fun resolveNullType(): NullType? {
-        if (getName() != "null") {
-            return null
-        }
-
-        return NullType(false, mutableListOf(), context)
-    }
 }
 
 data class UnionExpressionTypeReference(
@@ -84,7 +76,11 @@ data class IntersectionExpressionTypeReference(
     }
 
     override fun isSameReference(other: TypeReference): Boolean {
-        TODO("Not yet implemented")
+        // This is right realization ??
+        if (other is IntersectionExpressionTypeReference) {
+            this.left.isSameReference(other.left) && this.right.isSameReference(other.right)
+        }
+        return false
     }
 
     override fun equals(other: Any?): Boolean {
@@ -168,7 +164,7 @@ data class GenericTypeReference(
     override val context: LslContextBase,
 ) : TypeReference {
     override fun resolve(): Type? {
-        return resolveArrayType() ?: resolveListType() ?: resolveMapType() ?: resolveNullType()
+        return resolveArrayType() ?: resolveListType() ?: resolveMapType()
         ?: context.resolveType(this)
     }
 
@@ -259,8 +255,7 @@ data class PlainTypeReference(
     override val context: LslContextBase
 ) : TypeReference {
     override fun resolve(): Type? {
-        return resolveNullType()
-            ?: context.resolveType(this)
+        return context.resolveType(this)
     }
 
     override fun isReferenceMatchWithNode(node: Type): Boolean {
