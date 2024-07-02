@@ -3,30 +3,41 @@ package org.jetbrains.research.libsl.nodes.references
 import org.jetbrains.research.libsl.context.LslContextBase
 import org.jetbrains.research.libsl.type.*
 
-abstract class TypeReference(
+interface TypeReference : LslReference<Type, TypeReference> {
     override val context: LslContextBase
-) : LslReference<Type, TypeReference> {
 
-    override abstract fun isReferenceMatchWithNode(node: Type): Boolean
+    fun resolveNullType(): NullType? {
+        if (getName() != "null") {
+            return null
+        }
 
-    override abstract fun resolve(): Type?
+        return NullType(false, mutableListOf(), context)
+    }
 }
 
 data class UnionExpressionTypeReference(
     val left: TypeReference,
     val right: TypeReference,
     override val context: LslContextBase
-) : TypeReference(context = context) {
+) : TypeReference {
     override fun resolve(): Type? {
-        TODO("Not yet implemented")
+        this.left.resolve()
+        this.right.resolve()
+        // We don't have type for UnionExpression
+        return null
     }
 
     override fun isReferenceMatchWithNode(node: Type): Boolean {
-        TODO("Not yet implemented")
+        // we don't have Type for UnionExpressionTypeReference
+        return false
     }
 
     override fun isSameReference(other: TypeReference): Boolean {
-        TODO("Not yet implemented")
+        // This is right realization ??
+        if (other is UnionExpressionTypeReference) {
+            this.left.isSameReference(other.left) && this.right.isSameReference(other.right)
+        }
+        return false
     }
 
     override fun equals(other: Any?): Boolean {
@@ -49,6 +60,9 @@ data class UnionExpressionTypeReference(
         return result
     }
 
+    fun getName(): String {
+        return this.left.getName() + " | " + this.right.getName()
+    }
 
 }
 
@@ -56,13 +70,17 @@ data class IntersectionExpressionTypeReference(
     val left: TypeReference,
     val right: TypeReference,
     override val context: LslContextBase
-) : TypeReference(context = context) {
+) : TypeReference {
     override fun resolve(): Type? {
-        TODO("Not yet implemented")
+        this.left.resolve()
+        this.right.resolve()
+        // We don't have type for IntersectionExpression
+        return null
     }
 
     override fun isReferenceMatchWithNode(node: Type): Boolean {
-        TODO("Not yet implemented")
+        // we don't have Type for IntersectionExpressionTypeReference
+        return false
     }
 
     override fun isSameReference(other: TypeReference): Boolean {
@@ -89,13 +107,15 @@ data class IntersectionExpressionTypeReference(
         return result
     }
 
-
+    fun getName(): String {
+        return this.left.getName() + " & " + this.right.getName()
+    }
 }
 
 data class LiteralTypeReference(
     val value: String,
     override val context: LslContextBase
-) : TypeReference(context = context) {
+) : TypeReference {
     override fun resolve(): Type? {
         if (value.startsWith("\""))
             return StringType(context)
@@ -113,7 +133,10 @@ data class LiteralTypeReference(
     }
 
     override fun isSameReference(other: TypeReference): Boolean {
-        TODO("Not yet implemented")
+        if (other is LiteralTypeReference) {
+            return this.value == other.value
+        }
+        return false
     }
 
     override fun equals(other: Any?): Boolean {
@@ -143,14 +166,21 @@ data class GenericTypeReference(
     var typeBound: GenericTypeBound = GenericTypeBound.EMPTY,
     val genericReferences: MutableList<TypeReference>,
     override val context: LslContextBase,
-) : TypeReference(context = context) {
+) : TypeReference {
     override fun resolve(): Type? {
         return resolveArrayType() ?: resolveListType() ?: resolveMapType() ?: resolveNullType()
         ?: context.resolveType(this)
     }
 
     override fun isSameReference(other: TypeReference): Boolean {
-        TODO("Not yet implemented")
+        if (other is GenericTypeReference) {
+            return this.name == other.name && this.typeBound == other.typeBound && this.genericReferences.filterIndexed { i, it ->
+                !it.isSameReference(
+                    other.genericReferences.get(i)
+                )
+            }.isEmpty()
+        }
+        return false
     }
 
     override fun equals(other: Any?): Boolean {
@@ -196,13 +226,6 @@ data class GenericTypeReference(
         return MapType(generics = genericReferences, context = context)
     }
 
-    private fun resolveNullType(): NullType? {
-        if (name != "null") {
-            return null
-        }
-        return NullType(false, mutableListOf(), context)
-    }
-
     override fun isReferenceMatchWithNode(node: Type): Boolean {
         if (this.name != node.name) {
             return false
@@ -234,7 +257,7 @@ data class PlainTypeReference(
     val isPointer: Boolean,
     var typeBound: GenericTypeBound = GenericTypeBound.EMPTY,
     override val context: LslContextBase
-) : TypeReference(context = context) {
+) : TypeReference {
     override fun resolve(): Type? {
         return resolveNullType()
             ?: context.resolveType(this)
@@ -253,7 +276,10 @@ data class PlainTypeReference(
     }
 
     override fun isSameReference(other: TypeReference): Boolean {
-        TODO("Not yet implemented")
+        if (other is PlainTypeReference) {
+            this.name == other.name && this.typeBound == other.typeBound
+        }
+        return false
     }
 
     override fun equals(other: Any?): Boolean {
@@ -278,13 +304,6 @@ data class PlainTypeReference(
         return result
     }
 
-    private fun resolveNullType(): NullType? {
-        if (name != "null") {
-            return null
-        }
-        return NullType(false, mutableListOf(), context)
-    }
-
 }
 
 fun TypeReference.getName(): String {
@@ -292,8 +311,8 @@ fun TypeReference.getName(): String {
         is PlainTypeReference -> this.name
         is GenericTypeReference -> this.name
         is LiteralTypeReference -> this.value
-        is UnionExpressionTypeReference -> ""
-        is IntersectionExpressionTypeReference -> ""
-        else -> error("")
+        is UnionExpressionTypeReference -> this.getName()
+        is IntersectionExpressionTypeReference -> this.getName()
+        else -> error("Unsupported reference type")
     }
 } 
