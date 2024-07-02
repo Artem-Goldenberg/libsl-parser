@@ -32,26 +32,6 @@ data class UnionExpressionTypeReference(
         return false
     }
 
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (javaClass != other?.javaClass) return false
-
-        other as UnionExpressionTypeReference
-
-        if (left != other.left) return false
-        if (right != other.right) return false
-        if (context != other.context) return false
-
-        return true
-    }
-
-    override fun hashCode(): Int {
-        var result = left.hashCode()
-        result = 31 * result + right.hashCode()
-        result = 31 * result + context.hashCode()
-        return result
-    }
-
     fun getName(): String {
         return this.left.getName() + " | " + this.right.getName()
     }
@@ -83,26 +63,6 @@ data class IntersectionExpressionTypeReference(
         return false
     }
 
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (javaClass != other?.javaClass) return false
-
-        other as IntersectionExpressionTypeReference
-
-        if (left != other.left) return false
-        if (right != other.right) return false
-        if (context != other.context) return false
-
-        return true
-    }
-
-    override fun hashCode(): Int {
-        var result = left.hashCode()
-        result = 31 * result + right.hashCode()
-        result = 31 * result + context.hashCode()
-        return result
-    }
-
     fun getName(): String {
         return this.left.getName() + " & " + this.right.getName()
     }
@@ -113,6 +73,10 @@ data class LiteralTypeReference(
     override val context: LslContextBase
 ) : TypeReference {
     override fun resolve(): Type? {
+        return resolveLiteralType()
+    }
+
+    private fun resolveLiteralType(): Type? {
         if (value.startsWith("\""))
             return StringType(context)
         else if (value.startsWith("\'"))
@@ -134,26 +98,6 @@ data class LiteralTypeReference(
         }
         return false
     }
-
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (javaClass != other?.javaClass) return false
-
-        other as LiteralTypeReference
-
-        if (value != other.value) return false
-        if (context != other.context) return false
-
-        return true
-    }
-
-    override fun hashCode(): Int {
-        var result = value.hashCode()
-        result = 31 * result + context.hashCode()
-        return result
-    }
-
-
 }
 
 
@@ -177,28 +121,6 @@ data class GenericTypeReference(
             }.isEmpty()
         }
         return false
-    }
-
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (javaClass != other?.javaClass) return false
-
-        other as GenericTypeReference
-
-        if (name != other.name) return false
-        if (typeBound != other.typeBound) return false
-        if (genericReferences != other.genericReferences) return false
-        if (context != other.context) return false
-
-        return true
-    }
-
-    override fun hashCode(): Int {
-        var result = name.hashCode()
-        result = 31 * result + typeBound.hashCode()
-        result = 31 * result + genericReferences.hashCode()
-        result = 31 * result + context.hashCode()
-        return result
     }
 
     private fun resolveArrayType(): ArrayType? {
@@ -277,28 +199,22 @@ data class PlainTypeReference(
         return false
     }
 
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (javaClass != other?.javaClass) return false
+}
 
-        other as PlainTypeReference
-
-        if (name != other.name) return false
-        if (isPointer != other.isPointer) return false
-        if (typeBound != other.typeBound) return false
-        if (context != other.context) return false
-
-        return true
+data class WildcardTypeReference(
+    override val context: LslContextBase,
+) : TypeReference {
+    override fun resolve(): Type? {
+        return context.resolveType(this)
     }
 
-    override fun hashCode(): Int {
-        var result = name.hashCode()
-        result = 31 * result + isPointer.hashCode()
-        result = 31 * result + typeBound.hashCode()
-        result = 31 * result + context.hashCode()
-        return result
+    override fun isSameReference(other: TypeReference): Boolean {
+        return other is WildcardTypeReference
     }
 
+    override fun isReferenceMatchWithNode(node: Type): Boolean {
+        return node.name == this.getName()
+    }
 }
 
 fun TypeReference.getName(): String {
@@ -308,6 +224,7 @@ fun TypeReference.getName(): String {
         is LiteralTypeReference -> this.value
         is UnionExpressionTypeReference -> this.getName()
         is IntersectionExpressionTypeReference -> this.getName()
+        is WildcardTypeReference -> "?"
         else -> error("Unsupported reference type")
     }
 } 

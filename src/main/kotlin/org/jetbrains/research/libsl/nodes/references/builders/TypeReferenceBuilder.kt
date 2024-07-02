@@ -1,10 +1,7 @@
 package org.jetbrains.research.libsl.nodes.references.builders
 
 import org.jetbrains.research.libsl.context.LslContextBase
-import org.jetbrains.research.libsl.nodes.references.GenericTypeReference
-import org.jetbrains.research.libsl.nodes.references.LiteralTypeReference
-import org.jetbrains.research.libsl.nodes.references.PlainTypeReference
-import org.jetbrains.research.libsl.nodes.references.TypeReference
+import org.jetbrains.research.libsl.nodes.references.*
 import org.jetbrains.research.libsl.type.GenericTypeBound
 import org.jetbrains.research.libsl.type.Type
 
@@ -16,9 +13,11 @@ object TypeReferenceBuilder {
         isPointer: Boolean = false,
         context: LslContextBase
     ): TypeReference {
-        if (isLiteral(name))
+        if (isWildCard(name))
+            return buildWildcardRef(context)
+        else if (isLiteral(name))
             return buildLiteralRef(name, context)
-        if (genericReferences.isNotEmpty())
+        else if (genericReferences.isNotEmpty())
             return buildGenericRef(name, typeBound, genericReferences, context)
         return buildPlainRef(name, isPointer, typeBound, context)
     }
@@ -28,6 +27,12 @@ object TypeReferenceBuilder {
         context: LslContextBase
     ): TypeReference {
         return LiteralTypeReference(name, context)
+    }
+
+    private fun buildWildcardRef(
+        context: LslContextBase
+    ): TypeReference {
+        return WildcardTypeReference(context)
     }
 
     private fun buildGenericRef(
@@ -52,14 +57,16 @@ object TypeReferenceBuilder {
         context: LslContextBase,
         typeBound: GenericTypeBound = GenericTypeBound.EMPTY
     ): TypeReference {
+        if (isWildCard(name))
+            return buildWildcardRef(context)
         if (isLiteral(this.name))
             return buildLiteralRef(this.name, context)
-        if (this.generics.isNotEmpty())
+        else if (this.generics.isNotEmpty())
             return buildGenericRef(this.name, typeBound, this.generics, context)
         return buildPlainRef(this.name, this.isPointer, typeBound, context)
     }
 
-    fun isLiteral(name: String): Boolean {
+    private fun isLiteral(name: String): Boolean {
         val refNameFirstChar = name.first()
         if (name == "null")
             return true
@@ -73,4 +80,9 @@ object TypeReferenceBuilder {
             return true
         return false
     }
+
+    private fun isWildCard(name: String): Boolean {
+        return name == "?"
+    }
+    
 }

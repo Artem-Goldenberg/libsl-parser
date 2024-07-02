@@ -4,14 +4,13 @@ import org.jetbrains.research.libsl.LibSLParser
 import org.jetbrains.research.libsl.LibSLParser.*
 import org.jetbrains.research.libsl.context.LslContextBase
 import org.jetbrains.research.libsl.nodes.*
-import org.jetbrains.research.libsl.nodes.references.GenericTypeReference
 import org.jetbrains.research.libsl.nodes.references.TypeReference
+import org.jetbrains.research.libsl.nodes.references.WildcardTypeReference
 import org.jetbrains.research.libsl.nodes.references.builders.ActionDeclReferenceBuilder
 import org.jetbrains.research.libsl.nodes.references.builders.AutomatonReferenceBuilder
 import org.jetbrains.research.libsl.nodes.references.builders.AutomatonStateReferenceBuilder
 import org.jetbrains.research.libsl.nodes.references.builders.TypeReferenceBuilder.getReference
 import org.jetbrains.research.libsl.nodes.references.builders.VariableReferenceBuilder
-import org.jetbrains.research.libsl.type.GenericTypeBound
 import org.jetbrains.research.libsl.utils.PositionGetter
 import org.jetbrains.research.libsl.utils.getCharRepresentation
 import java.lang.Byte.parseByte
@@ -500,7 +499,7 @@ class ExpressionVisitor(
         val generics = processGenerics(ctx.generic())
 
         generics.forEach {
-            if (it is GenericTypeReference && (!GenericTypeBound.EMPTY.equals(it.typeBound) || "?".equals(it.name)))
+            if (it is WildcardTypeReference)
                 // TODO: add for all exceptions in parser concrete places where it was appeared.
                 throw error("Constructor invoke can't contain WildCards")
 
