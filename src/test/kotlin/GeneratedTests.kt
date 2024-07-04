@@ -259,10 +259,5 @@ class GeneratedTests {
     fun testCompositeTypesLsl() {
         runLslTest("compositeTypes")
     }
-
-    @Test
-    fun testArrayListTypeScriptLsl() {
-        // runLslTest("ArrayList.main")
-    }
 }
 

@@ -2,8 +2,7 @@ package org.jetbrains.research.libsl.nodes.references.builders
 
 import org.jetbrains.research.libsl.context.LslContextBase
 import org.jetbrains.research.libsl.nodes.references.*
-import org.jetbrains.research.libsl.type.GenericTypeBound
-import org.jetbrains.research.libsl.type.Type
+import org.jetbrains.research.libsl.type.*
 
 object TypeReferenceBuilder {
     fun build(
@@ -23,10 +22,20 @@ object TypeReferenceBuilder {
     }
 
     private fun buildLiteralRef(
-        name: String,
+        value: String,
         context: LslContextBase
     ): TypeReference {
-        return LiteralTypeReference(name, context)
+        return LiteralTypeReference(value as Any, createLiteralType(value, context), context)
+    }
+
+    private fun createLiteralType(value: String, context: LslContextBase): Type {
+        if (value.startsWith("\""))
+            return StringType(context)
+        else if (value.startsWith("\'"))
+            return CharType(context)
+        else if ((Character.isDigit(value.first()) && value.contains(",")) || (value.startsWith("-") && value.contains(",")))
+            return Float64Type(context)
+        return Int64Type(context)
     }
 
     private fun buildWildcardRef(

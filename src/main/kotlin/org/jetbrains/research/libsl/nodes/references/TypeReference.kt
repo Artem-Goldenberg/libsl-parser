@@ -21,9 +21,10 @@ data class UnionExpressionTypeReference(
     }
 
     override fun isSameReference(other: TypeReference): Boolean {
-        // This is right realization ??
         if (other is UnionExpressionTypeReference) {
-            this.left.isSameReference(other.left) && this.right.isSameReference(other.right)
+            val LLm = this.left.isSameReference(other.left) && this.right.isSameReference(other.right)
+            val LRm = this.left.isSameReference(other.right) && this.right.isSameReference(other.left)
+            return LLm xor LRm
         }
         return false
     }
@@ -48,9 +49,10 @@ data class IntersectionExpressionTypeReference(
     }
 
     override fun isSameReference(other: TypeReference): Boolean {
-        // This is right realization ??
         if (other is IntersectionExpressionTypeReference) {
-            this.left.isSameReference(other.left) && this.right.isSameReference(other.right)
+            val LLm = this.left.isSameReference(other.left) && this.right.isSameReference(other.right)
+            val LRm = this.left.isSameReference(other.right) && this.right.isSameReference(other.left)
+            return LLm xor LRm
         }
         return false
     }
@@ -61,15 +63,17 @@ data class IntersectionExpressionTypeReference(
 }
 
 data class LiteralTypeReference(
-    val value: String,
+    val value: Any,
+    val literalType: Type,
     override val context: LslContextBase
 ) : TypeReference {
-    override fun resolve(): Type? {
+    override fun resolve(): Type {
         return resolveLiteralType()
     }
 
     override fun isReferenceMatchWithNode(node: Type): Boolean {
-        return node.name == this.value
+        val type = resolveLiteralType()
+        return type == node
     }
 
     override fun isSameReference(other: TypeReference): Boolean {
@@ -79,16 +83,8 @@ data class LiteralTypeReference(
         return false
     }
 
-    private fun resolveLiteralType(): Type? {
-        if (value.startsWith("\""))
-            return StringType(context)
-        else if (value.startsWith("\'"))
-            return CharType(context)
-        else if ((Character.isDigit(value.first()) && value.contains(",")) || (value.startsWith("-") && value.contains(",")))
-            return Float64Type(context)
-        else if (Character.isDigit(value.first()) || value.startsWith("-"))
-            return Int64Type(context)
-        return null
+    private fun resolveLiteralType(): Type {
+        return literalType
     }
 }
 
@@ -242,7 +238,7 @@ fun TypeReference.getName(): String {
     return when (this) {
         is PlainTypeReference -> this.name
         is GenericTypeReference -> this.name
-        is LiteralTypeReference -> this.value
+        is LiteralTypeReference -> this.value.toString()
         is UnionExpressionTypeReference -> this.getName()
         is IntersectionExpressionTypeReference -> this.getName()
         is WildcardTypeReference -> this.name

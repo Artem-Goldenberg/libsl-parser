@@ -20,7 +20,7 @@ class LslGlobalContext(fileName: String) : LslContextBase(fileName) {
     override fun resolveType(reference: TypeReference): Type? {
         // #question: I suppose we don't need to save in GlobalContext literal types (or not) ? 
         if (reference is LiteralTypeReference)
-            return LiteralType(context = reference.context, name = reference.value)
+            return LiteralType(context = reference.context, name = reference.value.toString())
         return resolveType(reference, setOf(this))
     }
 
