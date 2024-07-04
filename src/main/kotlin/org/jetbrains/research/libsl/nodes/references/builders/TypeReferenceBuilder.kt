@@ -13,13 +13,13 @@ object TypeReferenceBuilder {
         isPointer: Boolean = false,
         context: LslContextBase
     ): TypeReference {
-        if (isWildCard(name))
-            return buildWildcardRef(context)
+        if (isWildCard(name, typeBound))
+            return buildWildcardRef(name, typeBound, genericReferences, context)
         else if (isLiteral(name))
             return buildLiteralRef(name, context)
         else if (isGeneric(genericReferences))
-            return buildGenericRef(name, typeBound, genericReferences, context)
-        return buildPlainRef(name, isPointer, typeBound, context)
+            return buildGenericRef(name, genericReferences, context)
+        return buildPlainRef(name, isPointer, context)
     }
 
     private fun buildLiteralRef(
@@ -30,40 +30,41 @@ object TypeReferenceBuilder {
     }
 
     private fun buildWildcardRef(
+        name: String,
+        typeBound: GenericTypeBound,
+        genericReferences: MutableList<TypeReference>,
         context: LslContextBase
     ): TypeReference {
-        return WildcardTypeReference(context)
+        return WildcardTypeReference(name, typeBound, genericReferences, context)
     }
 
     private fun buildGenericRef(
         name: String,
-        typeBound: GenericTypeBound = GenericTypeBound.EMPTY,
         genericReferences: MutableList<TypeReference>,
         context: LslContextBase
     ): TypeReference {
-        return GenericTypeReference(name, typeBound, genericReferences, context)
+        return GenericTypeReference(name, genericReferences, context)
     }
 
     private fun buildPlainRef(
         name: String,
         isPointer: Boolean = false,
-        typeBound: GenericTypeBound = GenericTypeBound.EMPTY,
         context: LslContextBase
     ): TypeReference {
-        return PlainTypeReference(name, isPointer, typeBound, context)
+        return PlainTypeReference(name, isPointer, context)
     }
 
     fun Type.getReference(
         context: LslContextBase,
         typeBound: GenericTypeBound = GenericTypeBound.EMPTY
     ): TypeReference {
-        if (isWildCard(name))
-            return buildWildcardRef(context)
+        if (isWildCard(name, typeBound))
+            return buildWildcardRef(this.name, typeBound, this.generics, context)
         else if (isLiteral(this.name))
             return buildLiteralRef(this.name, context)
         else if (isGeneric(generics))
-            return buildGenericRef(this.name, typeBound, this.generics, context)
-        return buildPlainRef(this.name, this.isPointer, typeBound, context)
+            return buildGenericRef(this.name, this.generics, context)
+        return buildPlainRef(this.name, this.isPointer, context)
     }
 
     private fun isLiteral(name: String): Boolean {
@@ -81,8 +82,8 @@ object TypeReferenceBuilder {
         return false
     }
 
-    private fun isWildCard(name: String): Boolean {
-        return name == "?"
+    private fun isWildCard(name: String, typeBound: GenericTypeBound): Boolean {
+        return name == "?" || typeBound != GenericTypeBound.EMPTY
     }
 
     private fun isGeneric(genericReferences: MutableList<TypeReference>): Boolean {

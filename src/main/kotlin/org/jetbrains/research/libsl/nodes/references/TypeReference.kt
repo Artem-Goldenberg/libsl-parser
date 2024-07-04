@@ -95,7 +95,6 @@ data class LiteralTypeReference(
 
 data class GenericTypeReference(
     val name: String,
-    var typeBound: GenericTypeBound = GenericTypeBound.EMPTY,
     val genericReferences: MutableList<TypeReference>,
     override val context: LslContextBase,
 ) : TypeReference {
@@ -106,7 +105,7 @@ data class GenericTypeReference(
 
     override fun isSameReference(other: TypeReference): Boolean {
         if (other is GenericTypeReference) {
-            return this.name == other.name && this.typeBound == other.typeBound && this.genericReferences.filterIndexed { i, it ->
+            return this.name == other.name && this.genericReferences.filterIndexed { i, it ->
                 !it.isSameReference(
                     other.genericReferences.get(i)
                 )
@@ -166,7 +165,6 @@ data class GenericTypeReference(
 data class PlainTypeReference(
     val name: String,
     val isPointer: Boolean,
-    var typeBound: GenericTypeBound = GenericTypeBound.EMPTY,
     override val context: LslContextBase
 ) : TypeReference {
     override fun resolve(): Type? {
@@ -187,7 +185,7 @@ data class PlainTypeReference(
 
     override fun isSameReference(other: TypeReference): Boolean {
         if (other is PlainTypeReference) {
-            this.name == other.name && this.typeBound == other.typeBound
+            this.name == other.name
         }
         return false
     }
@@ -195,18 +193,48 @@ data class PlainTypeReference(
 }
 
 data class WildcardTypeReference(
-    override val context: LslContextBase,
+    val name: String,
+    var typeBound: GenericTypeBound = GenericTypeBound.EMPTY,
+    val genericReferences: MutableList<TypeReference> = mutableListOf(),
+    override val context: LslContextBase
 ) : TypeReference {
     override fun resolve(): Type? {
         return context.resolveType(this)
     }
 
     override fun isSameReference(other: TypeReference): Boolean {
-        return other is WildcardTypeReference
+        if (other is WildcardTypeReference) {
+            return this.name == other.name && this.typeBound == other.typeBound && this.genericReferences.filterIndexed { i, it ->
+                !it.isSameReference(
+                    other.genericReferences.get(i)
+                )
+            }.isEmpty()
+        }
+        return false
     }
 
     override fun isReferenceMatchWithNode(node: Type): Boolean {
-        return node.name == this.getName()
+        if (this.name != node.name) {
+            return false
+        }
+
+        if (!areGenericsMatch(node.generics)) {
+            return false
+        }
+
+        return true
+    }
+
+    private fun areGenericsMatch(generics: MutableList<TypeReference>): Boolean {
+        if (this.genericReferences.isEmpty() && generics.isEmpty()) {
+            return true
+        }
+
+        if (this.genericReferences.isEmpty() || generics.isEmpty()) {
+            return false
+        }
+
+        return true
     }
 }
 
@@ -217,7 +245,7 @@ fun TypeReference.getName(): String {
         is LiteralTypeReference -> this.value
         is UnionExpressionTypeReference -> this.getName()
         is IntersectionExpressionTypeReference -> this.getName()
-        is WildcardTypeReference -> "?"
+        is WildcardTypeReference -> this.name
         else -> error("Unsupported reference type")
     }
 } 

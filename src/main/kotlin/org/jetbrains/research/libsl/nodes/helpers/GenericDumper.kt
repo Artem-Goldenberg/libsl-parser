@@ -1,9 +1,6 @@
 package org.jetbrains.research.libsl.nodes.helpers
 
-import org.jetbrains.research.libsl.nodes.references.GenericTypeReference
-import org.jetbrains.research.libsl.nodes.references.PlainTypeReference
-import org.jetbrains.research.libsl.nodes.references.TypeReference
-import org.jetbrains.research.libsl.nodes.references.getName
+import org.jetbrains.research.libsl.nodes.references.*
 import org.jetbrains.research.libsl.type.GenericType
 import org.jetbrains.research.libsl.type.GenericTypeBound
 import org.jetbrains.research.libsl.type.Type
@@ -87,20 +84,23 @@ private fun appendResolvedGeneric(stringBuilder: StringBuilder, currentTypeRef: 
 }
 
 private fun appendGenericsToQueue(queue: LinkedList<Pair<TypeReference, Int>>, deep: Int) {
-    if (queue.peekLast().first is GenericTypeReference) {
-        val genericReferences = (queue.peekLast().first as GenericTypeReference).genericReferences
-        if (genericReferences.isEmpty()) return
-        genericReferences.forEach {
-            queue.addLast(Pair(it, deep))
-            appendGenericsToQueue(queue, deep + 1)
-        }
+    val firstTypeReference = queue.peekLast().first
+
+    val genericReferences = if (firstTypeReference is GenericTypeReference)
+        (queue.peekLast().first as GenericTypeReference).genericReferences
+    else if (queue.peekLast().first is WildcardTypeReference)
+        (queue.peekLast().first as WildcardTypeReference).genericReferences
+    else mutableListOf()
+
+    if (genericReferences.isEmpty()) return
+    genericReferences.forEach {
+        queue.addLast(Pair(it, deep))
+        appendGenericsToQueue(queue, deep + 1)
     }
 }
 
 private fun getBound(type: TypeReference): String {
-    if (type is GenericTypeReference && type.typeBound != GenericTypeBound.EMPTY)
-        return type.typeBound.string + " "
-    if (type is PlainTypeReference && type.typeBound != GenericTypeBound.EMPTY)
+    if (type is WildcardTypeReference && type.typeBound != GenericTypeBound.EMPTY)
         return type.typeBound.string + " "
     return ""
 }
