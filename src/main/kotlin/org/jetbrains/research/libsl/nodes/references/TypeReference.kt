@@ -13,15 +13,11 @@ data class UnionExpressionTypeReference(
     override val context: LslContextBase
 ) : TypeReference {
     override fun resolve(): Type? {
-        this.left.resolve()
-        this.right.resolve()
-        // We don't have type for UnionExpression
-        return null
+        throw error("Operation is not supported")
     }
 
     override fun isReferenceMatchWithNode(node: Type): Boolean {
-        // we don't have Type for UnionExpressionTypeReference
-        return false
+        return left.isReferenceMatchWithNode(node) || right.isReferenceMatchWithNode(node)
     }
 
     override fun isSameReference(other: TypeReference): Boolean {
@@ -44,15 +40,11 @@ data class IntersectionExpressionTypeReference(
     override val context: LslContextBase
 ) : TypeReference {
     override fun resolve(): Type? {
-        this.left.resolve()
-        this.right.resolve()
-        // We don't have type for IntersectionExpression
-        return null
+        throw error("Operation is not supported")
     }
 
     override fun isReferenceMatchWithNode(node: Type): Boolean {
-        // we don't have Type for IntersectionExpressionTypeReference
-        return false
+        return left.isReferenceMatchWithNode(node) || right.isReferenceMatchWithNode(node)
     }
 
     override fun isSameReference(other: TypeReference): Boolean {
@@ -156,7 +148,7 @@ data class GenericTypeReference(
         genericReferences.forEach { it.resolve() }
         return MapType(generics = genericReferences, context = context)
     }
-    
+
     private fun areGenericsMatch(generics: MutableList<TypeReference>): Boolean {
         if (this.genericReferences.isEmpty() && generics.isEmpty()) {
             return true
