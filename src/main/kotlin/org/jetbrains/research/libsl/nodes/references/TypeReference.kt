@@ -181,7 +181,7 @@ data class PlainTypeReference(
 
     override fun isSameReference(other: TypeReference): Boolean {
         if (other is PlainTypeReference) {
-            this.name == other.name
+            return this.name == other.name
         }
         return false
     }
