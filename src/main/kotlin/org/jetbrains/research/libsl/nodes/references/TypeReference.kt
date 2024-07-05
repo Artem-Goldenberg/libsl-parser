@@ -30,7 +30,7 @@ data class UnionExpressionTypeReference(
     }
 
     fun getName(): String {
-        return this.left.getName() + " | " + this.right.getName()
+        return this.left.toSimpleString() + " | " + this.right.toSimpleString()
     }
 
 }
@@ -58,7 +58,7 @@ data class IntersectionExpressionTypeReference(
     }
 
     fun getName(): String {
-        return this.left.getName() + " & " + this.right.getName()
+        return this.left.toSimpleString() + " & " + this.right.toSimpleString()
     }
 }
 
@@ -234,7 +234,7 @@ data class WildcardTypeReference(
     }
 }
 
-fun TypeReference.getName(): String {
+fun TypeReference.toSimpleString(): String {
     return when (this) {
         is PlainTypeReference -> this.name
         is GenericTypeReference -> this.name

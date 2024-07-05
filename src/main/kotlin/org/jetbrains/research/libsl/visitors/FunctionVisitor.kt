@@ -11,7 +11,7 @@ import org.jetbrains.research.libsl.nodes.references.AutomatonReference
 import org.jetbrains.research.libsl.nodes.references.TypeReference
 import org.jetbrains.research.libsl.nodes.references.builders.AutomatonReferenceBuilder
 import org.jetbrains.research.libsl.nodes.references.builders.AutomatonReferenceBuilder.getReference
-import org.jetbrains.research.libsl.nodes.references.getName
+import org.jetbrains.research.libsl.nodes.references.toSimpleString
 import org.jetbrains.research.libsl.type.GenericType
 import org.jetbrains.research.libsl.utils.PositionGetter
 
@@ -252,7 +252,7 @@ class FunctionVisitor(
             val targetArg = firstOrNull { arg ->
                 arg.annotationUsages.any { it.annotationReference.name == "target" }
             } ?: return null
-            val automatonName = targetArg.typeReference.getName()
+            val automatonName = targetArg.typeReference.toSimpleString()
             return AutomatonReferenceBuilder.build(automatonName, functionContext)
         }
 

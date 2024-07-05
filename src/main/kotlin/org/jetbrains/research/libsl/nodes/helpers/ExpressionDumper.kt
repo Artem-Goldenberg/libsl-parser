@@ -2,7 +2,7 @@ package org.jetbrains.research.libsl.nodes.helpers
 
 import org.jetbrains.research.libsl.nodes.*
 import org.jetbrains.research.libsl.nodes.references.GenericTypeReference
-import org.jetbrains.research.libsl.nodes.references.getName
+import org.jetbrains.research.libsl.nodes.references.toSimpleString
 import org.jetbrains.research.libsl.utils.BackticksPolitics
 import org.jetbrains.research.libsl.utils.escapeCharStringRepresentation
 
@@ -241,7 +241,7 @@ object ExpressionDumper {
             if (expression.typeReference is GenericTypeReference)
                 appendGeneric(this, expression.typeReference)
             else {
-                append(expression.typeReference.getName())
+                append(expression.typeReference.toSimpleString())
             }
         }
     }

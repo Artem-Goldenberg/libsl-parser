@@ -4,7 +4,7 @@ import org.jetbrains.research.libsl.context.ActionContext
 import org.jetbrains.research.libsl.nodes.helpers.appendGeneric
 import org.jetbrains.research.libsl.nodes.helpers.appendWhereSection
 import org.jetbrains.research.libsl.nodes.references.TypeReference
-import org.jetbrains.research.libsl.nodes.references.getName
+import org.jetbrains.research.libsl.nodes.references.toSimpleString
 import org.jetbrains.research.libsl.type.GenericType
 import org.jetbrains.research.libsl.type.Type
 import org.jetbrains.research.libsl.utils.BackticksPolitics
@@ -46,12 +46,12 @@ data class ActionDecl(
             append(": ")
             if (actionGenericTypes.contains(
                     GenericType(
-                        returnType.getName(),
+                        returnType.toSimpleString(),
                         context = context
                     )
                 )
             ) {
-                append(returnType.getName())
+                append(returnType.toSimpleString())
             } else {
                 if (returnType.resolve()?.fullName != null)
                     appendGeneric(this, returnType)

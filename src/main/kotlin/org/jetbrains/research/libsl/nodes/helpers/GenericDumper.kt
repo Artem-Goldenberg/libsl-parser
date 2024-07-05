@@ -78,7 +78,7 @@ fun appendWhereSection(stringBuilder: StringBuilder, generics: MutableList<Gener
 
 private fun appendResolvedGeneric(stringBuilder: StringBuilder, currentTypeRef: TypeReference) {
     if (currentTypeRef.resolve() != null) {
-        stringBuilder.append("${addAsteriskForPointer(currentTypeRef)}${getBound(currentTypeRef)}${currentTypeRef.getName()}")
+        stringBuilder.append("${addAsteriskForPointer(currentTypeRef)}${getBound(currentTypeRef)}${currentTypeRef.toSimpleString()}")
     } else
         stringBuilder.append(Type.UNRESOLVED_TYPE_SYMBOL)
 }
