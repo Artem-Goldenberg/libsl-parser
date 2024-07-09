@@ -24,7 +24,7 @@ data class UnionExpressionTypeReference(
         if (other is UnionExpressionTypeReference) {
             val LLm = this.left.isSameReference(other.left) && this.right.isSameReference(other.right)
             val LRm = this.left.isSameReference(other.right) && this.right.isSameReference(other.left)
-            return LLm xor LRm
+            return LLm or LRm
         }
         return false
     }
@@ -45,14 +45,14 @@ data class IntersectionExpressionTypeReference(
     }
 
     override fun isReferenceMatchWithNode(node: Type): Boolean {
-        return left.isReferenceMatchWithNode(node) || right.isReferenceMatchWithNode(node)
+        return left.isReferenceMatchWithNode(node) && right.isReferenceMatchWithNode(node)
     }
 
     override fun isSameReference(other: TypeReference): Boolean {
         if (other is IntersectionExpressionTypeReference) {
             val LLm = this.left.isSameReference(other.left) && this.right.isSameReference(other.right)
             val LRm = this.left.isSameReference(other.right) && this.right.isSameReference(other.left)
-            return LLm xor LRm
+            return LLm or LRm
         }
         return false
     }
