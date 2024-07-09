@@ -143,9 +143,6 @@ data class LslVersion(
     val minor: Int,
     val patch: Int
 ) : IPrinter {
-    override fun dumpToString(): String {
-        return "$major.$minor.$patch"
-    }
 
     companion object {
         fun fromString(str: String): LslVersion {
@@ -158,5 +155,9 @@ data class LslVersion(
 
             return LslVersion(major, minor, patch)
         }
+    }
+    
+    override fun dumpToString(): String {
+        return "$major.$minor.$patch"
     }
 }

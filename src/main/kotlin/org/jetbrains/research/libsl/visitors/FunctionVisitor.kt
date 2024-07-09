@@ -4,23 +4,25 @@ import org.jetbrains.research.libsl.LibSLParser.*
 import org.jetbrains.research.libsl.context.FunctionContext
 import org.jetbrains.research.libsl.context.LslGlobalContext
 import org.jetbrains.research.libsl.errors.ErrorManager
+import org.jetbrains.research.libsl.errors.WhereSectionGenericWasMissed
 import org.jetbrains.research.libsl.nodes.*
 import org.jetbrains.research.libsl.nodes.Function
 import org.jetbrains.research.libsl.nodes.references.AutomatonReference
+import org.jetbrains.research.libsl.nodes.references.TypeReference
 import org.jetbrains.research.libsl.nodes.references.builders.AutomatonReferenceBuilder
 import org.jetbrains.research.libsl.nodes.references.builders.AutomatonReferenceBuilder.getReference
+import org.jetbrains.research.libsl.nodes.references.toSimpleString
 import org.jetbrains.research.libsl.type.GenericType
-import org.jetbrains.research.libsl.type.LiteralType
 import org.jetbrains.research.libsl.utils.PositionGetter
 
 class FunctionVisitor(
+    private val fileName: String,
     private val functionContext: FunctionContext,
     private var parentAutomaton: Automaton?,
     private val globalContext: LslGlobalContext,
     val errorManager: ErrorManager
 ) : LibSLParserVisitor<Unit>(functionContext) {
     private lateinit var buildingFunction: Function
-    private val fileName = context.fileName
     private val posGetter = PositionGetter()
 
     override fun visitFunctionDecl(ctx: FunctionDeclContext) {
@@ -58,10 +60,10 @@ class FunctionVisitor(
         args.forEach { arg -> functionContext.storeFunctionArgument(arg) }
 
         val targetAutomatonRef = args.getFunctionTargetByAnnotation ?: automatonReference
-        val returnType = ctx.functionHeader().functionType?.let { processTypeIdentifier(it) }
 
-        if (isNotStoredLiteralType(globalContext, returnType, ctx.functionHeader().functionType))
-            globalContext.storeType(LiteralType(context, returnType!!.name))
+        var returnType: TypeReference? = null
+        if (ctx.functionHeader().functionType != null)
+            returnType = TypeVisitor(context).visitTypeExpression(ctx.functionHeader().functionType)
 
         val funGenericTypes: MutableList<GenericType> = if (ctx.functionHeader().generic() != null)
             ctx.functionGenerics
@@ -152,7 +154,10 @@ class FunctionVisitor(
 
         procGenericTypes.forEach { functionContext.storeFunctionType(it) }
         args.forEach { arg -> functionContext.storeFunctionArgument(arg) }
-        val returnType = ctx.procHeader().functionType?.let { processTypeIdentifier(it) }
+
+        var returnType: TypeReference? = null
+        if (ctx.procHeader().functionType != null)
+            returnType = TypeVisitor(context).visitTypeExpression(ctx.procHeader().functionType)
 
         if (returnType != null) {
             val resultVariable = ResultVariable(
@@ -189,9 +194,23 @@ class FunctionVisitor(
         }
     }
 
+    override fun visitEnsuresContract(ctx: EnsuresContractContext) {
+        processContract(ctx.name?.text?.extractIdentifier(), ContractKind.ENSURES, ctx.expression())
+    }
+
+    override fun visitRequiresContract(ctx: RequiresContractContext) {
+        processContract(ctx.name?.text?.extractIdentifier(), ContractKind.REQUIRES, ctx.expression())
+    }
+
+    override fun visitAssignsContract(ctx: AssignsContractContext) {
+        processContract(ctx.name?.text?.extractIdentifier(), ContractKind.ASSIGNS, ctx.expression())
+    }
+    
     private fun getDeclArgs(functionDeclArgList: FunctionDeclArgListContext?): List<FunctionArgument> {
         return functionDeclArgList?.parameter()?.mapIndexed { i, parameter ->
-            val typeRef = processTypeIdentifier(parameter.type)
+
+            val typeRef = TypeVisitor(context).visitTypeExpression(parameter.typeExpression())
+
             val annotationsReferences = getAnnotationUsages(parameter.annotationUsage())
             val arg = FunctionArgument(
                 parameter.name.text.extractIdentifier(),
@@ -233,21 +252,9 @@ class FunctionVisitor(
             val targetArg = firstOrNull { arg ->
                 arg.annotationUsages.any { it.annotationReference.name == "target" }
             } ?: return null
-            val automatonName = targetArg.typeReference.name
+            val automatonName = targetArg.typeReference.toSimpleString()
             return AutomatonReferenceBuilder.build(automatonName, functionContext)
         }
-
-    override fun visitEnsuresContract(ctx: EnsuresContractContext) {
-        processContract(ctx.name?.text?.extractIdentifier(), ContractKind.ENSURES, ctx.expression())
-    }
-
-    override fun visitRequiresContract(ctx: RequiresContractContext) {
-        processContract(ctx.name?.text?.extractIdentifier(), ContractKind.REQUIRES, ctx.expression())
-    }
-
-    override fun visitAssignsContract(ctx: AssignsContractContext) {
-        processContract(ctx.name?.text?.extractIdentifier(), ContractKind.ASSIGNS, ctx.expression())
-    }
 
     private fun processContract(name: String?, kind: ContractKind, expressionContext: ExpressionContext) {
         val expressionVisitor = ExpressionVisitor(functionContext)
@@ -264,7 +271,8 @@ class FunctionVisitor(
 
 
     private val FunctionDeclContext.functionGenerics: MutableList<GenericType>
-        get() = getGenericTypes(this.functionHeader().generic(), this.functionHeader().whereConstraints(), context)
+        get() = if (this.functionHeader().whereConstraints() == null) error(WhereSectionGenericWasMissed(posGetter.getCtxPosition(fileName, this)).toString()) else
+            getGenericTypes(this.functionHeader().generic(), this.functionHeader().whereConstraints(), context)
 
     private val ProcDeclContext.procGenerics: MutableList<GenericType>
         get() = getGenericTypes(this.procHeader().generic(), this.procHeader().whereConstraints(), context)

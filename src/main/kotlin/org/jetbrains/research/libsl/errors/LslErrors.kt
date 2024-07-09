@@ -90,8 +90,7 @@ class UnresolvedImportOrInclude(
 
 // TODO: maybe add this ?
 class WhereSectionGenericWasMissed(
-    override val text: String,
-    override val entityPosition: EntityPosition
-) : LslError {
-    override fun toString(): String = "Was missed generic param constraint in file $text on ${entityPosition.string}"
+    val entityPosition: EntityPosition
+) {
+    override fun toString(): String = "${entityPosition.string} | missing WHERE section in generic declaration"
 }

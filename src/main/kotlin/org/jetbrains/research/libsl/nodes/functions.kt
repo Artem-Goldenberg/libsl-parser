@@ -1,12 +1,11 @@
 package org.jetbrains.research.libsl.nodes
 
 import org.jetbrains.research.libsl.context.FunctionContext
-import org.jetbrains.research.libsl.nodes.helpers.appendGeneric
+import org.jetbrains.research.libsl.nodes.helpers.TypeReferenceDumper
 import org.jetbrains.research.libsl.nodes.helpers.appendWhereSection
 import org.jetbrains.research.libsl.nodes.references.AutomatonReference
 import org.jetbrains.research.libsl.nodes.references.TypeReference
 import org.jetbrains.research.libsl.type.GenericType
-import org.jetbrains.research.libsl.type.Type.Companion.UNRESOLVED_TYPE_SYMBOL
 import org.jetbrains.research.libsl.utils.BackticksPolitics
 import org.jetbrains.research.libsl.utils.EntityPosition
 
@@ -54,20 +53,7 @@ open class Function(
 
         if (returnType != null) {
             append(": ")
-            if (funGenerics.contains(
-                    GenericType(
-                        returnType!!.name,
-                        context = context
-                    )
-                )
-            ) {
-                append(returnType!!.name)
-            } else {
-                if (returnType!!.resolve()?.fullName != null)
-                    appendGeneric(this, returnType!!)
-                else
-                    append(UNRESOLVED_TYPE_SYMBOL)
-            }
+            append(TypeReferenceDumper.dumpType(returnType!!))
         }
 
         if (funGenerics.isNotEmpty()) {

@@ -98,9 +98,7 @@ data class TypeAlias(
             append("typealias ")
             append(BackticksPolitics.forTypeIdentifier(name))
             append(" = ")
-            // TODO: add resolve of the type !
             appendGeneric(this, originalType)
-            // append(BackticksPolitics.forTypeIdentifier(originalType.resolve()?.fullName ?: UNRESOLVED_TYPE_SYMBOL))
             append(";")
         }
     }
@@ -312,5 +310,4 @@ data class GenericType(
     override fun hashCode(): Int {
         return name.hashCode()
     }
-
 }

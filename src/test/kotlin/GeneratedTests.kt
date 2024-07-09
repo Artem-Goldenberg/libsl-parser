@@ -254,5 +254,10 @@ class GeneratedTests {
     fun testLiteralTypesLsl() {
         runLslTest("literalTypes")
     }
+
+    @Test
+    fun testCompositeTypesLsl() {
+        runLslTest("compositeTypes")
+    }
 }
 

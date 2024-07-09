@@ -5,21 +5,22 @@ import org.jetbrains.research.libsl.LibSLParser.EnumSemanticTypeEntryContext
 import org.jetbrains.research.libsl.LibSLParser.FunctionDeclContext
 import org.jetbrains.research.libsl.context.FunctionContext
 import org.jetbrains.research.libsl.context.LslContextBase
-import org.jetbrains.research.libsl.errors.ErrorManager
 import org.jetbrains.research.libsl.nodes.*
 import org.jetbrains.research.libsl.nodes.Function
+import org.jetbrains.research.libsl.nodes.references.GenericTypeReference
+import org.jetbrains.research.libsl.nodes.references.IntersectionExpressionTypeReference
+import org.jetbrains.research.libsl.nodes.references.TypeReference
+import org.jetbrains.research.libsl.nodes.references.UnionExpressionTypeReference
 import org.jetbrains.research.libsl.type.*
 import org.jetbrains.research.libsl.utils.PositionGetter
 
 class TypeVisitor(
-    private val basePath: String,
-    private val errorManager: ErrorManager,
     context: LslContextBase
-) : LibSLParserVisitor<Unit>(context) {
+) : LibSLParserVisitor<TypeReference>(context) {
     private val fileName = context.fileName
     private val posGetter = PositionGetter()
 
-    override fun visitSimpleSemanticType(ctx: LibSLParser.SimpleSemanticTypeContext) {
+    override fun visitSimpleSemanticType(ctx: LibSLParser.SimpleSemanticTypeContext): TypeReference {
         val typeName = ctx.semanticName.name.periodSeparatedFullName().asPeriodSeparatedString()
         val annotationReferences = getAnnotationUsages(ctx.annotationUsage())
         val realNameCtx = ctx.realName
@@ -38,9 +39,10 @@ class TypeVisitor(
         if (type !in context.getAllTypes()) {
             context.storeType(type)
         }
+        return processTypeIdentifier(ctx.typeIdentifier(0))
     }
 
-    override fun visitEnumSemanticType(ctx: LibSLParser.EnumSemanticTypeContext) {
+    override fun visitEnumSemanticType(ctx: LibSLParser.EnumSemanticTypeContext): TypeReference {
         val typeName = ctx.semanticName.asPeriodSeparatedString()
         val realTypeCtx = ctx.realName
         val originType = getRealTypeOrArray(realTypeCtx)
@@ -63,22 +65,10 @@ class TypeVisitor(
         if (type !in context.getAllTypes()) {
             context.storeType(type)
         }
+        return processTypeIdentifier(ctx.typeIdentifier())
     }
 
-    private fun processBlockTypeStatements(statementsContexts: List<EnumSemanticTypeEntryContext>): Map<String, Atomic> {
-        return statementsContexts.map { ctx -> processBlockTypeStatement(ctx) }.associate { it }
-    }
-
-    private fun processBlockTypeStatement(statementContext: EnumSemanticTypeEntryContext): Pair<String, Atomic> {
-        val entryName = statementContext.Identifier().asPeriodSeparatedString()
-        val expressionVisitor = ExpressionVisitor(context)
-        val atomicValueContext = statementContext.expressionAtomic()
-        val atomicValue = expressionVisitor.visitExpressionAtomic(atomicValueContext)
-
-        return entryName to atomicValue
-    }
-
-    override fun visitTypealiasStatement(ctx: LibSLParser.TypealiasStatementContext) {
+    override fun visitTypealiasStatement(ctx: LibSLParser.TypealiasStatementContext): TypeReference {
         val name = ctx.left.typeIdentifierName().periodSeparatedFullName().asPeriodSeparatedString()
         val originalTypeReference = processTypeIdentifier(ctx.right)
         val annotationReferences = getAnnotationUsages(ctx.annotationUsage())
@@ -92,9 +82,10 @@ class TypeVisitor(
         )
 
         context.storeType(type)
+        return processTypeIdentifier(ctx.typeIdentifier(0))
     }
 
-    override fun visitEnumBlock(ctx: LibSLParser.EnumBlockContext) {
+    override fun visitEnumBlock(ctx: LibSLParser.EnumBlockContext): TypeReference {
         val name = ctx.typeIdentifier().text.extractIdentifier()
         val statementsContexts = ctx.enumBlockStatement()
         val statements = processEnumStatements(statementsContexts)
@@ -109,23 +100,10 @@ class TypeVisitor(
         )
 
         context.storeType(type)
+        return processTypeIdentifier(ctx.typeIdentifier())
     }
 
-    private fun processEnumStatements(statements: List<LibSLParser.EnumBlockStatementContext>): Map<String, Atomic> {
-        return statements.map { processEnumStatement(it) }.associate { it }
-    }
-
-    private fun processEnumStatement(statement: LibSLParser.EnumBlockStatementContext): Pair<String, Atomic> {
-        val name = statement.Identifier().asPeriodSeparatedString()
-
-        val expressionVisitor = ExpressionVisitor(context)
-        val atomicContext = statement.integerNumber()
-        val atomic = expressionVisitor.visit(atomicContext) as Atomic
-
-        return name to atomic
-    }
-
-    override fun visitTypeDefBlock(ctx: LibSLParser.TypeDefBlockContext) {
+    override fun visitTypeDefBlock(ctx: LibSLParser.TypeDefBlockContext): TypeReference {
         val name = ctx.type.name.periodSeparatedFullName().asPeriodSeparatedString()
         val isTypeIdentifier = ctx.targetType()?.typeIdentifier()?.name?.text
         val forTypeList = mutableListOf<String>()
@@ -150,6 +128,7 @@ class TypeVisitor(
 
         val annotationReferences = getAnnotationUsages(ctx.annotationUsage())
         val typeIdentifier = processTypeIdentifier(ctx.typeIdentifier())
+        val generics = if (typeIdentifier is GenericTypeReference) typeIdentifier.genericReferences else mutableListOf()
         val type = StructuredType(
             name,
             variables,
@@ -160,11 +139,54 @@ class TypeVisitor(
             annotationReferences,
             context,
             posGetter.getCtxPosition(fileName, ctx),
-            typeIdentifier.genericReferences
+            generics
         )
         if (type !in context.getAllTypes()) {
             context.storeType(type)
         }
+        return processTypeIdentifier(ctx.typeIdentifier())
+    }
+
+    override fun visitTypeExpression(ctx: LibSLParser.TypeExpressionContext): TypeReference {
+        return when {
+            ctx.typeIdentifier() != null -> {
+                processTypeIdentifier(ctx.typeIdentifier())
+            }
+            ctx.AMPERSAND() != null -> {
+                processIntersection(ctx)
+            }
+            ctx.BIT_OR() != null -> {
+                processUnion(ctx)
+            }
+            else -> error("unknown expression type")
+        }
+    }
+    
+    private fun processBlockTypeStatements(statementsContexts: List<EnumSemanticTypeEntryContext>): Map<String, Atomic> {
+        return statementsContexts.map { ctx -> processBlockTypeStatement(ctx) }.associate { it }
+    }
+
+    private fun processBlockTypeStatement(statementContext: EnumSemanticTypeEntryContext): Pair<String, Atomic> {
+        val entryName = statementContext.Identifier().asPeriodSeparatedString()
+        val expressionVisitor = ExpressionVisitor(context)
+        val atomicValueContext = statementContext.expressionAtomic()
+        val atomicValue = expressionVisitor.visitExpressionAtomic(atomicValueContext)
+
+        return entryName to atomicValue
+    }
+    
+    private fun processEnumStatements(statements: List<LibSLParser.EnumBlockStatementContext>): Map<String, Atomic> {
+        return statements.map { processEnumStatement(it) }.associate { it }
+    }
+
+    private fun processEnumStatement(statement: LibSLParser.EnumBlockStatementContext): Pair<String, Atomic> {
+        val name = statement.Identifier().asPeriodSeparatedString()
+
+        val expressionVisitor = ExpressionVisitor(context)
+        val atomicContext = statement.integerNumber()
+        val atomic = expressionVisitor.visit(atomicContext) as Atomic
+
+        return name to atomic
     }
 
     private val LibSLParser.TypeDefBlockContext.typeDefBlockGenerics: MutableList<GenericType>
@@ -173,7 +195,9 @@ class TypeVisitor(
     private fun processVariableDecl(ctx: LibSLParser.VariableDeclContext): Variable {
         val keyword = VariableKind.fromString(ctx.keyword.text)
         val name = ctx.nameWithType().name.asPeriodSeparatedString()
-        val typeReference = processTypeIdentifier(ctx.nameWithType().type)
+
+        val typeReference = TypeVisitor(context).visitTypeExpression(ctx.nameWithType().typeExpression())
+
         val expressionVisitor = ExpressionVisitor(context)
         val initValue = ctx.assignmentRight()?.let { right -> expressionVisitor.visitAssignmentRight(right) }
 
@@ -206,7 +230,9 @@ class TypeVisitor(
         val args = ctx.args.toMutableList()
         args.forEach { arg -> functionContext.storeFunctionArgument(arg) }
 
-        val returnType = ctx.functionHeader().functionType?.let { processTypeIdentifier(it) }
+        var returnType: TypeReference? = null
+        if (ctx.functionHeader().functionType != null)
+            returnType = visitTypeExpression(ctx.functionHeader().functionType)
 
         return Function(
             kind = FunctionKind.FUNCTION,
@@ -224,12 +250,34 @@ class TypeVisitor(
         )
     }
 
+    private fun processIntersection(ctx: LibSLParser.TypeExpressionContext): TypeReference {
+        val left = visitTypeExpression(ctx.typeExpression(0))
+        val right = visitTypeExpression(ctx.typeExpression(1))
+        return IntersectionExpressionTypeReference(
+            left,
+            right,
+            context
+        )
+    }
+
+    private fun processUnion(ctx: LibSLParser.TypeExpressionContext): TypeReference {
+        val left = visitTypeExpression(ctx.typeExpression(0))
+        val right = visitTypeExpression(ctx.typeExpression(1))
+        return UnionExpressionTypeReference(
+            left,
+            right,
+            context
+        )
+    }
+
     private val FunctionDeclContext.args: List<FunctionArgument>
         get() = this
             .functionHeader().functionDeclArgList()
             ?.parameter()
             ?.mapIndexed { i, parameter ->
-                val typeRef = processTypeIdentifier(parameter.type)
+
+                val typeRef = TypeVisitor(context).visitTypeExpression(parameter.typeExpression())
+
                 val annotationsReferences = getAnnotationUsages(parameter.annotationUsage())
                 val arg = FunctionArgument(
                     parameter.name.text.extractIdentifier(), typeRef, i,

@@ -1,9 +1,10 @@
 package org.jetbrains.research.libsl.nodes
 
 import org.jetbrains.research.libsl.context.AutomatonContext
+import org.jetbrains.research.libsl.nodes.helpers.TypeReferenceDumper
 import org.jetbrains.research.libsl.nodes.references.FunctionReference
 import org.jetbrains.research.libsl.nodes.references.TypeReference
-import org.jetbrains.research.libsl.type.Type.Companion.UNRESOLVED_TYPE_SYMBOL
+import org.jetbrains.research.libsl.nodes.references.toSimpleString
 import org.jetbrains.research.libsl.utils.BackticksPolitics
 import org.jetbrains.research.libsl.utils.EntityPosition
 
@@ -33,11 +34,11 @@ open class Automaton(
         append("automaton ${BackticksPolitics.forPeriodSeparated(name)}")
 
         if (constructorVariables.isNotEmpty()) {
-            append(" (${constructorVariables.joinToString(", ") { v -> v.dumpToString() } })")
+            append(" (${constructorVariables.joinToString(", ") { v -> v.dumpToString() }})")
         }
-        append(" : ${BackticksPolitics.forPeriodSeparated(typeReference.resolve()?.fullName ?: UNRESOLVED_TYPE_SYMBOL)}")
+        append(" : ${TypeReferenceDumper.dumpType(typeReference)}")
 
-        if(implementedConcepts.isNotEmpty()) {
+        if (implementedConcepts.isNotEmpty()) {
             append(" implements ")
             append(implementedConcepts.joinToString(separator = ", ") {
                 it.name
@@ -108,11 +109,11 @@ data class AutomatonConcept(
         append(formatListEmptyLineAtEndIfNeeded(annotationUsages))
         append("automaton concept ${BackticksPolitics.forPeriodSeparated(name)}")
         if (constructorVariables.isNotEmpty()) {
-            append(" (${constructorVariables.joinToString(", ") { v -> v.dumpToString() } })")
+            append(" (${constructorVariables.joinToString(", ") { v -> v.dumpToString() }})")
         }
-        append(" : ${BackticksPolitics.forPeriodSeparated(typeReference.resolve()?.fullName ?: UNRESOLVED_TYPE_SYMBOL)}")
-
-        if(implementedConcepts.isNotEmpty()) {
+        append(" : ${TypeReferenceDumper.dumpType(typeReference)}")
+        
+        if (implementedConcepts.isNotEmpty()) {
             append(" implements ")
             append(implementedConcepts.joinToString(separator = ", ") {
                 it.name
@@ -189,7 +190,7 @@ data class Shift(
                     if (function.argTypes.isNotEmpty()) {
                         val argTypeNames =
                             function.argTypes.joinToString(separator = ", ", prefix = "(", postfix = ")") {
-                                it.name
+                                it.toSimpleString()
                             }
                         "$functionName$argTypeNames"
                     } else {

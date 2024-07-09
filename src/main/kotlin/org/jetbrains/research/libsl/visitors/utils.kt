@@ -6,9 +6,7 @@ import org.antlr.v4.runtime.VocabularyImpl
 import org.antlr.v4.runtime.tree.TerminalNode
 import org.jetbrains.research.libsl.LibSLParser
 import org.jetbrains.research.libsl.LibSLParser.PeriodSeparatedFullNameContext
-import org.jetbrains.research.libsl.context.LslGlobalContext
 import org.jetbrains.research.libsl.errors.Position
-import org.jetbrains.research.libsl.nodes.references.TypeReference
 
 
 fun String.removeDoubleQuotes(): String = removeSurrounding("\"", "\"")
@@ -40,11 +38,3 @@ fun Token.position(): Position {
 fun ParserRuleContext.position() = start.position()
 
 val keywords = (LibSLParser.VOCABULARY as VocabularyImpl).literalNames.filterNotNull().map { k -> k.removeQuotes() }
-
-fun isNotStoredLiteralType(
-    ctx: LslGlobalContext,
-    typeReference: TypeReference?,
-    type: LibSLParser.TypeIdentifierContext?
-): Boolean {
-    return type?.typeIdentifierName()?.primitiveLiteral() != null && typeReference != null && ctx.resolveType(typeReference) == null
-}

@@ -9,17 +9,17 @@ open class ActionContext(
 ) : LslContextBase(parentContext.fileName) {
     private val actionGenericTypes = mutableListOf<GenericType>()
 
+    override fun resolveType(reference: TypeReference): Type? {
+        return actionGenericTypes.firstOrNull { types -> reference.isReferenceMatchWithNode(types) }
+            ?: parentContext.resolveType(reference)
+    }
+    
     fun storeActionType(type: GenericType) {
         // TODO: maybe add exception if such type was stored previously ?
         if (type in actionGenericTypes)
             return
 
         actionGenericTypes.add(type)
-    }
-
-    override fun resolveType(reference: TypeReference): Type? {
-        return actionGenericTypes.firstOrNull { types -> reference.isReferenceMatchWithNode(types) }
-            ?: parentContext.resolveType(reference)
     }
 
     fun getActionGenericTypes(): MutableList<GenericType> {

@@ -4,7 +4,6 @@ import org.jetbrains.research.libsl.LibSLParser
 import org.jetbrains.research.libsl.context.FunctionContext
 import org.jetbrains.research.libsl.context.LslGlobalContext
 import org.jetbrains.research.libsl.nodes.*
-import org.jetbrains.research.libsl.type.LiteralType
 import org.jetbrains.research.libsl.utils.PositionGetter
 
 class BlockStatementVisitor(
@@ -70,10 +69,8 @@ class BlockStatementVisitor(
     override fun visitVariableDecl(ctx: LibSLParser.VariableDeclContext) {
         val keyword = VariableKind.fromString(ctx.keyword.text)
         val name = ctx.nameWithType().name.asPeriodSeparatedString()
-        val typeReference = processTypeIdentifier(ctx.nameWithType().type)
 
-        if (isNotStoredLiteralType(globalContext, typeReference, ctx.nameWithType().typeIdentifier()))
-            globalContext.storeType(LiteralType(context, typeReference.name))
+        val typeReference = TypeVisitor(globalContext).visitTypeExpression(ctx.nameWithType().typeExpression())
 
         val expressionVisitor = ExpressionVisitor(context)
         val initValue = ctx.assignmentRight()?.let {

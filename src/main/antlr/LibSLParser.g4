@@ -153,7 +153,7 @@ actionParameter
  */
 automatonDecl
    :   annotationUsage* AUTOMATON CONCEPT? name=periodSeparatedFullName (L_BRACKET constructorVariables* R_BRACKET)?
-   COLON type=typeIdentifier implementedConcepts*
+   COLON type=typeExpression implementedConcepts*
    L_BRACE automatonStatement* R_BRACE
    ;
 
@@ -215,12 +215,19 @@ variableDecl
    ;
 
 nameWithType
-   :  name=Identifier COLON type=typeIdentifier
+   :  name=Identifier COLON type=typeExpression
    ;
 
 /*
  * syntax: one.two.three<T>
  */
+ 
+typeExpression
+   :   typeIdentifier
+   |   typeExpression AMPERSAND  typeExpression
+   |   typeExpression BIT_OR typeExpression
+   ;
+ 
 typeIdentifier
    :   (asterisk=ASTERISK)? name=typeIdentifierName generic?
    ;
@@ -290,7 +297,7 @@ procDecl
 
 procHeader
    :   annotationUsage* PROC headerWithAsterisk? functionName=Identifier generic? L_BRACKET functionDeclArgList? R_BRACKET
-   (COLON functionType=typeIdentifier)? whereConstraints?
+   (COLON functionType=typeExpression)? whereConstraints?
    ;
 /*
  * syntax: @Annotation
@@ -303,7 +310,7 @@ functionDecl
 
 functionHeader
    :   annotationUsage* modifier=Identifier? FUN (automatonName=periodSeparatedFullName DOT)? headerWithAsterisk? functionName=Identifier generic?
-   L_BRACKET functionDeclArgList? R_BRACKET (COLON functionType=typeIdentifier)? whereConstraints?
+   L_BRACKET functionDeclArgList? R_BRACKET (COLON functionType=typeExpression)? whereConstraints?
    ;
 
 functionDeclArgList
@@ -311,7 +318,7 @@ functionDeclArgList
    ;
 
 parameter
-   :   annotationUsage* name=Identifier COLON type=typeIdentifier
+   :   annotationUsage* name=Identifier COLON type=typeExpression
    ;
 
 /* annotation

@@ -28,15 +28,15 @@ data class FunctionReference(
         return this.name == other.name && areArgsMatch(other.argTypes)
     }
 
+    override fun toString(): String {
+        return "FunctionReference($name)"
+    }
+    
     private fun areArgsMatch(args: List<TypeReference>): Boolean {
         if (args.size != this.argTypes.size) {
             return false
         }
 
         return args.withIndex().all { (i, a) -> a.isSameReference(args[i]) }
-    }
-
-    override fun toString(): String {
-        return "FunctionReference($name)"
     }
 }

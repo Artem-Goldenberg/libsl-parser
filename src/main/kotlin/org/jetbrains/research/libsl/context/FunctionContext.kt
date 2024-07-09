@@ -13,6 +13,15 @@ class FunctionContext(
     private val functionArguments = mutableListOf<FunctionArgument>()
     private val functionGenericTypes = mutableListOf<GenericType>()
 
+    override fun resolveVariable(reference: VariableReference): Variable? {
+        return functionArguments.firstOrNull { it.name == reference.name } ?: super.resolveVariable(reference)
+    }
+
+    override fun resolveType(reference: TypeReference): Type? {
+        return functionGenericTypes.firstOrNull { types -> reference.isReferenceMatchWithNode(types) }
+            ?: parentContext.resolveType(reference)
+    }
+    
     fun resolveFunctionArgumentByName(name: String): FunctionArgument? {
         return functionArguments.firstOrNull { arg -> arg.name == name }
     }
@@ -21,21 +30,12 @@ class FunctionContext(
         functionArguments.add(arg)
     }
 
-    override fun resolveVariable(reference: VariableReference): Variable? {
-        return functionArguments.firstOrNull { it.name == reference.name } ?: super.resolveVariable(reference)
-    }
-
     fun storeFunctionType(type: GenericType) {
         // TODO: maybe add exception if such type was stored previously ?
         if (type in functionGenericTypes)
             return
 
         functionGenericTypes.add(type)
-    }
-
-    override fun resolveType(reference: TypeReference): Type? {
-        return functionGenericTypes.firstOrNull { types -> reference.isReferenceMatchWithNode(types) }
-            ?: parentContext.resolveType(reference)
     }
 
     fun getFunctionGenericTypes(): MutableList<GenericType> {

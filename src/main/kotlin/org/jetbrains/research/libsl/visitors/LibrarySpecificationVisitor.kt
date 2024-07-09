@@ -25,9 +25,18 @@ class LibrarySpecificationVisitor(
 ) : LibSLParserVisitor<Unit>(globalContext) {
     private val posGetter = PositionGetter()
 
+    override fun visitGlobalStatement(ctx: LibSLParser.GlobalStatementContext) {
+        when {
+            ctx.ImportStatement() != null -> processImport(ctx.ImportStatement().text, posGetter.getCtxPosition(fileName, ctx))
+            ctx.IncludeStatement() != null -> processInclude(ctx.IncludeStatement().text, posGetter.getCtxPosition(fileName, ctx))
+        }
+
+        super.visitGlobalStatement(ctx)
+    }
+    
     fun processFile(file: FileContext, library: Library): Library {
 
-        TopLevelDeclarationsVisitor(basePath, errorManager, globalContext).visitFile(file)
+        TopLevelDeclarationsVisitor(fileName, basePath, errorManager, globalContext).visitFile(file)
 
         file.globalStatement().forEach { visitGlobalStatement(it) }
 
@@ -39,15 +48,6 @@ class LibrarySpecificationVisitor(
         representDeclaredActionsFromContextInLibrary()
 
         return library
-    }
-
-    override fun visitGlobalStatement(ctx: LibSLParser.GlobalStatementContext) {
-        when {
-            ctx.ImportStatement() != null -> processImport(ctx.ImportStatement().text, posGetter.getCtxPosition(fileName, ctx))
-            ctx.IncludeStatement() != null -> processInclude(ctx.IncludeStatement().text, posGetter.getCtxPosition(fileName, ctx))
-        }
-
-        super.visitGlobalStatement(ctx)
     }
 
     private fun processImport(str: String, entityPosition: EntityPosition) {
