@@ -29,7 +29,7 @@ data class UnionExpressionTypeReference(
         return false
     }
 
-    fun getName(): String {
+    fun toSimpleString(): String {
         return this.left.toSimpleString() + " | " + this.right.toSimpleString()
     }
 
@@ -57,7 +57,7 @@ data class IntersectionExpressionTypeReference(
         return false
     }
 
-    fun getName(): String {
+    fun toSimpleString(): String {
         return this.left.toSimpleString() + " & " + this.right.toSimpleString()
     }
 }
@@ -239,8 +239,8 @@ fun TypeReference.toSimpleString(): String {
         is PlainTypeReference -> this.name
         is GenericTypeReference -> this.name
         is LiteralTypeReference -> this.value.toString()
-        is UnionExpressionTypeReference -> this.getName()
-        is IntersectionExpressionTypeReference -> this.getName()
+        is UnionExpressionTypeReference -> this.toSimpleString()
+        is IntersectionExpressionTypeReference -> this.toSimpleString()
         is WildcardTypeReference -> this.name
         else -> error("Unsupported reference type")
     }
