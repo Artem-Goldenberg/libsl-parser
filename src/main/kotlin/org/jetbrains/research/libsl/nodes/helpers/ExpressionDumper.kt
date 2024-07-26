@@ -138,6 +138,8 @@ object ExpressionDumper {
     private fun dumpAutomatonOfFunctionArgumentInvoke(expression: AutomatonVariableInvoke): String {
         return buildString {
             append(BackticksPolitics.forPeriodSeparated(expression.automatonReference.name))
+            if (expression.generics.isNotEmpty())
+                appendGenericArray(this, expression.generics)
             append("(")
             append(dump(expression.arg))
             append(")")
@@ -152,6 +154,8 @@ object ExpressionDumper {
     private fun dumpAutomatonProcedureCall(expression: AutomatonProcedureCall): String {
         return buildString {
             append(BackticksPolitics.forPeriodSeparated(expression.automatonReference.name))
+            if (expression.generics.isNotEmpty())
+                appendGenericArray(this, expression.generics)
             append("(")
             append(dump(expression.arg))
             append(").")

@@ -275,6 +275,7 @@ class ExpressionVisitor(
         // check(context is FunctionContext) { "simple call is allowed only inside of function" }
 
         val automatonName = ctx.Identifier().asPeriodSeparatedString()
+        val generics = processGenerics(ctx.generic())
         val automatonReference = AutomatonReferenceBuilder.build(automatonName, context)
 
         //val argName = ctx.Identifier(1).asPeriodSeparatedString()
@@ -284,6 +285,7 @@ class ExpressionVisitor(
 
         return AutomatonVariableInvoke(
             automatonReference,
+            generics,
             arg,
             childAccess = null,
             entityPosition = posGetter.getCtxPosition(fileName, ctx)
@@ -599,6 +601,7 @@ class ExpressionVisitor(
         // check(context is FunctionContext) { "simple call is allowed only inside of function" }
 
         val automatonName = ctx.simpleCall().Identifier().asPeriodSeparatedString()
+        val generics = processGenerics(ctx.simpleCall().generic())
         val automatonReference = AutomatonReferenceBuilder.build(automatonName, context)
 
         //val argName = ctx.Identifier(1).asPeriodSeparatedString()
@@ -608,6 +611,7 @@ class ExpressionVisitor(
 
         return AutomatonProcedureCall(
             automatonReference,
+            generics,
             arg,
             childAccess = null,
             procExpression = visitProcUsage(ctx.procUsage()) as ProcExpression,

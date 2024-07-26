@@ -498,7 +498,7 @@ qualifiedAccess
    ;
 
 simpleCall
-   :   Identifier L_BRACKET qualifiedAccess R_BRACKET
+   :   Identifier generic? L_BRACKET qualifiedAccess R_BRACKET
    ;
 
 identifierList
