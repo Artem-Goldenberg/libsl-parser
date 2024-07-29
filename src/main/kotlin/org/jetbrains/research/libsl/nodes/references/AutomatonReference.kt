@@ -5,8 +5,9 @@ import org.jetbrains.research.libsl.nodes.Automaton
 
 data class AutomatonReference(
     val name: String,
-    override val context: LslContextBase
-) : LslReference<Automaton, AutomatonReference> {
+    override val context: LslContextBase,
+    val generics: MutableList<TypeReference>
+    ) : LslReference<Automaton, AutomatonReference> {
     override fun resolve(): Automaton? {
         return context.resolveAutomaton(this)
     }

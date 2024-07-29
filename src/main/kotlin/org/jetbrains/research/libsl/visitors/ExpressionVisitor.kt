@@ -276,7 +276,7 @@ class ExpressionVisitor(
 
         val automatonName = ctx.Identifier().asPeriodSeparatedString()
         val generics = processGenerics(ctx.generic())
-        val automatonReference = AutomatonReferenceBuilder.build(automatonName, context)
+        val automatonReference = AutomatonReferenceBuilder.build(automatonName, context, generics)
 
         //val argName = ctx.Identifier(1).asPeriodSeparatedString()
         val arg = visitQualifiedAccess(ctx.qualifiedAccess())
@@ -285,7 +285,6 @@ class ExpressionVisitor(
 
         return AutomatonVariableInvoke(
             automatonReference,
-            generics,
             arg,
             childAccess = null,
             entityPosition = posGetter.getCtxPosition(fileName, ctx)
@@ -296,9 +295,9 @@ class ExpressionVisitor(
         ctx: CallAutomatonConstructorWithNamedArgsContext
     ): Expression {
         val automatonName = ctx.name.asPeriodSeparatedString()
-        val automatonRef = AutomatonReferenceBuilder.build(automatonName, context)
-
         val generics = processGenerics(ctx.generic())
+        val automatonRef = AutomatonReferenceBuilder.build(automatonName, context, generics)
+
 
         generics.forEach {
             if (it is WildcardTypeReference)
@@ -334,7 +333,6 @@ class ExpressionVisitor(
 
         return CallAutomatonConstructor(
             automatonRef,
-            generics,
             args,
             stateRef,
             posGetter.getCtxPosition(fileName, ctx)
@@ -602,7 +600,7 @@ class ExpressionVisitor(
 
         val automatonName = ctx.simpleCall().Identifier().asPeriodSeparatedString()
         val generics = processGenerics(ctx.simpleCall().generic())
-        val automatonReference = AutomatonReferenceBuilder.build(automatonName, context)
+        val automatonReference = AutomatonReferenceBuilder.build(automatonName, context, generics)
 
         //val argName = ctx.Identifier(1).asPeriodSeparatedString()
         val arg = visitQualifiedAccess(ctx.simpleCall().qualifiedAccess())
@@ -611,7 +609,6 @@ class ExpressionVisitor(
 
         return AutomatonProcedureCall(
             automatonReference,
-            generics,
             arg,
             childAccess = null,
             procExpression = visitProcUsage(ctx.procUsage()) as ProcExpression,

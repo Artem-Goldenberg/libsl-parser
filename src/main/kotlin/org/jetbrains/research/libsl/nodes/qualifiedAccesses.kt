@@ -1,7 +1,6 @@
 package org.jetbrains.research.libsl.nodes
 
 import org.jetbrains.research.libsl.nodes.references.AutomatonReference
-import org.jetbrains.research.libsl.nodes.references.TypeReference
 import org.jetbrains.research.libsl.nodes.references.VariableReference
 import org.jetbrains.research.libsl.utils.BackticksPolitics
 import org.jetbrains.research.libsl.utils.EntityPosition
@@ -57,7 +56,6 @@ data class ArrayAccess(
 
 data class AutomatonVariableInvoke(
     val automatonReference: AutomatonReference,
-    val generics: MutableList<TypeReference> = mutableListOf(),
     val arg: QualifiedAccess,
     override var childAccess: QualifiedAccess?,
     val entityPosition: EntityPosition
@@ -65,7 +63,6 @@ data class AutomatonVariableInvoke(
 
 data class AutomatonProcedureCall(
     val automatonReference: AutomatonReference,
-    val generics: MutableList<TypeReference> = mutableListOf(),
     val arg: QualifiedAccess,
     override var childAccess: QualifiedAccess?,
     val procExpression: ProcExpression,
