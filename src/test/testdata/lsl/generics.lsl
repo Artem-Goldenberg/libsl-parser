@@ -38,6 +38,7 @@ define action <T> COMPLICATED_RETURN_TYPE_OF_GENERIC_ACTION(x: Int, s: T): HashM
 
 automaton A
 (
+    var storage: array<K>
 )
 : HashMap <K, V>
 {
@@ -86,7 +87,7 @@ automaton A
 
     fun *.genericTypeDefBlockReturnType (x: K): HashMap <Int, Int> {
         var newHashMap: HashMap<Int, Int> = new A<Int, Int>(state = Initialized);
-        A(newHashMap)._genericProc<Int, Int, Int>();
+        A<Int, Int>(newHashMap)._genericProc<Int, Int, Int>();
         result = newHashMap;
         action PLAIN_GENERIC_ACTION<Int>(5, 6);
         if (x is HashMap <Int, Int>) {
@@ -95,14 +96,14 @@ automaton A
         var obj: HashMap <Int, Int> = x as HashMap <Int, Int>;
 
         var newHashMapUnbounded: HashMap<?, ?> = new A<Int, Int>(state = Initialized);
-        A(newHashMapUnbounded)._genericProc<?, ?, ?>();
+        A<Int, Int>(newHashMapUnbounded)._genericProc<?, ?, ?>();
         action PLAIN_GENERIC_ACTION<?>(5, 6);
         if (x is HashMap<?, ?>) {
 
         }
         var obj2: HashMap <?, ?> = x as HashMap <?, ?>;
         var newHashMapBounded: HashMap<in Int, out String> = new A<Int, String>(state = Initialized);
-        A(newHashMapBounded)._genericProc<in Int, Int, out Int>();
+        A<Int, Int>(newHashMapBounded)._genericProc<in Int, Int, out Int>();
         action PLAIN_GENERIC_ACTION<in Int>(5, 6);
         if (x is HashMap<in Int, out string>) {
 
@@ -110,11 +111,13 @@ automaton A
         var obj3: HashMap<in Int, out string> = x as HashMap<in Int, out string>;
         
         var newHashMapWithLiterals: HashMap<in Int, out String> = new A<5, "anyString">(state = Initialized);
-        A(newHashMapWithLiterals)._genericProc<5, 'J', "anyString">();
+        A<Int, Int>(newHashMapWithLiterals)._genericProc<5, 'J', "anyString">();
         if (x is HashMap<5.79, "anyString">) {
 
         }
         var obj4: HashMap<in Int, out string> = x as HashMap<5.79, "anyString">;
+        A<Int, Int>(newHashMapBounded)._genericProc<in Int, Int, out Int>();
+        var copyStorage: array<K> = A<Int, Int>(newHashMapBounded).storage;
     }
 
     fun *.ComplicatedWhere <T, R> (from: R, to: T): void where T: HashMap<HashMap<Int, map<Int, Int>>, Int>, R: out Int {

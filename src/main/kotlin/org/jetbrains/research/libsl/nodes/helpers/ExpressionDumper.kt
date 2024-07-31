@@ -87,8 +87,8 @@ object ExpressionDumper {
         return buildString {
             append("new ${BackticksPolitics.forPeriodSeparated(expression.automatonRef.name)}")
 
-            if (expression.generics.isNotEmpty())
-                appendGenericArray(this, expression.generics)
+            if (expression.automatonRef.generics.isNotEmpty())
+                appendGenericArray(this, expression.automatonRef.generics)
 
             val formattedArgs = buildList {
                 add("state = ${BackticksPolitics.forIdentifier(expression.stateRef.name)}")
@@ -138,6 +138,8 @@ object ExpressionDumper {
     private fun dumpAutomatonOfFunctionArgumentInvoke(expression: AutomatonVariableInvoke): String {
         return buildString {
             append(BackticksPolitics.forPeriodSeparated(expression.automatonReference.name))
+            if (expression.automatonReference.generics.isNotEmpty())
+                appendGenericArray(this, expression.automatonReference.generics)
             append("(")
             append(dump(expression.arg))
             append(")")
@@ -152,6 +154,8 @@ object ExpressionDumper {
     private fun dumpAutomatonProcedureCall(expression: AutomatonProcedureCall): String {
         return buildString {
             append(BackticksPolitics.forPeriodSeparated(expression.automatonReference.name))
+            if (expression.automatonReference.generics.isNotEmpty())
+                appendGenericArray(this, expression.automatonReference.generics)
             append("(")
             append(dump(expression.arg))
             append(").")
