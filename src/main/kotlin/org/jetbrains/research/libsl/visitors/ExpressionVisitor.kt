@@ -39,7 +39,7 @@ class ExpressionVisitor(
                 processTypeOperationExpression(ctx)
             }
 
-            ctx.expression().size == 1 && ctx.op == null -> {
+            ctx.expression().size == 1 && ctx.op == null && ctx.procUsage() == null -> {
                 // brackets expression
                 visitExpression(ctx.expression()!![0])
             }
@@ -67,7 +67,9 @@ class ExpressionVisitor(
             }
 
             ctx.procUsage() != null -> {
-                visitProcUsage(ctx.procUsage())
+                val visitProcUsage = visitProcUsage(ctx.procUsage()) as ProcExpression
+                visitProcUsage.procedureCall.invoker= visitExpression(ctx.expression()!![0]).toString()
+                return visitProcUsage
             }
 
             ctx.actionUsage() != null -> {

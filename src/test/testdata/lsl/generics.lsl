@@ -61,6 +61,10 @@ automaton A
 
     proc _printProc <T, S, Q> (t: T, s: S, args: array<Q>): Q where T: in Int, S: any, Q: out Int {
     }
+    
+    proc _bar <Q> (x: Q): void where Q: any {
+        val q: string = x;
+    }
 
     fun *.genericFun <T, R, Q> (): void where T: any, R: any, Q: any
     {
@@ -82,10 +86,11 @@ automaton A
     }
 
     fun *.procUsage (@target self: HashMap <K, V>): void {
-        _genericFunWithParams<Int, Int, Int>(4, 5);
+        this._genericFunWithParams<Int, Int, Int>(4, 5);
     }
 
     fun *.genericTypeDefBlockReturnType (x: K): HashMap <Int, Int> {
+        this._bar<string>("abc");
         var newHashMap: HashMap<Int, Int> = new A<Int, Int>(state = Initialized);
         A<Int, Int>(newHashMap)._genericProc<Int, Int, Int>();
         result = newHashMap;

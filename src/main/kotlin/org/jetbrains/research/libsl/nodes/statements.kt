@@ -79,7 +79,8 @@ data class ProcedureCall(
     val name: String,
     val generics: MutableList<TypeReference>,
     val arguments: List<Expression>,
-    val entityPosition: EntityPosition
+    val entityPosition: EntityPosition,
+    var invoker: String = ""
 ) : Statement() {
     override fun dumpToString(): String = buildString {
         append("${BackticksPolitics.forIdentifier(name)}(")
@@ -94,6 +95,8 @@ data class ProcedureCall(
             )
         }
     }
+    
+    
 }
 
 data class FunctionUsage(

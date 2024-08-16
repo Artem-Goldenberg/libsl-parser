@@ -193,6 +193,8 @@ object ExpressionDumper {
     private fun dumpProcExpression(expression: ProcExpression): String {
         return buildString {
             // TODO()
+            if (expression.procedureCall.invoker != "")
+                append("${expression.procedureCall.invoker}.")
             append(BackticksPolitics.forIdentifier(expression.procedureCall.name))
 
             if (expression.procedureCall.generics.isNotEmpty())

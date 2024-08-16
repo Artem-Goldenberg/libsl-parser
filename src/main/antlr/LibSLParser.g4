@@ -407,7 +407,8 @@ expression
    // primaryNoNewArray
    |   qualifiedAccess apostrophe=APOSTROPHE
    |   qualifiedAccess
-   |   procUsage
+//   |   procUsage
+   |   expression DOT procUsage
    |   actionUsage
    |   callAutomatonConstructorWithNamedArgs
    |   lbracket=L_BRACKET expression rbracket=R_BRACKET
